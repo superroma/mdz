@@ -1,47 +1,37 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { api } from './api'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { usePagesStore } from './store/pages.store'
 
 type Node = { path: string; title: string; children?: Node[] }
 
 export function Sidebar() {
-  const [tree, setTree] = React.useState<Node[]>([])
   const navigate = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = React.useState(false)
 
-  async function refreshTree() {
-    const t = await api.tree()
-    setTree(t)
-  }
+  const tree = usePagesStore((s) => s.tree)
+  const loadTree = usePagesStore((s) => s.loadTree)
+  const createRootUntitled = usePagesStore((s) => s.createRootUntitled)
+  const createChildUntitled = usePagesStore((s) => s.createChildUntitled)
+
+  const currentPagePath = React.useMemo(() => {
+    const match = location.pathname.match(/^\/p\/(.+)$/)
+    return match ? decodeURIComponent(match[1]) : null
+  }, [location.pathname])
 
   React.useEffect(() => {
-    void refreshTree()
-  }, [])
-
-  async function generateAvailableName(base: string, parentPath?: string) {
-    for (let i = 0; i < 20; i++) {
-      const candidate = i === 0 ? base : `${base}-${i + 1}`
-      const full = parentPath ? `${parentPath}/${candidate}` : candidate
-      try {
-        await api.create(full, '')
-        return full
-      } catch (e: any) {
-        const msg = String(e?.message || e)
-        if (!/already exists/i.test(msg)) throw e
-      }
-    }
-    throw new Error('Could not allocate a unique name')
-  }
+    void loadTree()
+  }, [loadTree])
 
   async function addRoot() {
-    const path = await generateAvailableName('Untitled')
-    await refreshTree()
+    const path = await createRootUntitled()
+    await loadTree()
     navigate(`/p/${encodeURIComponent(path)}`)
   }
 
   async function addChild(parentPath: string) {
-    const path = await generateAvailableName('Untitled', parentPath)
-    await refreshTree()
+    const path = await createChildUntitled(parentPath)
+    await loadTree()
     navigate(`/p/${encodeURIComponent(path)}`)
   }
 
@@ -74,7 +64,8 @@ export function Sidebar() {
           {tree.map((n) => (
             <TreeNode
               key={n.path}
-              node={n}
+              node={n as any as Node}
+              selectedPath={currentPagePath}
               onOpen={(p) => navigate(`/p/${encodeURIComponent(p)}`)}
               onAddChild={(p) => void addChild(p)}
             />
@@ -87,27 +78,38 @@ export function Sidebar() {
 
 function TreeNode({
   node,
+  selectedPath,
   onOpen,
   onAddChild,
 }: {
   node: Node
+  selectedPath?: string | null
   onOpen: (p: string) => void
   onAddChild: (p: string) => void
 }) {
   const hasChildren = (node.children?.length ?? 0) > 0
+  const isSelected = selectedPath === node.path
   return (
     <li role="treeitem" aria-expanded={hasChildren ? true : undefined}>
-      <div className="flex items-center gap-2">
+      <div
+        className={`flex items-center gap-2 w-full justify-between rounded px-1 py-0.5 transition-colors ${
+          isSelected
+            ? 'bg-gray-100 dark:bg-gray-800 border-l-2 border-gray-300 dark:border-gray-700'
+            : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+        }`}
+      >
         <button
           aria-label={`open ${node.title}`}
-          className="text-left hover:underline"
+          className={
+            'text-left hover:underline px-2 py-1 rounded bg-transparent flex-1 min-w-0'
+          }
           onClick={() => onOpen(node.path)}
         >
           {node.title}
         </button>
         <button
           aria-label={`add child page for ${node.title}`}
-          className="px-1 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="ml-2 px-1 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
           onClick={() => onAddChild(node.path)}
         >
           +
@@ -119,6 +121,7 @@ function TreeNode({
             <TreeNode
               key={c.path}
               node={c}
+              selectedPath={selectedPath}
               onOpen={onOpen}
               onAddChild={onAddChild}
             />

@@ -6,12 +6,14 @@ import {
   Routes,
   useNavigate,
   useParams,
+  useLocation,
 } from 'react-router-dom'
 import { Viewer } from './viewer'
 import { Editor } from './editor'
 import './index.css'
 import { api } from './api'
 import { Sidebar } from './sidebar'
+import { usePagesStore } from './store/pages.store'
 
 function App() {
   React.useEffect(() => {
@@ -21,6 +23,7 @@ function App() {
     else if (mode === 'light') root.style.colorScheme = 'light'
     else root.style.colorScheme = 'light dark'
   }, [])
+
   return (
     <div className="h-screen md:flex">
       <Sidebar />
@@ -30,15 +33,42 @@ function App() {
           <Route
             path="*"
             element={
-              <div aria-label="empty" className="p-4 text-gray-500">
-                Select a page
-              </div>
+              <AutoSelectFirst>
+                <div aria-label="empty" className="p-4 text-gray-500">
+                  Select a page
+                </div>
+              </AutoSelectFirst>
             }
           />
         </Routes>
       </div>
     </div>
   )
+}
+
+function AutoSelectFirst({ children }: { children: React.ReactNode }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const tree = usePagesStore((s) => s.tree)
+  const loadTree = usePagesStore((s) => s.loadTree)
+
+  const currentPath = React.useMemo(() => {
+    const match = location.pathname.match(/^\/p\/(.+)$/)
+    return match ? decodeURIComponent(match[1]) : null
+  }, [location.pathname])
+
+  React.useEffect(() => {
+    // ensure tree is loaded
+    if (tree.length === 0) void loadTree()
+  }, [tree.length, loadTree])
+
+  React.useEffect(() => {
+    if (!currentPath && tree.length > 0) {
+      navigate(`/p/${encodeURIComponent(tree[0].path)}`, { replace: true })
+    }
+  }, [currentPath, tree, navigate])
+
+  return <>{children}</>
 }
 
 function PageView() {
