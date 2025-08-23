@@ -2,6 +2,22 @@
 
 /* color scheme is controlled at runtime based on VITE_THEME */
 
+html[data-theme='light'] {
+  --sidebar-bg: color-mix(in oklab, white, black 3%);
+  --sidebar-row-selected-bg: color-mix(in oklab, var(--sidebar-bg), black 5%);
+  --sidebar-row-selected-border: color-mix(in oklab, var(--sidebar-bg), black 15%);
+  --sidebar-row-text: color-mix(in oklab, black, white 50%);
+  --sidebar-row-selected-text: black;
+}
+
+html[data-theme='dark'] {
+  --sidebar-bg: color-mix(in oklab, black, white 10%);
+  --sidebar-row-selected-bg: color-mix(in oklab, var(--sidebar-bg), black 10%);
+  --sidebar-row-selected-border: color-mix(in oklab, var(--sidebar-bg), black 25%);
+  --sidebar-row-text: color-mix(in oklab, white, black 20%);
+  --sidebar-row-selected-text: white;
+}
+
 /* Minimal readable typography for rendered markdown (no plugin) */
 .mdx-content { line-height: 1.7; }
 .mdx-content h1 { font-size: 1.875rem; font-weight: 700; margin: 1rem 0; }
@@ -16,3 +32,37 @@
 .mdx-content hr { border: 0; border-top: 1px solid rgba(127,127,127,0.3); margin: 1rem 0; }
 
 
+@layer utilities {
+  .row-surface {
+    background: var(--row-bg);
+    transition: background-color .15s ease;
+  }
+  .row-surface:hover {
+    background: color-mix(in oklab, var(--row-bg), black 5%);
+  }
+  .row-surface[data-plus-hover="true"] {
+    background: var(--row-bg);
+  }
+  .plus-btn { color: var(--sidebar-row-text); }
+  .plus-btn:hover { background: color-mix(in oklab, var(--surface-bg), black 10%); }
+  .row-surface[aria-selected="true"] {
+    --row-bg: var(--sidebar-row-selected-bg);
+    border-left: 2px solid var(--sidebar-row-selected-border);
+  }
+  .row-text { color: var(--sidebar-row-text); }
+  .row-surface[aria-selected="true"] .row-text { color: var(--sidebar-row-selected-text); }
+
+  /* Generic clickable surface utility */
+  .clickable-surface {
+    background: var(--surface-bg, var(--sidebar-bg));
+    transition: background-color .15s ease;
+  }
+  .clickable-surface:hover {
+    background: color-mix(in oklab, var(--surface-bg, var(--sidebar-bg)), black 5%);
+  }
+  .clickable-surface[aria-selected="true"] {
+    --surface-bg: var(--sidebar-row-selected-bg);
+    border-left: 2px solid var(--sidebar-row-selected-border);
+  }
+  .clickable-surface[aria-selected="true"] .row-text { color: var(--sidebar-row-selected-text); }
+}

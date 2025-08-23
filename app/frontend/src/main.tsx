@@ -19,9 +19,19 @@ function App() {
   React.useEffect(() => {
     const mode = (import.meta as any).env?.VITE_THEME || 'system'
     const root = document.documentElement
-    if (mode === 'dark') root.style.colorScheme = 'dark'
-    else if (mode === 'light') root.style.colorScheme = 'light'
-    else root.style.colorScheme = 'light dark'
+    const setTheme = (theme: 'light' | 'dark') => {
+      root.style.colorScheme = theme
+      root.setAttribute('data-theme', theme)
+    }
+    if (mode === 'dark') setTheme('dark')
+    else if (mode === 'light') setTheme('light')
+    else {
+      const media = window.matchMedia('(prefers-color-scheme: dark)')
+      const apply = () => setTheme(media.matches ? 'dark' : 'light')
+      apply()
+      media.addEventListener('change', apply)
+      return () => media.removeEventListener('change', apply)
+    }
   }, [])
 
   return (

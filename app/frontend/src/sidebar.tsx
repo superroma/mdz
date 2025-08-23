@@ -49,6 +49,7 @@ export function Sidebar() {
         className={`border-r border-gray-200 p-2 overflow-auto h-full ${
           open ? 'block' : 'hidden md:block'
         }`}
+        style={{ backgroundColor: 'var(--sidebar-bg)' }}
       >
         <div className="flex items-center justify-between px-1 pb-2">
           <div className="font-semibold text-sm text-gray-700">Pages</div>
@@ -89,28 +90,38 @@ function TreeNode({
 }) {
   const hasChildren = (node.children?.length ?? 0) > 0
   const isSelected = selectedPath === node.path
+  const rowRef = React.useRef<HTMLDivElement>(null)
   return (
     <li role="treeitem" aria-expanded={hasChildren ? true : undefined}>
       <div
-        className={`flex items-center gap-2 w-full justify-between rounded px-1 py-0.5 transition-colors ${
-          isSelected
-            ? 'bg-gray-100 dark:bg-gray-800 border-l-2 border-gray-300 dark:border-gray-700'
-            : 'hover:bg-gray-50 dark:hover:bg-gray-800'
-        }`}
+        ref={rowRef}
+        aria-selected={isSelected || undefined}
+        className={
+          'group clickable-surface flex items-center gap-2 w-full justify-between rounded px-1 py-0.5'
+        }
+        style={{
+          // @ts-ignore -- custom property
+          ['--surface-bg' as any]: isSelected
+            ? 'var(--sidebar-row-selected-bg)'
+            : 'var(--sidebar-bg)',
+        }}
       >
         <button
           aria-label={`open ${node.title}`}
           className={
-            'text-left hover:underline px-2 py-1 rounded bg-transparent flex-1 min-w-0'
+            'text-left px-2 py-1 rounded bg-transparent flex-1 min-w-0'
           }
           onClick={() => onOpen(node.path)}
         >
-          {node.title}
+          <span className={'row-text block truncate'}>{node.title}</span>
         </button>
         <button
           aria-label={`add child page for ${node.title}`}
-          className="ml-2 px-1 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="plus-btn ml-2 px-2 text-base rounded focus:outline-none focus-visible:ring opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
+          onMouseEnter={() => {}}
+          onMouseLeave={() => {}}
           onClick={() => onAddChild(node.path)}
+          data-plus
         >
           +
         </button>
