@@ -1,0 +1,10 @@
+{
+  "name": "mdz1",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "pnpm -C app/backend dev & pnpm -C app/frontend dev",
+    "build": "pnpm -C app/backend build && pnpm -C app/frontend build",
+    "test": "pnpm -C app/backend test && pnpm -C app/frontend test && pnpm -C app/e2e test"
+  }
+}
