@@ -1,4 +1,4 @@
-# MDZ1 User Manual
+# MDZ User Manual
 
 ## What is this?
 
@@ -23,5 +23,5 @@ Minimal markdown editor/viewer backed by a filesystem folder `./pages`.
 
 - Commit `./pages` to sync/share
 - Resolve conflicts manually if they occur
- 
+
 ## Some additions

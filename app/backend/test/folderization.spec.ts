@@ -7,7 +7,7 @@ import { createStorage } from '../src/storage'
 let rootDir: string
 
 beforeEach(() => {
-  rootDir = mkdtempSync(join(tmpdir(), 'mdz1-fold-'))
+  rootDir = mkdtempSync(join(tmpdir(), 'mdz-fold-'))
 })
 
 afterEach(() => {

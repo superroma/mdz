@@ -7,7 +7,7 @@ import { buildServer } from '../src/server'
 let rootDir: string
 
 beforeEach(() => {
-  rootDir = mkdtempSync(join(tmpdir(), 'mdz1-api-'))
+  rootDir = mkdtempSync(join(tmpdir(), 'mdz-api-'))
 })
 
 afterEach(() => {

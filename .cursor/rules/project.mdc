@@ -2,7 +2,7 @@
 alwaysApply: false
 ---
 
-Project: MDZ1 (MVP)
+Project: MDZ (MVP)
 
 Goal
 
@@ -18,55 +18,3 @@ Storage
 
 - Plain markdown files (no front-matter/metadata). Title = basename of path.
 - Page without children: `PageName.md`. When first child is added, convert to folder: `PageName/README.md` and child `PageName/Child.md`. When last child is removed, convert back to `PageName.md`.
-
-Run
-
-- Dev: `pnpm -C app/backend dev` and `pnpm -C app/frontend dev`
-- Build: `pnpm -C app/backend build && pnpm -C app/frontend build`
-- Tests: backend (vitest), frontend (vitest), e2e (playwright). From repo root: `pnpm test` runs all.
-  - E2E uses `app/e2e/test-pages/` as storage root (auto-reset per run).
-
-Where to look
-
-- `plan.md` (scope), `checklist.md` (status)
-- `app/backend/src/storage.ts`, `app/backend/src/server.ts`
-- `app/frontend/src` (Sidebar/Viewer/Editor)
-
-Constraints
-
-- Keep code small (YAGNI). Prefer role/label queries for a11y tests.
-- Avoid memory-bank docs; keep this file concise.
-  Project: MDZ1 (MVP)
-
-Goal
-
-- Minimal markdown editor/viewer with filesystem storage. TDD only for necessary paths.
-
-Tech
-
-- Backend: Fastify + local storage; routes `/pages/*`; production alias `/api/pages/*`.
-- Frontend: Vite + React + Tailwind; Sidebar/Viewer/Editor. MDX via `@mdx-js/mdx` evaluate with `useDynamicImport: false`.
-  - Responsive: sidebar hidden on small screens with a toggle; desktop shows sidebar by default.
-
-Storage
-
-- Plain markdown files (no front-matter/metadata). Title = basename of path.
-- Page without children: `PageName.md`. When first child is added, convert to folder: `PageName/README.md` and child `PageName/Child.md`. When last child is removed, convert back to `PageName.md`.
-
-Run
-
-- Dev: `pnpm -C app/backend dev` and `pnpm -C app/frontend dev`
-- Build: `pnpm -C app/backend build && pnpm -C app/frontend build`
-- Tests: backend (vitest), frontend (vitest), e2e (playwright). From repo root: `pnpm test` runs all.
-  - E2E uses `app/e2e/test-pages/` as storage root (auto-reset per run).
-
-Where to look
-
-- `plan.md` (scope), `checklist.md` (status)
-- `app/backend/src/storage.ts`, `app/backend/src/server.ts`
-- `app/frontend/src` (Sidebar/Viewer/Editor)
-
-Constraints
-
-- Keep code small (YAGNI). Prefer role/label queries for a11y tests.
-- Avoid memory-bank docs; keep this file concise.

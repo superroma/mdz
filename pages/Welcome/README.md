@@ -1,4 +1,4 @@
-# Welcome to MDZ1
+# Welcome to MDZ
 
 This is your local knowledge space.
 

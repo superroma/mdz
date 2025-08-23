@@ -1,24 +1,14 @@
-# Write mdz from scratch
+# UI improvements
 
-We are rewriting `../mdz/` from scratch to have real MVP without exta features.
+Use TDD - write tests first.
 
-## What to keep
+For UI components behavior and formatting - write frontend tests.
+For API behavior - write backend tests
+For user action flow - use e2e tests
 
-- Language and technology: TypeScript, node, vite, React.
-- Tests structure. Backend, Frontend UI, Frontend Behabior and E2E. Preserve structure and approach, not tests themselves.
-- backend API
-- Page storage strategy. Page is PageName.md or PageName/README.md
-- UI style
+## Selecting pages
 
-## What to change
-
-- Page editing - just a md source editing in text editor, no fancy GUI like Novel
-- Page view - rendered markdown with MDX support.
-
-## Requirements
-
-- Code style: TDD, DRY, YAGNI. No comments.
-- Minimal code. No "legacy support", no imagined use cases - just what required for app to run.
-- Minimal tests. Test only that feature works. Then if you find error, reproduce in test first.
-- A11y, ARIA, use it for tests.
-- Use Storybook for UI Elements design
+- Highlight selected page
+- Select first page in the sidebar at startup
+- Select previous page if current is deleted
+- Show nothing in the page view only if there are no pages
