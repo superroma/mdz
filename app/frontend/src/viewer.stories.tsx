@@ -20,15 +20,88 @@ export const Basic: Story = {
 }
 
 export const Formatting: Story = {
-  render: () => (
-    <div style={{ display: 'grid', gap: 16 }}>
-      <Viewer source={String(formattingMd)} />
-      <details>
-        <summary>Show source (Formatting.md)</summary>
-        <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>
-          {String(formattingMd)}
-        </pre>
-      </details>
-    </div>
-  ),
+  render: () => {
+    const content = `
+## Headers
+
+# Header 1
+
+## Header 2
+
+### Header 3
+
+#### Header 4
+
+##### Header 5
+
+###### Header 6
+
+## Text Formatting
+
+**Bold text** or **also bold**
+
+_Italic text_ or _also italic_
+
+**_Bold and italic_** or **_also bold and italic_**
+
+~~Strikethrough text~~
+
+## Lists
+
+### Unordered Lists
+
+- Item 1
+- Item 2
+  - Nested item A
+  - Nested item B
+    - Deeply nested item
+- Item 3
+
+### Ordered Lists
+
+1. First item
+2. Second item
+   1. Nested numbered item
+   2. Another nested item
+3. Third item
+
+### Task Lists
+
+- [x] Completed task
+- [ ] Incomplete task
+- [ ] Another incomplete task
+
+## Links and Images
+
+### Links
+
+[Basic link](https://example.com)
+
+[Link with title](https://example.com 'This is a title')
+
+<https://auto-link.com>
+
+[Reference-style link][ref-link]
+
+[Another reference][1]
+
+[ref-link]: https://example.com
+[1]: https://example.com/reference
+
+### Images
+
+![Alt text](https://via.placeholder.com/300x200/4f46e5/ffffff?text=MDZ+Image)
+
+![Alt text with title](https://via.placeholder.com/200x150/10b981/ffffff?text=Sample 'Image title')
+`
+    return (
+      <div style={{ display: 'grid', gap: 16 }}>
+        <Viewer source={content} />
+        <details>
+          <summary>Show source</summary>
+          <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>{content}</pre>
+        </details>
+      </div>
+    )
+  },
 }

@@ -41,11 +41,16 @@ class ErrorBoundary extends React.Component<
 function MDXRuntime({ code }: { code: string }) {
   const [Comp, setComp] = React.useState<React.ComponentType | null>(null)
   const [err, setErr] = React.useState<string | null>(null)
+  const containerRef = React.useRef<HTMLDivElement | null>(null)
   React.useEffect(() => {
     let cancelled = false
     ;(async () => {
       try {
-        const file = await evaluate(code, {
+        const preprocessed = code.replace(
+          /<(https?:\/\/[^>\s]+)>/g,
+          (_m, url) => `[${url}](${url})`,
+        )
+        const file = await evaluate(preprocessed, {
           Fragment: runtime.Fragment as any,
           jsx: (runtime as any).jsx,
           jsxs: (runtime as any).jsxs,
@@ -76,11 +81,22 @@ function MDXRuntime({ code }: { code: string }) {
       cancelled = true
     }
   }, [code])
-  if (!Comp) return err ? <pre role="alert">{err}</pre> : null
+  React.useEffect(() => {
+    if (!Comp || err) return
+    // Defer to after paint to check if anything actually rendered
+    const id = window.setTimeout(() => {
+      const html = containerRef.current?.innerHTML?.trim() || ''
+      if (!html) setErr('MDX rendered no content')
+    }, 0)
+    return () => window.clearTimeout(id)
+  }, [Comp, err, code])
+  if (err) return <pre role="alert">{err}</pre>
   return (
     <MDXProvider>
       <ErrorBoundary>
-        <Comp />
+        <div ref={containerRef}>
+          <Comp />
+        </div>
       </ErrorBoundary>
     </MDXProvider>
   )

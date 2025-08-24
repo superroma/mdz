@@ -23,6 +23,7 @@ const config: StorybookConfig = {
     const pagesDir = path.resolve(repoRoot, 'pages')
     const allow = new Set<string>([
       ...(((baseConfig.server as any).fs.allow as string[]) || []),
+      frontendDir,
       pagesDir,
     ])
     ;(baseConfig.server as any).fs.allow = Array.from(allow)

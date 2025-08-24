@@ -4,8 +4,9 @@ import { describe, it, expect } from 'vitest'
 import { Viewer } from './viewer'
 // @ts-ignore
 import formattingMd from './fixtures/Formatting.md?raw'
-import fs from 'node:fs/promises'
-import path from 'node:path'
+// Use same import path as Storybook story
+// @ts-ignore
+import projectFormattingMd from '../../../pages/Formatting.md?raw'
 
 describe('Viewer Formatting fixture', () => {
   it('renders headings, paragraph, and a table from fixture', async () => {
@@ -20,15 +21,7 @@ describe('Viewer Formatting fixture', () => {
   })
 
   it('renders real pages/Formatting.md (fails with the actual error if not)', async () => {
-    const filePath = path.resolve(
-      process.cwd(),
-      '..',
-      '..',
-      'pages',
-      'Formatting.md',
-    )
-    const md = await fs.readFile(filePath, 'utf8')
-    render(<Viewer source={md} />)
+    render(<Viewer source={String(projectFormattingMd)} />)
     try {
       await waitFor(() => {
         expect(screen.getByRole('table')).toBeInTheDocument()

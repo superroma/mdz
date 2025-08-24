@@ -40,4 +40,13 @@ describe('Viewer', () => {
       spy.mockRestore()
     }
   })
+
+  it('renders angle-bracket autolink as an anchor', async () => {
+    const md = '# Link Test\n\n<https://auto-link.com>\n'
+    render(<Viewer source={md} />)
+    const link = await screen.findByRole('link', {
+      name: 'https://auto-link.com',
+    })
+    expect(link).toHaveAttribute('href', 'https://auto-link.com')
+  })
 })
