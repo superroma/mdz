@@ -30,6 +30,11 @@ html[data-theme='dark'] {
 .mdx-content pre { background: rgba(127,127,127,0.15); padding: 0.75rem; border-radius: 6px; overflow: auto; }
 .mdx-content a { color: #2563eb; text-decoration: underline; }
 .mdx-content hr { border: 0; border-top: 1px solid rgba(127,127,127,0.3); margin: 1rem 0; }
+/* Basic table styling for rendered markdown */
+.mdx-content table { border-collapse: collapse; margin: 1rem 0; width: 100%; }
+.mdx-content thead th { background: rgba(127,127,127,0.1); font-weight: 600; }
+.mdx-content th, .mdx-content td { border: 1px solid rgba(127,127,127,0.3); padding: 0.5rem 0.75rem; text-align: left; }
+.mdx-content tbody tr:nth-child(even) { background: rgba(127,127,127,0.05); }
 
 
 @layer utilities {
