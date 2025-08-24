@@ -1,6 +1,7 @@
 import Fastify from 'fastify'
 import dotenv from 'dotenv'
 import { createStorage } from './storage'
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import fastifyStatic from '@fastify/static'
@@ -11,15 +12,22 @@ export function buildServer(opts?: { storageRoot?: string }) {
   const thisDir = path.dirname(fileURLToPath(import.meta.url))
   const repoRoot = path.resolve(thisDir, '../../../')
   // Load env from repo root so both dev and production runs read the same .env
-  dotenv.config({ path: path.resolve(repoRoot, '.env'), override: true })
+  dotenv.config({ path: path.resolve(repoRoot, '.env'), override: false })
   const defaultPagesRoot = path.resolve(repoRoot, 'pages')
-  const envRootRaw = process.env.STORAGE_ROOT
-  const envRootResolved = envRootRaw
-    ? path.isAbsolute(envRootRaw)
-      ? envRootRaw
-      : path.resolve(repoRoot, envRootRaw)
-    : undefined
-  const storageRoot = opts?.storageRoot ?? envRootResolved ?? defaultPagesRoot
+  const fromEnv = process.env.STORAGE_ROOT
+  const candidate = opts?.storageRoot ?? fromEnv ?? defaultPagesRoot
+  const storageRoot = path.isAbsolute(candidate)
+    ? candidate
+    : path.resolve(repoRoot, candidate)
+
+  if (opts?.storageRoot || fromEnv) {
+    try {
+      const stat = fs.statSync(storageRoot)
+      if (!stat.isDirectory()) throw new Error('not a directory')
+    } catch {
+      throw new Error(`Invalid STORAGE_ROOT: ${storageRoot} does not exist`)
+    }
+  }
   const storage = createStorage(storageRoot)
 
   server.get('/health', async () => {
