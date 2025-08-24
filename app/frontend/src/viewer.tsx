@@ -91,6 +91,7 @@ function MDXRuntime({ code }: { code: string }) {
     return () => window.clearTimeout(id)
   }, [Comp, err, code])
   if (err) return <pre role="alert">{err}</pre>
+  if (!Comp) return null
   return (
     <MDXProvider>
       <ErrorBoundary>
