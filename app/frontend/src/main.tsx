@@ -14,6 +14,7 @@ import './index.css'
 import { api } from './api'
 import { Sidebar } from './sidebar'
 import { usePagesStore } from './store/pages.store'
+import { flattenTreePreOrder } from './tree'
 
 function App() {
   React.useEffect(() => {
@@ -85,6 +86,8 @@ function PageView() {
   const { path = '' } = useParams()
   const navigate = useNavigate()
   const [mode, setMode] = React.useState<'view' | 'edit'>('view')
+  const tree = usePagesStore((s) => s.tree)
+  const deletePath = usePagesStore((s) => s.deletePath)
   return (
     <div>
       <div className="flex items-center gap-2 p-2 border-b border-gray-200 dark:border-gray-800">
@@ -129,8 +132,16 @@ function PageView() {
           className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
           aria-label="delete"
           onClick={async () => {
-            await api.remove(decodeURIComponent(path))
-            navigate('/')
+            const current = decodeURIComponent(path)
+            const order = flattenTreePreOrder(tree as any)
+            const idx = order.indexOf(current)
+            const prev = idx > 0 ? order[idx - 1] : undefined
+            const nextIfFirst =
+              idx === 0 && order.length > 1 ? order[1] : undefined
+            const target = prev ?? nextIfFirst
+            await deletePath(current)
+            if (target) navigate(`/p/${encodeURIComponent(target)}`)
+            else navigate('/')
           }}
         >
           Delete
