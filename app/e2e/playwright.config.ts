@@ -1,11 +1,13 @@
 import { defineConfig, devices } from '@playwright/test'
+import path from 'node:path'
 
 export default defineConfig({
   globalSetup: require.resolve('./setup/global-setup'),
   webServer: [
     {
-      command: 'STORAGE_ROOT=../e2e/test-pages pnpm -C ../backend dev',
+      command: 'pnpm -C ../backend dev',
       port: 3001,
+      env: { STORAGE_ROOT: path.resolve(__dirname, 'test-pages') },
       reuseExistingServer: !process.env.CI,
     },
     {
