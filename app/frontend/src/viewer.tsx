@@ -14,6 +14,30 @@ export function Viewer({ source }: { source: string }) {
   )
 }
 
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { error: any }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { error: null }
+  }
+  static getDerivedStateFromError(error: any) {
+    return { error }
+  }
+  render() {
+    if (this.state.error) {
+      const msg = String(this.state.error?.message || this.state.error)
+      return (
+        <pre role="alert" style={{ whiteSpace: 'pre-wrap' }}>
+          {msg}
+        </pre>
+      )
+    }
+    return this.props.children as any
+  }
+}
+
 function MDXRuntime({ code }: { code: string }) {
   const [Comp, setComp] = React.useState<React.ComponentType | null>(null)
   const [err, setErr] = React.useState<string | null>(null)
@@ -33,8 +57,13 @@ function MDXRuntime({ code }: { code: string }) {
         } as any)
         const C = (file as any).default as React.ComponentType | undefined
         if (!cancelled) {
-          setErr(null)
-          setComp(() => (C ? C : () => null))
+          if (!C) {
+            setErr('MDX produced no default export')
+            setComp(() => null)
+          } else {
+            setErr(null)
+            setComp(() => C)
+          }
         }
       } catch (e) {
         if (!cancelled) {
@@ -50,7 +79,9 @@ function MDXRuntime({ code }: { code: string }) {
   if (!Comp) return err ? <pre role="alert">{err}</pre> : null
   return (
     <MDXProvider>
-      <Comp />
+      <ErrorBoundary>
+        <Comp />
+      </ErrorBoundary>
     </MDXProvider>
   )
 }

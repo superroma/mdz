@@ -4,7 +4,9 @@ import { Viewer } from './viewer'
 // @ts-ignore - Vite raw import of markdown outside package
 // vite supports raw import of local files inside repo
 // @ts-ignore
-import formattingMd from './fixtures/Formatting.md?raw'
+// Use the real project file
+// @ts-ignore
+import formattingMd from '../../../pages/Formatting.md?raw'
 
 const meta: Meta<typeof Viewer> = {
   title: 'Viewer',
@@ -18,5 +20,15 @@ export const Basic: Story = {
 }
 
 export const Formatting: Story = {
-  render: () => <Viewer source={String(formattingMd)} />,
+  render: () => (
+    <div style={{ display: 'grid', gap: 16 }}>
+      <Viewer source={String(formattingMd)} />
+      <details>
+        <summary>Show source (Formatting.md)</summary>
+        <pre style={{ whiteSpace: 'pre-wrap', fontSize: 12 }}>
+          {String(formattingMd)}
+        </pre>
+      </details>
+    </div>
+  ),
 }

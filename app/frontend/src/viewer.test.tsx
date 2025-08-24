@@ -1,6 +1,6 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { Viewer } from './viewer'
 
 describe('Viewer', () => {
@@ -26,5 +26,18 @@ describe('Viewer', () => {
       .map((th) => th.textContent)
     const cells = screen.getAllByRole('cell').map((td) => td.textContent)
     expect([...headers, ...cells]).toEqual(['A', 'B', '1', '2'])
+  })
+
+  it('shows an error when MDX runtime render fails', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    try {
+      const invalid = '# Title\n\n<NotDefined />\n'
+      render(<Viewer source={invalid} />)
+      await waitFor(async () => {
+        expect(await screen.findByRole('alert')).toBeInTheDocument()
+      })
+    } finally {
+      spy.mockRestore()
+    }
   })
 })
