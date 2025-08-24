@@ -26,7 +26,7 @@ test('deleting a page leads to 404 on direct visit', async ({
 }) => {
   await cleanAll(page)
   // Create page via API
-  const res = await request.post('http://localhost:3001/pages', {
+  const res = await request.post('/api/pages', {
     data: { path: 'Temp', content: 'x' },
   })
   expect(res.ok()).toBeTruthy()
@@ -39,6 +39,6 @@ test('deleting a page leads to 404 on direct visit', async ({
   await expect(page).toHaveURL(/\/?(p\/|$)/)
 
   // Direct link should show 404 from backend
-  const res2 = await request.get('http://localhost:3001/pages/Temp')
+  const res2 = await request.get('/api/pages/Temp')
   expect(res2.status()).toBe(404)
 })

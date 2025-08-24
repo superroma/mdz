@@ -14,6 +14,31 @@ export function Viewer({ source }: { source: string }) {
   )
 }
 
+// Fetches page content by path and renders via Viewer
+export function PageViewer({ path }: { path: string }) {
+  const [content, setContent] = React.useState<string>('')
+  const [error, setError] = React.useState<string | null>(null)
+  React.useEffect(() => {
+    let cancelled = false
+    setError(null)
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/pages/${encodeURIComponent(path)}`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const j = (await res.json()) as { content?: string }
+        if (!cancelled) setContent(String(j?.content ?? ''))
+      } catch (e: any) {
+        if (!cancelled) setError(String(e?.message || e))
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [path])
+  if (error) return <pre role="alert">{error}</pre>
+  return <Viewer source={content} />
+}
+
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { error: any }

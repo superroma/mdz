@@ -6,14 +6,17 @@ export default defineConfig({
   webServer: [
     {
       command: 'pnpm -C ../backend dev',
-      port: 3001,
-      env: { STORAGE_ROOT: path.resolve(__dirname, 'test-pages') },
-      reuseExistingServer: !process.env.CI,
+      port: 3002,
+      env: {
+        STORAGE_ROOT: path.resolve(__dirname, 'test-pages'),
+        PORT: '3002',
+      },
+      reuseExistingServer: false,
     },
     {
-      command: 'pnpm -C ../frontend dev',
+      command: 'BACKEND_PORT=3002 pnpm -C ../frontend dev',
       port: 5173,
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: false,
     },
   ],
   use: {

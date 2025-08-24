@@ -8,7 +8,7 @@ import {
   useParams,
   useLocation,
 } from 'react-router-dom'
-import { Viewer } from './viewer'
+import { Viewer, PageViewer } from './viewer'
 import { Editor } from './editor'
 import './index.css'
 import { api } from './api'
@@ -148,7 +148,7 @@ function PageView() {
         </button>
       </div>
       {mode === 'view' ? (
-        <Viewer path={decodeURIComponent(path)} />
+        <PageViewer path={decodeURIComponent(path)} />
       ) : (
         <Editor
           path={decodeURIComponent(path)}
