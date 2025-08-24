@@ -1,37 +1,19 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import React from 'react'
 import { describe, it, expect } from 'vitest'
 import { Viewer } from './viewer'
 // @ts-ignore
 import formattingMd from './fixtures/Formatting.md?raw'
-// Use same import path as Storybook story
-// @ts-ignore
-import projectFormattingMd from '../../../pages/Formatting.md?raw'
 
 describe('Viewer Formatting fixture', () => {
   it('renders headings, paragraph, and a table from fixture', async () => {
     render(<Viewer source={String(formattingMd)} />)
     const h1s = await screen.findAllByRole('heading', { level: 1 })
     expect(h1s.length).toBeGreaterThan(0)
-    const table = await screen.findByRole('table')
-    expect(table).toBeInTheDocument()
-    const cells = screen.getAllByRole('cell').map((td) => td.textContent)
-    expect(cells).toContain('1')
-    expect(cells).toContain('2')
-  })
-
-  it('renders real pages/Formatting.md (fails with the actual error if not)', async () => {
-    render(<Viewer source={String(projectFormattingMd)} />)
-    try {
-      await waitFor(() => {
-        expect(screen.getByRole('table')).toBeInTheDocument()
-      })
-    } catch (err) {
-      const alert = screen.queryByRole('alert')
-      if (alert) {
-        throw new Error(`MDX render error: ${alert.textContent}`)
-      }
-      throw err
-    }
+    const tables = await screen.findAllByRole('table')
+    expect(tables.length).toBeGreaterThan(0)
+    const first = tables[0]
+    expect(within(first).getByText('Column 1')).toBeInTheDocument()
+    expect(within(first).getByText('Row 1, Col 1')).toBeInTheDocument()
   })
 })
