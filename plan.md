@@ -12,3 +12,5 @@ For user action flow - use e2e tests
 - Select first page in the sidebar at startup
 - Select previous page if current is deleted
 - Show nothing in the page view only if there are no pages
+
+## Page creation flow

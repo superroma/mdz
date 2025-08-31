@@ -3,19 +3,29 @@
 /* color scheme is controlled at runtime based on VITE_THEME */
 
 html[data-theme='light'] {
-  --sidebar-bg: color-mix(in oklab, white, black 3%);
-  --sidebar-row-selected-bg: color-mix(in oklab, var(--sidebar-bg), black 5%);
-  --sidebar-row-selected-border: color-mix(in oklab, var(--sidebar-bg), black 15%);
-  --sidebar-row-text: color-mix(in oklab, black, white 50%);
-  --sidebar-row-selected-text: black;
+  --app-bg: #f7f7f8;
+  --app-bg-hover: #efeff1;
+  --stroke: #cfd3da;
+  --sidebar-bg: #f3f4f6;
+  --sidebar-bg-hover: #d8dee6;
+  --sidebar-row-selected-bg: #e2e5ea;
+  --sidebar-row-selected-bg-hover: #cfd6e1;
+  --sidebar-row-selected-border: #c8ccd3;
+  --sidebar-row-text: #464a50;
+  --sidebar-row-selected-text: #000000;
 }
 
 html[data-theme='dark'] {
-  --sidebar-bg: color-mix(in oklab, black, white 10%);
-  --sidebar-row-selected-bg: color-mix(in oklab, var(--sidebar-bg), black 10%);
-  --sidebar-row-selected-border: color-mix(in oklab, var(--sidebar-bg), black 25%);
-  --sidebar-row-text: color-mix(in oklab, white, black 20%);
-  --sidebar-row-selected-text: white;
+  --app-bg: #121315;
+  --app-bg-hover: #1a1c20;
+  --stroke: #3a404a;
+  --sidebar-bg: #14171b;
+  --sidebar-bg-hover: #1b1f25;
+  --sidebar-row-selected-bg: #23272f;
+  --sidebar-row-selected-bg-hover: #2a2f38;
+  --sidebar-row-selected-border: #3f4651;
+  --sidebar-row-text: #e2e6ea;
+  --sidebar-row-selected-text: #ffffff;
 }
 
 /* Minimal readable typography for rendered markdown (no plugin) */
@@ -39,19 +49,20 @@ html[data-theme='dark'] {
 
 @layer utilities {
   .row-surface {
-    background: var(--row-bg);
+    background-color: var(--row-bg);
     transition: background-color .15s ease;
   }
   .row-surface:hover {
-    background: color-mix(in oklab, var(--row-bg), black 5%);
+    background-color: var(--row-hover-bg, var(--sidebar-bg-hover));
   }
   .row-surface[data-plus-hover="true"] {
     background: var(--row-bg);
   }
   .plus-btn { color: var(--sidebar-row-text); }
-  .plus-btn:hover { background: color-mix(in oklab, var(--surface-bg), black 10%); }
+  .plus-btn:hover { background-color: var(--surface-hover-bg, var(--app-bg-hover)); }
+  .plus-btn[data-force-hover="true"] { background-color: var(--surface-hover-bg, var(--app-bg-hover)) !important; }
   .row-surface[aria-selected="true"] {
-    --row-bg: var(--sidebar-row-selected-bg);
+    background-color: var(--row-selected-bg, var(--sidebar-row-selected-bg));
     border-left: 2px solid var(--sidebar-row-selected-border);
   }
   .row-text { color: var(--sidebar-row-text); }
@@ -59,15 +70,33 @@ html[data-theme='dark'] {
 
   /* Generic clickable surface utility */
   .clickable-surface {
-    background: var(--surface-bg, var(--sidebar-bg));
+    background-color: var(--surface-bg, var(--app-bg));
     transition: background-color .15s ease;
   }
   .clickable-surface:hover {
-    background: color-mix(in oklab, var(--surface-bg, var(--sidebar-bg)), black 5%);
+    background-color: var(--surface-hover-bg, var(--app-bg-hover));
+  }
+  .clickable-surface[data-force-hover="true"] {
+    background-color: var(--surface-hover-bg, var(--app-bg-hover)) !important;
   }
   .clickable-surface[aria-selected="true"] {
-    --surface-bg: var(--sidebar-row-selected-bg);
+    background-color: var(--surface-selected-bg, var(--sidebar-row-selected-bg));
     border-left: 2px solid var(--sidebar-row-selected-border);
   }
   .clickable-surface[aria-selected="true"] .row-text { color: var(--sidebar-row-selected-text); }
+  li[role="treeitem"][aria-selected="true"] > .clickable-surface {
+    background-color: var(--surface-selected-bg, var(--sidebar-row-selected-bg));
+    border-left: 2px solid var(--sidebar-row-selected-border);
+  }
+  li[role="treeitem"][aria-selected="true"] > .clickable-surface .row-text {
+    color: var(--sidebar-row-selected-text);
+  }
+  nav[aria-label="Pages"] .clickable-surface {
+    --surface-bg: var(--sidebar-bg);
+    --surface-hover-bg: var(--sidebar-bg-hover);
+    --surface-selected-bg: var(--sidebar-row-selected-bg);
+  }
+  li[role="treeitem"][aria-selected="true"] .clickable-surface {
+    --surface-hover-bg: var(--sidebar-row-selected-bg-hover);
+  }
 }

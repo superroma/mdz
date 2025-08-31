@@ -115,6 +115,23 @@ function MDXRuntime({ code }: { code: string }) {
     }, 0)
     return () => window.clearTimeout(id)
   }, [Comp, err, code])
+  React.useEffect(() => {
+    if (!Comp || err) return
+    const id = window.setTimeout(() => {
+      const root = containerRef.current
+      if (!root) return
+      // Mark GitHub-flavored Markdown task list checkboxes as presentational
+      const inputs = root.querySelectorAll<HTMLInputElement>(
+        '.contains-task-list input[type="checkbox"]',
+      )
+      inputs.forEach((el) => {
+        el.setAttribute('aria-hidden', 'true')
+        el.setAttribute('role', 'presentation')
+        el.setAttribute('tabindex', '-1')
+      })
+    }, 0)
+    return () => window.clearTimeout(id)
+  }, [Comp, err, code])
   if (err) return <pre role="alert">{err}</pre>
   if (!Comp) return null
   return (

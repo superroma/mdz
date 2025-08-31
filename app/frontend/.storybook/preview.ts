@@ -5,6 +5,16 @@ import '../src/index.css'
 const preview: Preview = {
   parameters: {
     controls: { expanded: true },
+    a11y: {
+      disable: false,
+      manual: false,
+      config: {},
+      options: {},
+      experimental: {},
+      // Treat violations as errors in the test runner
+      // @ts-expect-error: test is a runner option, not used in UI
+      test: 'error',
+    },
   },
   decorators: [
     (Story) => {

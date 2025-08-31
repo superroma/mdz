@@ -23,3 +23,8 @@ Storage
 
 - Plain markdown files (no front-matter/metadata). Title = basename of path.
 - Page without children: `PageName.md`. When first child is added, convert to folder: `PageName/README.md` and child `PageName/Child.md`. When last child is removed, convert back to `PageName.md`.
+
+UI
+
+- Selected item has a background that 5% darker than underlying backround
+- Clickable item on hover has a background that 5% darker than underlying background

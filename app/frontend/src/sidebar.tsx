@@ -39,7 +39,7 @@ export function Sidebar() {
     <aside className="md:w-[280px] md:shrink-0">
       <button
         aria-label={open ? 'close sidebar' : 'open sidebar'}
-        className="md:hidden m-2 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+        className="md:hidden m-2 px-3 py-2 rounded focus:outline-none focus-visible:ring clickable-surface"
         onClick={() => setOpen((v) => !v)}
       >
         ☰
@@ -52,10 +52,10 @@ export function Sidebar() {
         style={{ backgroundColor: 'var(--sidebar-bg)' }}
       >
         <div className="flex items-center justify-between px-1 pb-2">
-          <div className="font-semibold text-sm text-gray-700">Pages</div>
+          <div className="font-semibold text-sm row-text">Pages</div>
           <button
             aria-label="add root page"
-            className="px-2 py-1 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+            className="px-2 py-1 text-sm rounded focus:outline-none focus-visible:ring clickable-surface"
             onClick={() => void addRoot()}
           >
             +
@@ -92,10 +92,13 @@ function TreeNode({
   const isSelected = selectedPath === node.path
   const rowRef = React.useRef<HTMLDivElement>(null)
   return (
-    <li role="treeitem" aria-expanded={hasChildren ? true : undefined}>
+    <li
+      role="treeitem"
+      aria-expanded={hasChildren ? true : undefined}
+      aria-selected={isSelected || undefined}
+    >
       <div
         ref={rowRef}
-        aria-selected={isSelected || undefined}
         className={
           'group clickable-surface flex items-center gap-2 w-full justify-between rounded px-1 py-0.5'
         }

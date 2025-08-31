@@ -17,21 +17,21 @@ export function PageView() {
     <div>
       <div className="flex items-center gap-2 p-2 border-b border-gray-200 dark:border-gray-800">
         <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus-visible:ring clickable-surface"
           aria-label="edit"
           onClick={() => setMode('edit')}
         >
           Edit
         </button>
         <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus-visible:ring clickable-surface"
           aria-label="view"
           onClick={() => setMode('view')}
         >
           View
         </button>
         <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus-visible:ring clickable-surface"
           aria-label="create"
           onClick={async () => {
             const fullPath = await createRootUntitled()
@@ -41,7 +41,7 @@ export function PageView() {
           New
         </button>
         <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus-visible:ring clickable-surface"
           aria-label="rename"
           onClick={async () => {
             const newName = prompt('New name')
@@ -54,7 +54,7 @@ export function PageView() {
           Rename
         </button>
         <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
+          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 focus:outline-none focus-visible:ring clickable-surface"
           aria-label="delete"
           onClick={async () => {
             const current = decodeURIComponent(path)
