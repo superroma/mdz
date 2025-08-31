@@ -3,6 +3,7 @@ import path from 'node:path'
 
 export default defineConfig({
   globalSetup: require.resolve('./setup/global-setup'),
+  workers: 1,
   webServer: [
     {
       command: 'pnpm -C ../backend dev',

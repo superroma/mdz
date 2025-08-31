@@ -1,16 +1,10 @@
 import { test, expect } from '@playwright/test'
+import { cleanAll, create } from './_helpers'
 
 test('startup selects first page when none selected', async ({ page }) => {
-  // Ensure there is at least one page
-  const res = await page.request.post('/api/pages', {
-    data: { path: 'Z-First', content: '# First' },
-  })
-  expect(res.ok()).toBeTruthy()
+  await cleanAll(page)
+  await create(page, 'Z-First', '# First')
 
   await page.goto('/')
   await expect(page).toHaveURL(/\/p\/Z-First$/)
 })
-
-
-
-
