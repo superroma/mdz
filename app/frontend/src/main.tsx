@@ -8,13 +8,12 @@ import {
   useParams,
   useLocation,
 } from 'react-router-dom'
-import { Viewer, PageViewer } from './viewer'
-import { Editor } from './editor'
+import { Viewer } from './viewer'
 import './index.css'
-import { api } from './api'
 import { Sidebar } from './sidebar'
 import { usePagesStore } from './store/pages.store'
 import { flattenTreePreOrder } from './tree'
+import { PageView } from './page-view'
 
 function App() {
   React.useEffect(() => {
@@ -82,82 +81,7 @@ function AutoSelectFirst({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-function PageView() {
-  const { path = '' } = useParams()
-  const navigate = useNavigate()
-  const [mode, setMode] = React.useState<'view' | 'edit'>('view')
-  const tree = usePagesStore((s) => s.tree)
-  const deletePath = usePagesStore((s) => s.deletePath)
-  return (
-    <div>
-      <div className="flex items-center gap-2 p-2 border-b border-gray-200 dark:border-gray-800">
-        <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
-          aria-label="edit"
-          onClick={() => setMode('edit')}
-        >
-          Edit
-        </button>
-        <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
-          aria-label="view"
-          onClick={() => setMode('view')}
-        >
-          View
-        </button>
-        <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
-          aria-label="create"
-          onClick={async () => {
-            await api.create('Untitled', '')
-            navigate('/p/Untitled')
-          }}
-        >
-          New
-        </button>
-        <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
-          aria-label="rename"
-          onClick={async () => {
-            const newName = prompt('New name')
-            if (newName) {
-              await api.rename(decodeURIComponent(path), newName)
-              navigate(`/p/${encodeURIComponent(newName)}`)
-            }
-          }}
-        >
-          Rename
-        </button>
-        <button
-          className="px-2 py-1 text-sm rounded border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 focus:outline-none focus-visible:ring"
-          aria-label="delete"
-          onClick={async () => {
-            const current = decodeURIComponent(path)
-            const order = flattenTreePreOrder(tree as any)
-            const idx = order.indexOf(current)
-            const prev = idx > 0 ? order[idx - 1] : undefined
-            const nextIfFirst =
-              idx === 0 && order.length > 1 ? order[1] : undefined
-            const target = prev ?? nextIfFirst
-            await deletePath(current)
-            if (target) navigate(`/p/${encodeURIComponent(target)}`)
-            else navigate('/')
-          }}
-        >
-          Delete
-        </button>
-      </div>
-      {mode === 'view' ? (
-        <PageViewer path={decodeURIComponent(path)} />
-      ) : (
-        <Editor
-          path={decodeURIComponent(path)}
-          onSaved={() => setMode('view')}
-        />
-      )}
-    </div>
-  )
-}
+// PageView moved to ./page-view
 
 const container = document.getElementById('root')!
 createRoot(container).render(
