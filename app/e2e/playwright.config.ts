@@ -11,16 +11,23 @@ export default defineConfig({
         STORAGE_ROOT: path.resolve(__dirname, 'test-pages'),
         PORT: '3002',
       },
-      reuseExistingServer: false,
+      reuseExistingServer: true,
     },
     {
-      command: 'BACKEND_PORT=3002 pnpm -C ../frontend dev',
-      port: 5173,
-      reuseExistingServer: false,
+      command: 'pnpm vite --port 5174 --strictPort',
+      port: 5174,
+      cwd: path.resolve(__dirname, '../frontend'),
+      env: {
+        BACKEND_PORT: '3002',
+      },
+      timeout: 120_000,
+      stdout: 'pipe',
+      stderr: 'pipe',
+      reuseExistingServer: true,
     },
   ],
   use: {
-    baseURL: 'http://localhost:5173',
+    baseURL: 'http://localhost:5174',
   },
   projects: [
     {

@@ -13,6 +13,11 @@ Tech
 - Backend: Fastify + local storage; routes `/pages/*`; production alias `/api/pages/*`.
 - Frontend: Vite + React + Tailwind; Sidebar/Viewer/Editor. MDX via `@mdx-js/mdx` evaluate with `useDynamicImport: false`.
   - Responsive: sidebar hidden on small screens with a toggle; desktop shows sidebar by default.
+  - Storybook for component development and tests
+  - Zustand for state management
+  - Separate UI behavior from presentation. Test viewmodels for behavior.
+- e2e tests: playwright
+- e2e tests: playwright (dev servers: backend 3002, frontend 5174 during e2e)
 
 Storage
 
