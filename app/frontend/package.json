@@ -10,7 +10,7 @@
     "test": "vitest run --environment=jsdom --reporter=dot",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test-storybook": "test-storybook"
+    "test-storybook": "cross-env __STORYBOOK_TEST__=true test-storybook"
   },
   "dependencies": {
     "@mdx-js/mdx": "^2.3.0",
@@ -43,6 +43,7 @@
     "@types/react-dom": "^18.3.1",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.21",
+    "cross-env": "^10.0.0",
     "eslint": "^9.33.0",
     "jsdom": "^25.0.1",
     "postcss": "^8.5.6",

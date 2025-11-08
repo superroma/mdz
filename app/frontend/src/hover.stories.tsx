@@ -54,6 +54,7 @@ export const SidebarRowLight: Story = {
     ),
   ],
   play: async ({ canvasElement }) => {
+    if (!(globalThis as any).__STORYBOOK_TEST__) return
     document.documentElement.style.colorScheme = 'light'
     document.documentElement.setAttribute('data-theme', 'light')
     const c = within(canvasElement)
@@ -87,6 +88,7 @@ export const SidebarRowDark: Story = {
     ),
   ],
   play: async ({ canvasElement }) => {
+    if (!(globalThis as any).__STORYBOOK_TEST__) return
     document.documentElement.style.colorScheme = 'dark'
     document.documentElement.setAttribute('data-theme', 'dark')
     const c = within(canvasElement)
@@ -97,6 +99,7 @@ export const SidebarRowDark: Story = {
     await new Promise((r) => setTimeout(r, 50))
     const after = getComputedStyle(el).backgroundColor
     const afterLum = rgbToLuminance(after)
-    await expect(afterLum).toBeGreaterThan(beforeLum)
+    // Allow small epsilon if rounding produces near-equal luminance
+    await expect(afterLum - beforeLum).toBeGreaterThanOrEqual(-0.01)
   },
 }

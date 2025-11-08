@@ -14,3 +14,5 @@ For user action flow - use e2e tests
 - Show nothing in the page view only if there are no pages
 
 ## Page creation flow
+
+- When '+' pressed, page named 'Untitled' is created. In the sidebar in place of its name, editor is created with name selected. So when user types, this page immediately gets renamed. On pressing enter or clicking outside editor - changes are saved

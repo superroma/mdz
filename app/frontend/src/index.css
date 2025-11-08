@@ -7,9 +7,9 @@ html[data-theme='light'] {
   --app-bg-hover: #efeff1;
   --stroke: #cfd3da;
   --sidebar-bg: #f3f4f6;
-  --sidebar-bg-hover: #d8dee6;
-  --sidebar-row-selected-bg: #e2e5ea;
-  --sidebar-row-selected-bg-hover: #cfd6e1;
+  --sidebar-bg-hover: color-mix(in oklab, var(--sidebar-bg), black 5%);
+  --sidebar-row-selected-bg: color-mix(in oklab, var(--sidebar-bg), black 5%);
+  --sidebar-row-selected-bg-hover: color-mix(in oklab, var(--sidebar-row-selected-bg), black 5%);
   --sidebar-row-selected-border: #c8ccd3;
   --sidebar-row-text: #464a50;
   --sidebar-row-selected-text: #000000;
@@ -20,9 +20,9 @@ html[data-theme='dark'] {
   --app-bg-hover: #1a1c20;
   --stroke: #3a404a;
   --sidebar-bg: #14171b;
-  --sidebar-bg-hover: #1b1f25;
-  --sidebar-row-selected-bg: #23272f;
-  --sidebar-row-selected-bg-hover: #2a2f38;
+  --sidebar-bg-hover: color-mix(in oklab, var(--sidebar-bg), white 5%);
+  --sidebar-row-selected-bg: color-mix(in oklab, var(--sidebar-bg), white 5%);
+  --sidebar-row-selected-bg-hover: color-mix(in oklab, var(--sidebar-row-selected-bg), white 5%);
   --sidebar-row-selected-border: #3f4651;
   --sidebar-row-text: #e2e6ea;
   --sidebar-row-selected-text: #ffffff;
@@ -58,8 +58,8 @@ html[data-theme='dark'] {
   .row-surface[data-plus-hover="true"] {
     background: var(--row-bg);
   }
-  .plus-btn { color: var(--sidebar-row-text); }
-  .plus-btn:hover { background-color: var(--surface-hover-bg, var(--app-bg-hover)); }
+  .plus-btn { color: var(--sidebar-row-text); background-color: var(--surface-bg, var(--sidebar-bg)); }
+  .plus-btn:hover { background-color: var(--surface-hover-bg, var(--sidebar-bg-hover)); }
   .plus-btn[data-force-hover="true"] { background-color: var(--surface-hover-bg, var(--app-bg-hover)) !important; }
   .row-surface[aria-selected="true"] {
     background-color: var(--row-selected-bg, var(--sidebar-row-selected-bg));
@@ -97,6 +97,6 @@ html[data-theme='dark'] {
     --surface-selected-bg: var(--sidebar-row-selected-bg);
   }
   li[role="treeitem"][aria-selected="true"] .clickable-surface {
-    --surface-hover-bg: var(--sidebar-row-selected-bg-hover);
+    --surface-hover-bg: color-mix(in oklab, var(--surface-selected-bg, var(--sidebar-row-selected-bg)), black 5%);
   }
 }

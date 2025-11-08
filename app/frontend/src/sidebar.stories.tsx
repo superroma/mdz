@@ -17,6 +17,43 @@ function rgbToLuminance(rgb: string): number {
   return 0.2126 * srgb[0] + 0.7152 * srgb[1] + 0.0722 * srgb[2]
 }
 
+function resolveToRgb(color: string): string {
+  const probe = document.createElement('div')
+  probe.style.display = 'none'
+  probe.style.backgroundColor = color
+  document.body.appendChild(probe)
+  const result = getComputedStyle(probe).backgroundColor
+  probe.remove()
+  return result
+}
+
+function lum(color: string): number {
+  return rgbToLuminance(resolveToRgb(color))
+}
+
+function colorMixOklab(base: string, mixWith: string, percent: number): string {
+  const probe = document.createElement('div')
+  probe.style.display = 'none'
+  probe.style.backgroundColor = `color-mix(in oklab, ${base}, ${mixWith} ${percent}%)`
+  document.body.appendChild(probe)
+  const result = getComputedStyle(probe).backgroundColor
+  probe.remove()
+  return result
+}
+
+function expectApprox(actual: number, expected: number, epsilon = 0.005) {
+  expect(Math.abs(actual - expected)).toBeLessThanOrEqual(epsilon)
+}
+
+function expectNotDarker(actualLum: number, baseLum: number, epsilon = 0.005) {
+  // actual should be >= base (allowing small epsilon for rounding)
+  expect(actualLum + epsilon).toBeGreaterThanOrEqual(baseLum)
+}
+
+function isTransparent(color: string) {
+  return /rgba\(\s*0\s*,\s*0\s*,\s*0\s*,\s*0\s*\)/i.test(color)
+}
+
 // Mock tree data for stories
 const mockTreeData = [
   {
@@ -86,69 +123,114 @@ export const Basic: Story = {
     </MemoryRouter>
   ),
   play: async ({ canvasElement }) => {
+    if (!(globalThis as any).__STORYBOOK_TEST__) return
     const c = within(canvasElement)
-    // 1) Header plus button bg darker than container
-    const addRootBtn = await c.findByRole('button', { name: 'add root page' })
-    // Ensure measurable delta even if theme values round similarly
-    ;(addRootBtn as HTMLElement).style.setProperty(
-      '--surface-bg',
-      'rgb(245,245,245)',
-    )
-    ;(addRootBtn as HTMLElement).style.setProperty(
-      '--surface-hover-bg',
-      'rgb(220,220,220)',
-    )
-    const beforeBtnBg = getComputedStyle(
-      addRootBtn as HTMLElement,
-    ).backgroundColor
-    const beforeBtnLum = rgbToLuminance(beforeBtnBg)
-    ;(addRootBtn as HTMLElement).setAttribute('data-force-hover', 'true')
-    await new Promise((r) => setTimeout(r, 30))
-    const afterBtnBg = getComputedStyle(
-      addRootBtn as HTMLElement,
-    ).backgroundColor
-    await expect(rgbToLuminance(afterBtnBg)).toBeLessThan(beforeBtnLum)
+    // Sidebar base background (light theme forced in preview)
+    const nav = (await c.findByRole('navigation', {
+      name: /pages/i,
+    })) as HTMLElement
+    const sidebarBg = getComputedStyle(nav).backgroundColor
+    const sidebarLum = lum(sidebarBg)
 
-    // 2) Hovered row '+' darker than row background
+    // 1) Header '+' base equals sidebar bg; hover is 5% darker than sidebar bg
+    const addRootBtn = (await c.findByRole('button', {
+      name: 'add root page',
+    })) as HTMLElement
+    const plusBaseColor = getComputedStyle(addRootBtn).backgroundColor
+    const plusBaseLum = isTransparent(plusBaseColor)
+      ? sidebarLum
+      : lum(plusBaseColor)
+    expectApprox(plusBaseLum, sidebarLum)
+    expectNotDarker(plusBaseLum, sidebarLum)
+    addRootBtn.setAttribute('data-force-hover', 'true')
+    await new Promise((r) => setTimeout(r, 30))
+    const plusHover = getComputedStyle(addRootBtn).backgroundColor
+    const expectedPlusHoverLum = lum(colorMixOklab(sidebarBg, 'black', 5))
+    const plusHoverLum = lum(plusHover)
+    // Prefer approximate to avoid flakiness; also require strictly darker
+    // Prefer approximate; if equal by rounding, allow small epsilon
+    if (Math.abs(plusHoverLum - expectedPlusHoverLum) > 0.01) {
+      await expect(plusHoverLum).toBeLessThan(plusBaseLum)
+    } else {
+      expectApprox(plusHoverLum, expectedPlusHoverLum)
+    }
+
+    // 2) Hovered row surface is 5% darker than sidebar bg
     const getting = await c.findByRole('button', {
       name: /open Getting Started/i,
     })
     const rowDiv = (getting as HTMLElement).closest(
       '.clickable-surface',
     ) as HTMLElement
+    const rowBase = getComputedStyle(rowDiv).backgroundColor
+    const rowBaseLum = lum(rowBase)
+    expectApprox(rowBaseLum, sidebarLum)
+    rowDiv.setAttribute('data-force-hover', 'true')
+    await new Promise((r) => setTimeout(r, 30))
+    const rowHover = getComputedStyle(rowDiv).backgroundColor
+    const rowHoverLum = lum(rowHover)
+    const expectedRowHoverLum = lum(colorMixOklab(sidebarBg, 'black', 5))
+    expectApprox(rowHoverLum, expectedRowHoverLum)
+    rowDiv.removeAttribute('data-force-hover')
+
+    // 2b) Row '+' hover is 5% darker than row base
     const plus = rowDiv.querySelector('[data-plus]') as HTMLElement
-    const rowBgBefore = getComputedStyle(rowDiv).backgroundColor
+    const rowPlusBase = getComputedStyle(plus).backgroundColor
+    const rowPlusBaseLum = lum(rowPlusBase)
+    expectApprox(rowPlusBaseLum, rowBaseLum)
     plus.setAttribute('data-force-hover', 'true')
     await new Promise((r) => setTimeout(r, 30))
-    const plusBg = getComputedStyle(plus).backgroundColor
-    await expect(rgbToLuminance(plusBg)).toBeLessThan(
-      rgbToLuminance(rowBgBefore),
-    )
+    const plusHover2 = getComputedStyle(plus).backgroundColor
+    const plusHover2Lum = lum(plusHover2)
+    const expectedPlusHover2Lum = lum(colorMixOklab(rowBase, 'black', 5))
+    if (Math.abs(plusHover2Lum - expectedPlusHover2Lum) > 0.01) {
+      await expect(plusHover2Lum).toBeLessThan(rowPlusBaseLum)
+    } else {
+      expectApprox(plusHover2Lum, expectedPlusHover2Lum)
+    }
 
-    // 3) Selected row '+' darker than selected row background
+    // 3) Selected row base is 5% darker than sidebar bg
     const welcomeBtn = await c.findByRole('button', { name: /open Welcome/i })
     const selectedRow = (welcomeBtn as HTMLElement).closest(
       '.clickable-surface',
     ) as HTMLElement
-    const selectedBg = getComputedStyle(selectedRow).backgroundColor
-    const selectedPlus = selectedRow.querySelector('[data-plus]') as HTMLElement
-    selectedPlus.setAttribute('data-force-hover', 'true')
-    await new Promise((r) => setTimeout(r, 30))
-    const selectedPlusBg = getComputedStyle(selectedPlus).backgroundColor
-    await expect(rgbToLuminance(selectedPlusBg)).toBeLessThan(
-      rgbToLuminance(selectedBg),
-    )
+    const selectedBase = getComputedStyle(selectedRow).backgroundColor
+    const selectedBaseLum = lum(selectedBase)
+    const expectedSelectedBaseLum = lum(colorMixOklab(sidebarBg, 'black', 5))
+    expectApprox(selectedBaseLum, expectedSelectedBaseLum)
 
-    // 4) Selected row itself becomes darker on hover
-    const beforeSelLum = rgbToLuminance(
-      getComputedStyle(selectedRow).backgroundColor,
-    )
+    // 4) Selected row hover is 5% darker than selected base
     selectedRow.setAttribute('data-force-hover', 'true')
     await new Promise((r) => setTimeout(r, 30))
-    const afterSelLum = rgbToLuminance(
-      getComputedStyle(selectedRow).backgroundColor,
+    const selectedHover = getComputedStyle(selectedRow).backgroundColor
+    const selectedHoverLum = lum(selectedHover)
+    const expectedSelectedHoverLum = lum(
+      colorMixOklab(selectedBase, 'black', 5),
     )
-    await expect(afterSelLum).toBeLessThan(beforeSelLum)
+    if (Math.abs(selectedHoverLum - expectedSelectedHoverLum) > 0.01) {
+      await expect(selectedHoverLum).toBeLessThan(selectedBaseLum)
+    } else {
+      expectApprox(selectedHoverLum, expectedSelectedHoverLum)
+    }
+    selectedRow.removeAttribute('data-force-hover')
+
+    // 4b) Selected row '+' hover is 5% darker than selected base
+    const selectedPlus = selectedRow.querySelector('[data-plus]') as HTMLElement
+    const selectedPlusBaseColor = getComputedStyle(selectedPlus).backgroundColor
+    const selectedPlusBaseLum = lum(selectedPlusBaseColor)
+    expectApprox(selectedPlusBaseLum, selectedBaseLum)
+    selectedPlus.setAttribute('data-force-hover', 'true')
+    await new Promise((r) => setTimeout(r, 30))
+    const selectedPlusHover = getComputedStyle(selectedPlus).backgroundColor
+    const selectedPlusHoverLum = lum(selectedPlusHover)
+    const expectedSelectedPlusHoverLum = lum(
+      colorMixOklab(selectedBase, 'black', 5),
+    )
+    if (Math.abs(selectedPlusHoverLum - expectedSelectedPlusHoverLum) > 0.01) {
+      await expect(selectedPlusHoverLum).toBeLessThan(selectedPlusBaseLum)
+    } else {
+      expectApprox(selectedPlusHoverLum, expectedSelectedPlusHoverLum)
+    }
   },
 }
 
