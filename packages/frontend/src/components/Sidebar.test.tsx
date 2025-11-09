@@ -80,7 +80,7 @@ describe("Sidebar", () => {
     );
     
     const aside = container.querySelector("aside");
-    expect(aside).not.toHaveClass("hidden");
+    expect(aside).toHaveClass("translate-x-0");
   });
 
   it("is hidden when isOpen is false on mobile", () => {
@@ -91,7 +91,7 @@ describe("Sidebar", () => {
     );
     
     const aside = container.querySelector("aside");
-    expect(aside).toHaveClass("hidden");
+    expect(aside).toHaveClass("-translate-x-full");
   });
 
   it("has correct styling classes", () => {

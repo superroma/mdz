@@ -62,6 +62,7 @@ function AppContent() {
         onCreateRoot={handleCreateRoot}
         onCreateChild={handleCreateChild}
         isOpen={isSidebarOpen}
+        onClose={toggleSidebar}
       />
       <Routes>
         <Route path="/" element={<RedirectToFirstPage />} />

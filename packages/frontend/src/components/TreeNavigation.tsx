@@ -5,15 +5,18 @@ interface TreeItemProps {
   page: Page;
   level: number;
   onCreateChild: (parent: string) => void;
+  onNavigate?: () => void;
   currentPath?: string;
 }
 
-function TreeItem({ page, level, onCreateChild, currentPath }: TreeItemProps) {
+function TreeItem({ page, level, onCreateChild, onNavigate, currentPath }: TreeItemProps) {
   const navigate = useNavigate();
   const isSelected = currentPath === page.path;
 
   const handleClick = () => {
     navigate(`/${page.path}`);
+    // Close mobile sidebar after navigation
+    onNavigate?.();
   };
 
   const handleAddChild = (e: React.MouseEvent) => {
@@ -25,23 +28,25 @@ function TreeItem({ page, level, onCreateChild, currentPath }: TreeItemProps) {
     <div>
       <div
         className={`
-          group flex items-center gap-2 py-1.5 px-3 cursor-pointer transition-colors
-          ${isSelected ? "bg-slate-700 border-l-2 border-sky-400" : "hover:bg-slate-700/50"}
+          group flex items-center gap-2 py-1.5 px-3 transition-colors
+          ${isSelected ? "bg-slate-700 border-l-2 border-sky-400" : "active:bg-slate-700/50 md:hover:bg-slate-700/50"}
         `}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
-        onClick={handleClick}
       >
-        <button
-          type="button"
-          className="flex-1 text-left text-sm truncate"
+        <div
+          role="button"
+          tabIndex={0}
+          className="flex-1 text-left text-sm truncate cursor-pointer"
+          onClick={handleClick}
+          onKeyDown={(e) => e.key === 'Enter' && handleClick()}
           aria-label={`Navigate to ${page.title}`}
         >
           {page.title}
-        </button>
+        </div>
         <button
           type="button"
           onClick={handleAddChild}
-          className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-200 text-xs px-1"
+          className="opacity-0 md:group-hover:opacity-100 md:focus:opacity-100 text-slate-400 active:text-slate-200 md:hover:text-slate-200 text-xs px-1"
           aria-label={`Add child page to ${page.title}`}
           title="Add child page"
         >
@@ -55,9 +60,10 @@ function TreeItem({ page, level, onCreateChild, currentPath }: TreeItemProps) {
 interface TreeNavigationProps {
   pages: Page[];
   onCreateChild: (parent: string) => void;
+  onNavigate?: () => void;
 }
 
-export function TreeNavigation({ pages, onCreateChild }: TreeNavigationProps) {
+export function TreeNavigation({ pages, onCreateChild, onNavigate }: TreeNavigationProps) {
   const { "*": currentPath } = useParams();
 
   const buildTree = (pages: Page[]) => {
@@ -72,6 +78,7 @@ export function TreeNavigation({ pages, onCreateChild }: TreeNavigationProps) {
             page={page}
             level={level}
             onCreateChild={onCreateChild}
+            onNavigate={onNavigate}
             currentPath={currentPath}
           />
           {children.map((child) => renderPage(child, level + 1))}
