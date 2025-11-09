@@ -1,7 +1,7 @@
 import { FastifyInstance } from "fastify";
-import { listPages, readPage, createPage, updatePage, renamePage, deletePage } from "../storage/page-storage";
-import { validatePathOrThrow } from "../storage/path-validator";
-import { NotFoundError, ValidationError } from "../errors";
+import { listPages, readPage, createPage, updatePage, renamePage, deletePage } from "../storage/page-storage.js";
+import { validatePathOrThrow } from "../storage/path-validator.js";
+import { NotFoundError, ValidationError } from "../errors.js";
 
 export async function registerPageRoutes(app: FastifyInstance) {
   app.get("/api/pages", async () => {

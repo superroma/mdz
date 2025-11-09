@@ -1,15 +1,15 @@
 import { existsSync, readFileSync, writeFileSync, unlinkSync, readdirSync, mkdirSync, renameSync, rmdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { validatePath, getPagesRoot } from "./path-validator";
-import { parseFrontMatter, serializeFrontMatter, FrontMatter } from "./front-matter";
+import { validatePath, getPagesRoot } from "./path-validator.js";
+import { parseFrontMatter, serializeFrontMatter, FrontMatter } from "./front-matter.js";
 import {
   ensurePageFolderized,
   checkShouldDefolderize,
   defolderizePage,
   getPageTitleFromPath,
   isChildPage
-} from "./folderization";
-import { NotFoundError, ValidationError } from "../errors";
+} from "./folderization.js";
+import { NotFoundError, ValidationError } from "../errors.js";
 
 export interface Page {
   path: string;

@@ -6,9 +6,9 @@ import {
   createReadStream,
 } from "node:fs";
 import { join } from "node:path";
-import { validatePath, validateFilename, getPagesRoot } from "./path-validator";
-import { ensurePageFolderized } from "./folderization";
-import { NotFoundError, ValidationError, ForbiddenError } from "../errors";
+import { validatePath, validateFilename, getPagesRoot } from "./path-validator.js";
+import { ensurePageFolderized } from "./folderization.js";
+import { NotFoundError, ValidationError, ForbiddenError } from "../errors.js";
 
 export interface FileInfo {
   name: string;

@@ -1,12 +1,12 @@
 import { FastifyInstance } from "fastify";
-import { listFiles, deleteFile, getFileStream } from "../storage/file-storage";
-import { validatePathOrThrow, validateFilenameOrThrow, validateFileExtensionOrThrow } from "../storage/path-validator";
-import { ensurePageFolderized } from "../storage/folderization";
-import { readPage } from "../storage/page-storage";
+import { listFiles, deleteFile, getFileStream } from "../storage/file-storage.js";
+import { validatePathOrThrow, validateFilenameOrThrow, validateFileExtensionOrThrow } from "../storage/path-validator.js";
+import { ensurePageFolderized } from "../storage/folderization.js";
+import { readPage } from "../storage/page-storage.js";
 import { createWriteStream, statSync } from "node:fs";
 import { join, extname } from "node:path";
-import { getPagesRoot } from "../storage/path-validator";
-import { NotFoundError, ValidationError } from "../errors";
+import { getPagesRoot } from "../storage/path-validator.js";
+import { NotFoundError, ValidationError } from "../errors.js";
 
 // MIME type mapping for common file types
 const getMimeType = (filename: string): string => {
@@ -49,14 +49,14 @@ const getMimeType = (filename: string): string => {
     ".zip": "application/zip",
     ".tar": "application/x-tar",
     ".gz": "application/gzip",
-    // Audio
-    ".mp3": "audio/mpeg",
-    ".wav": "audio/wav",
-    ".ogg": "audio/ogg",
-    // Video
-    ".mp4": "video/mp4",
-    ".webm": "video/webm",
-    ".ogg": "video/ogg",
+  // Audio
+  ".mp3": "audio/mpeg",
+  ".wav": "audio/wav",
+  ".ogg": "audio/ogg",
+  // Video
+  ".mp4": "video/mp4",
+  ".webm": "video/webm",
+  ".ogv": "video/ogg",
   };
   return mimeTypes[ext] || "application/octet-stream";
 };

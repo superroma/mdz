@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, mkdirSync, renameSync, rmdirSync } from "node:fs";
 import { join, dirname } from "node:path";
-import { validatePath, getPagesRoot } from "./path-validator";
-import { ForbiddenError } from "../errors";
+import { validatePath, getPagesRoot } from "./path-validator.js";
+import { ForbiddenError } from "../errors.js";
 
 export function getPageFilePath(pagePath: string): string {
   const validation = validatePath(pagePath);

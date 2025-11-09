@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "build": "echo 'No build needed for e2e tests'",
     "test:e2e": "cucumber-js --config cucumber.cjs",
     "test:playwright": "playwright test",
     "lint": "eslint \"step-definitions/**/*.ts\" \"support/**/*.ts\""

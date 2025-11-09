@@ -5,7 +5,9 @@ import type {
   RenamePageRequest,
 } from "../types";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3001";
+// In production, use relative URLs since backend serves both frontend and API
+// In development, VITE_API_URL should be set to http://localhost:3001
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {

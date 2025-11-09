@@ -1,5 +1,5 @@
 import { resolve, relative, normalize, extname } from "node:path";
-import { ForbiddenError, ValidationError } from "../errors";
+import { ForbiddenError, ValidationError } from "../errors.js";
 
 export const DEFAULT_PAGES_ROOT = "pages";
 
@@ -142,10 +142,10 @@ const ALLOWED_FILE_EXTENSIONS = new Set([
   // Video
   ".mp4",
   ".webm",
-  ".ogg",
+  ".ogv",
   ".mov",
   ".avi",
-] as const);
+]);
 
 export function validateFileExtension(filename: string): {
   valid: boolean;

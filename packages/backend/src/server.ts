@@ -1,13 +1,15 @@
 import fastify from "fastify";
 import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
-import { registerPageRoutes } from "./routes/pages";
-import { registerFileRoutes } from "./routes/files";
-import { getPagesRoot } from "./storage/path-validator";
+import fastifyStatic from "@fastify/static";
+import { registerPageRoutes } from "./routes/pages.js";
+import { registerFileRoutes } from "./routes/files.js";
+import { getPagesRoot } from "./storage/path-validator.js";
 import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
-import { AppError } from "./errors";
+import { AppError } from "./errors.js";
 
 export const DEFAULT_PORT = 3001;
 export const DEFAULT_PAGES_ROOT = "pages";
@@ -85,6 +87,27 @@ export async function buildServer() {
 
   await registerPageRoutes(app);
   await registerFileRoutes(app);
+
+  // Serve static frontend files in production
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const frontendDistPath = join(__dirname, "../../frontend/dist");
+  
+  if (existsSync(frontendDistPath)) {
+    await app.register(fastifyStatic, {
+      root: frontendDistPath,
+      prefix: "/",
+    });
+
+    // Fallback to index.html for client-side routing
+    app.setNotFoundHandler((request, reply) => {
+      if (!request.url.startsWith("/api/")) {
+        reply.sendFile("index.html");
+      } else {
+        reply.status(404).send({ error: "Not Found" });
+      }
+    });
+  }
 
   return app;
 }

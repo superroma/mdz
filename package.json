@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace @app/backend\" \"npm run dev --workspace @app/frontend\"",
     "build": "npm run build --workspaces",
+    "start": "npm run start --workspace @app/backend",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
     "test:e2e": "npm run test:e2e --workspace @app/e2e"
