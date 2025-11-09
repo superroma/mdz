@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { createPage, readPage, updatePage, deletePage, listPages, renamePage } from "../../src/storage/page-storage";
+import { listFiles } from "../../src/storage/file-storage";
 import { mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -93,5 +94,135 @@ test("folderization converts single file to folder when child added", () => {
   const pagesRoot = process.env.PAGES_ROOT!;
   expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(true);
   expect(existsSync(join(pagesRoot, "Parent/Child.md"))).toBe(true);
+});
+
+test("defolderization converts folder back to single file when last child removed", () => {
+  const { join } = require("node:path");
+  const { existsSync } = require("node:fs");
+  const pagesRoot = process.env.PAGES_ROOT!;
+  
+  // Create parent and child (parent becomes folder)
+  createPage("Parent", "# Parent");
+  createPage("Parent/Child", "# Child");
+  
+  // Verify folder structure exists
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent/Child.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent.md"))).toBe(false);
+  
+  // Delete the child
+  deletePage("Parent/Child");
+  
+  // Verify parent is converted back to single file
+  expect(existsSync(join(pagesRoot, "Parent.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(false);
+  expect(existsSync(join(pagesRoot, "Parent"))).toBe(false);
+  
+  // Verify parent page still works
+  const parent = readPage("Parent");
+  expect(parent).not.toBeNull();
+  expect(parent?.content).toBe("# Parent");
+});
+
+test("defolderization works with nested paths", () => {
+  const { join } = require("node:path");
+  const { existsSync } = require("node:fs");
+  const pagesRoot = process.env.PAGES_ROOT!;
+  
+  // Create nested structure: Welcome/Markdown Guide/Child
+  createPage("Welcome/Markdown Guide", "# Markdown Guide");
+  createPage("Welcome/Markdown Guide/Child", "# Child");
+  
+  // Verify folder structure exists
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/Child.md"))).toBe(true);
+  
+  // Delete the child
+  deletePage("Welcome/Markdown Guide/Child");
+  
+  // Verify parent is converted back to single file
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(false);
+  
+  // Verify parent page still works
+  const parent = readPage("Welcome/Markdown Guide");
+  expect(parent).not.toBeNull();
+  expect(parent?.content).toBe("# Markdown Guide");
+});
+
+test("defolderized page stays as single file after file operations", () => {
+  const pagesRoot = process.env.PAGES_ROOT!;
+  
+  // Create parent and child (parent becomes folder)
+  createPage("Parent", "# Parent");
+  createPage("Parent/Child", "# Child");
+  
+  // Verify folder structure exists
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(true);
+  
+  // Delete the child (defolderizes)
+  deletePage("Parent/Child");
+  
+  // Verify it's now a single file
+  expect(existsSync(join(pagesRoot, "Parent.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(false);
+  
+  // Perform file operations that should NOT re-folderize
+  // 1. List files (should return empty, not trigger folderization)
+  const files = listFiles("Parent");
+  expect(files).toEqual([]);
+  
+  // 2. Verify it's still a single file after listing files
+  expect(existsSync(join(pagesRoot, "Parent.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(false);
+  
+  // 3. Read the page again
+  const parent = readPage("Parent");
+  expect(parent).not.toBeNull();
+  
+  // 4. Verify it's still a single file after reading
+  expect(existsSync(join(pagesRoot, "Parent.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(false);
+  
+  // 5. Update the page
+  updatePage("Parent", "# Updated Parent");
+  
+  // 6. Verify it's still a single file after updating
+  expect(existsSync(join(pagesRoot, "Parent.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Parent/README.md"))).toBe(false);
+});
+
+test("defolderized page with spaces stays as single file after file operations", () => {
+  const pagesRoot = process.env.PAGES_ROOT!;
+  
+  // Create parent with spaces and child
+  createPage("Welcome/Markdown Guide", "# Markdown Guide");
+  createPage("Welcome/Markdown Guide/Child", "# Child");
+  
+  // Verify folder structure exists
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(true);
+  
+  // Delete the child (defolderizes)
+  deletePage("Welcome/Markdown Guide/Child");
+  
+  // Verify it's now a single file
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(false);
+  
+  // Perform file operations that should NOT re-folderize
+  const files = listFiles("Welcome/Markdown Guide");
+  expect(files).toEqual([]);
+  
+  // Verify it's still a single file after listing files
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(false);
+  
+  // Read the page
+  const page = readPage("Welcome/Markdown Guide");
+  expect(page).not.toBeNull();
+  
+  // Verify it's still a single file after reading
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide.md"))).toBe(true);
+  expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(false);
 });
 

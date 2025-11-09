@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
 import { validatePath, validateFilename, getPagesRoot } from "../../src/storage/path-validator";
 import { getPageTitleFromPath } from "../../src/storage/folderization";
-import { mkdtempSync } from "node:fs";
-import { join } from "node:path";
+import { mkdtempSync, mkdirSync, writeFileSync, existsSync, rmSync } from "node:fs";
+import { join, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 
 let testDir: string;
@@ -13,6 +13,9 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  if (testDir) {
+    rmSync(testDir, { recursive: true, force: true });
+  }
   delete process.env.PAGES_ROOT;
 });
 
@@ -114,5 +117,93 @@ test("validatePath blocks absolute paths outside root", () => {
   const absolutePath = join("/", "etc", "passwd");
   const result = validatePath(absolutePath);
   expect(result.valid).toBe(false);
+});
+
+test("validatePath resolves paths with spaces correctly", () => {
+  const result = validatePath("Welcome/Markdown Guide");
+  expect(result.valid).toBe(true);
+  expect(result.resolvedPath).toBe(join(testDir, "Welcome", "Markdown Guide"));
+});
+
+test("validatePath resolves nested paths with spaces correctly", () => {
+  const result = validatePath("Welcome/Markdown Guide/Child Page");
+  expect(result.valid).toBe(true);
+  expect(result.resolvedPath).toBe(join(testDir, "Welcome", "Markdown Guide", "Child Page"));
+});
+
+test("validatePath resolved path matches actual filesystem path", () => {
+  const pathWithSpaces = "Parent/Child Page";
+  const result = validatePath(pathWithSpaces);
+  
+  expect(result.valid).toBe(true);
+  const resolvedPath = result.resolvedPath;
+  
+  // Create the directory structure
+  mkdirSync(resolvedPath, { recursive: true });
+  writeFileSync(join(resolvedPath, "test.md"), "# Test");
+  
+  // Verify the resolved path actually exists
+  expect(existsSync(resolvedPath)).toBe(true);
+  expect(existsSync(join(resolvedPath, "test.md"))).toBe(true);
+});
+
+test("validatePath resolves paths consistently - same input gives same output", () => {
+  const path = "Welcome/Markdown Guide";
+  const result1 = validatePath(path);
+  const result2 = validatePath(path);
+  
+  expect(result1.valid).toBe(true);
+  expect(result2.valid).toBe(true);
+  expect(result1.resolvedPath).toBe(result2.resolvedPath);
+});
+
+test("validatePath handles paths with multiple spaces", () => {
+  const result = validatePath("Parent/Child Page With Multiple Spaces");
+  expect(result.valid).toBe(true);
+  expect(result.resolvedPath).toBe(join(testDir, "Parent", "Child Page With Multiple Spaces"));
+});
+
+test("validatePath resolves single file path correctly", () => {
+  const path = "Page With Spaces";
+  const result = validatePath(path);
+  
+  expect(result.valid).toBe(true);
+  const resolvedPath = result.resolvedPath;
+  const filePath = `${resolvedPath}.md`;
+  
+  // Create the file
+  writeFileSync(filePath, "# Test");
+  
+  // Verify the resolved path leads to the actual file
+  expect(existsSync(filePath)).toBe(true);
+});
+
+test("validatePath resolves paths with special characters", () => {
+  const result = validatePath("Parent/Page-With_Dots.and.more");
+  expect(result.valid).toBe(true);
+  expect(result.resolvedPath).toBe(join(testDir, "Parent", "Page-With_Dots.and.more"));
+});
+
+test("validatePath resolved path is absolute and within pages root", () => {
+  const result = validatePath("Test/Page");
+  expect(result.valid).toBe(true);
+  
+  // Resolved path should be absolute
+  expect(isAbsolute(result.resolvedPath)).toBe(true);
+  
+  // Resolved path should start with testDir (pages root)
+  expect(result.resolvedPath.startsWith(testDir)).toBe(true);
+});
+
+test("validatePath handles root level paths", () => {
+  const result = validatePath("RootPage");
+  expect(result.valid).toBe(true);
+  expect(result.resolvedPath).toBe(join(testDir, "RootPage"));
+});
+
+test("validatePath handles deeply nested paths with spaces", () => {
+  const result = validatePath("Level1/Level 2/Level 3/Level 4");
+  expect(result.valid).toBe(true);
+  expect(result.resolvedPath).toBe(join(testDir, "Level1", "Level 2", "Level 3", "Level 4"));
 });
 

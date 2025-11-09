@@ -7,7 +7,6 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { validatePath, validateFilename, getPagesRoot } from "./path-validator.js";
-import { ensurePageFolderized } from "./folderization.js";
 import { NotFoundError, ValidationError, ForbiddenError } from "../errors.js";
 
 export interface FileInfo {
@@ -17,7 +16,6 @@ export interface FileInfo {
 }
 
 export function listFiles(pagePath: string): FileInfo[] {
-  const pagesRoot = getPagesRoot();
   const relativePath = pagePath.replace(/\.md$/, "");
   const validation = validatePath(relativePath);
 
@@ -25,13 +23,16 @@ export function listFiles(pagePath: string): FileInfo[] {
     throw new ForbiddenError(validation.error || "Invalid path");
   }
 
-  const folderPath = join(pagesRoot, relativePath);
-  const singleFilePath = join(pagesRoot, `${relativePath}.md`);
+  // Use the resolved path from validation to ensure correct path handling
+  const resolvedPath = validation.resolvedPath;
+  const folderPath = resolvedPath;
+  const singleFilePath = `${resolvedPath}.md`;
 
   let dirPath: string;
   if (existsSync(folderPath)) {
     dirPath = folderPath;
   } else if (existsSync(singleFilePath)) {
+    // Single-file pages don't have attached files
     return [];
   } else {
     return [];
@@ -78,16 +79,17 @@ export function getFilePath(pagePath: string, filename: string): string {
     throw new ValidationError(filenameValidation.error || "Invalid filename");
   }
 
-  const pagesRoot = getPagesRoot();
-  const folderPath = join(pagesRoot, relativePath);
-  const singleFilePath = join(pagesRoot, `${relativePath}.md`);
+  // Use the resolved path from validation to ensure correct path handling
+  const resolvedPath = validation.resolvedPath;
+  const folderPath = resolvedPath;
+  const singleFilePath = `${resolvedPath}.md`;
 
   let dirPath: string;
   if (existsSync(folderPath)) {
     dirPath = folderPath;
   } else if (existsSync(singleFilePath)) {
-    ensurePageFolderized(relativePath);
-    dirPath = join(pagesRoot, relativePath);
+    // Single-file pages don't have attached files - files only exist on folderized pages
+    throw new NotFoundError("Files can only be accessed on pages with children or attachments");
   } else {
     throw new NotFoundError("Page not found");
   }

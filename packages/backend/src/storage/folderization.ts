@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, mkdirSync, renameSync, rmdirSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, relative } from "node:path";
 import { validatePath, getPagesRoot } from "./path-validator.js";
 import { ForbiddenError } from "../errors.js";
 
@@ -42,25 +42,38 @@ export function ensurePageFolderized(pagePath: string): void {
     throw new ForbiddenError(validation.error || "Invalid path");
   }
   
-  const singleFilePath = join(pagesRoot, `${relativePath}.md`);
-  const folderPath = join(pagesRoot, relativePath);
+  // Use the resolved path from validation to ensure correct path handling
+  const resolvedPath = validation.resolvedPath;
+  const singleFilePath = `${resolvedPath}.md`;
+  const folderPath = resolvedPath;
   const readmePath = join(folderPath, "README.md");
   
-  if (existsSync(singleFilePath) && !existsSync(folderPath)) {
+  const singleFileExists = existsSync(singleFilePath);
+  const folderExists = existsSync(folderPath);
+  
+  console.log(`[ensurePageFolderized] pagePath="${pagePath}", relativePath="${relativePath}"`);
+  console.log(`[ensurePageFolderized] resolvedPath="${resolvedPath}"`);
+  console.log(`[ensurePageFolderized] singleFileExists=${singleFileExists}, folderExists=${folderExists}`);
+  
+  if (singleFileExists && !folderExists) {
+    console.log(`[ensurePageFolderized] CONVERTING: ${singleFilePath} -> ${readmePath}`);
     mkdirSync(folderPath, { recursive: true });
     renameSync(singleFilePath, readmePath);
+    console.log(`[ensurePageFolderized] CONVERSION COMPLETE`);
+  } else {
+    console.log(`[ensurePageFolderized] SKIPPED: singleFileExists=${singleFileExists}, folderExists=${folderExists}`);
   }
 }
 
 export function checkShouldDefolderize(pagePath: string): boolean {
-  const pagesRoot = getPagesRoot();
   const relativePath = pagePath.replace(/\.md$/, "").replace(/\/README$/, "");
   const validation = validatePath(relativePath);
   if (!validation.valid) {
     return false;
   }
   
-  const folderPath = join(pagesRoot, relativePath);
+  // Use the resolved path from validation to ensure correct path handling
+  const folderPath = validation.resolvedPath;
   const readmePath = join(folderPath, "README.md");
   
   if (!existsSync(folderPath) || !existsSync(readmePath)) {
@@ -86,9 +99,13 @@ export function defolderizePage(pagePath: string): void {
     throw new ForbiddenError(validation.error || "Invalid path");
   }
   
-  const folderPath = join(pagesRoot, relativePath);
+  // Use the resolved path from validation to ensure correct path handling
+  const folderPath = validation.resolvedPath;
   const readmePath = join(folderPath, "README.md");
-  const singleFilePath = join(pagesRoot, `${relativePath}.md`);
+  // For the single file path, we need to construct it relative to pagesRoot
+  // Get the relative path from pagesRoot to the folder, then append .md
+  const relativeToRoot = relative(pagesRoot, folderPath);
+  const singleFilePath = join(pagesRoot, `${relativeToRoot}.md`);
   
   if (existsSync(readmePath)) {
     renameSync(readmePath, singleFilePath);

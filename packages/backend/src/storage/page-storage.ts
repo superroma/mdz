@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, writeFileSync, unlinkSync, readdirSync, mkdirSync, renameSync, rmdirSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, relative } from "node:path";
 import { validatePath, getPagesRoot } from "./path-validator.js";
 import { parseFrontMatter, serializeFrontMatter, FrontMatter } from "./front-matter.js";
 import {
@@ -147,6 +147,7 @@ export function createPage(pagePath: string, content: string = "", frontMatter: 
   const parentPath = dirname(relativePath);
   
   if (parentPath && parentPath !== ".") {
+    console.log(`[createPage] Calling ensurePageFolderized for parent: "${parentPath}" (creating child: "${relativePath}")`);
     ensurePageFolderized(parentPath);
   }
   
@@ -258,8 +259,15 @@ export function deletePage(pagePath: string): void {
   const pagesRoot = getPagesRoot();
   const relativePath = pagePath.replace(/\.md$/, "");
   
-  const singleFilePath = join(pagesRoot, `${relativePath}.md`);
-  const folderPath = join(pagesRoot, relativePath);
+  // Validate and resolve the path to ensure correct handling of paths with spaces
+  const pathValidation = validatePath(relativePath);
+  if (!pathValidation.valid) {
+    throw new NotFoundError("Page not found");
+  }
+  
+  const resolvedPath = pathValidation.resolvedPath;
+  const singleFilePath = `${resolvedPath}.md`;
+  const folderPath = resolvedPath;
   const readmePath = join(folderPath, "README.md");
   
   if (existsSync(readmePath)) {
@@ -275,10 +283,20 @@ export function deletePage(pagePath: string): void {
     throw new NotFoundError("Page not found");
   }
   
+  // Check if parent should be defolderized after deleting this child
+  // Calculate parent from the original relativePath (before resolution)
+  // This ensures we get the correct parent path format
   const parentDir = dirname(relativePath);
+  
   if (parentDir && parentDir !== ".") {
-    if (checkShouldDefolderize(parentDir)) {
-      defolderizePage(parentDir);
+    // Validate and normalize the parent path before checking
+    const parentValidation = validatePath(parentDir);
+    if (parentValidation.valid) {
+      // Use the relative path (not resolved) for checkShouldDefolderize
+      // since it expects a relative path and resolves it internally
+      if (checkShouldDefolderize(parentDir)) {
+        defolderizePage(parentDir);
+      }
     }
   }
 }
