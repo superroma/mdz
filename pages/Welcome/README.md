@@ -1,9 +1,23 @@
-# Welcome to MDZ
+# Welcome to Markdown Editor
 
-This is your local knowledge space.
+This is a minimal markdown editor with filesystem storage.
 
-- Edit pages in the app (Sidebar → select → Edit)
-- Save with the button or Cmd/Ctrl+S
-- Pages live in `./pages/`
+![Logo](./logo.png)
 
-Tip: commit changes to sync via Git.
+## Features
+
+- Create and organize pages hierarchically
+- Edit markdown with live preview
+- Custom fields for structured data
+- File attachments
+- MDX view components
+
+## Getting Started
+
+Check out these example pages:
+
+- [Markdown Guide](<./Markdown Guide.md>) - Learn markdown syntax
+- [Tasks](./Tasks) - See custom fields and views in action
+- [Projects](./Projects) - Another example with different schema
+
+Start by exploring the sidebar navigation!

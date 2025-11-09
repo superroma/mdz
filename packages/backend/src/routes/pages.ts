@@ -1,0 +1,71 @@
+import { FastifyInstance } from "fastify";
+import { listPages, readPage, createPage, updatePage, renamePage, deletePage } from "../storage/page-storage";
+import { validatePathOrThrow } from "../storage/path-validator";
+import { NotFoundError, ValidationError } from "../errors";
+
+export async function registerPageRoutes(app: FastifyInstance) {
+  app.get("/api/pages", async () => {
+    return listPages();
+  });
+
+  app.get("/api/pages/*", async (request) => {
+    const path = (request.params as { "*": string })["*"];
+    validatePathOrThrow(path);
+    const page = readPage(path);
+    if (!page) {
+      throw new NotFoundError("Page not found");
+    }
+    return page;
+  });
+
+  app.post("/api/pages", async (request) => {
+    const body = request.body as { path?: string; content?: string; parent?: string; frontMatter?: Record<string, unknown> };
+    const pagePath = body.path || "Untitled";
+    const content = body.content || "";
+    const frontMatter = body.frontMatter || {};
+    
+    let finalPath = pagePath;
+    if (body.parent) {
+      validatePathOrThrow(body.parent);
+      finalPath = `${body.parent}/${pagePath}`;
+    }
+    
+    validatePathOrThrow(finalPath);
+    const page = createPage(finalPath, content, frontMatter);
+    return page;
+  });
+
+  app.put("/api/pages/*", async (request) => {
+    const path = (request.params as { "*": string })["*"];
+    validatePathOrThrow(path);
+    
+    const body = request.body as { content: string; frontMatter?: Record<string, unknown> };
+    
+    if (typeof body.content !== "string") {
+      throw new ValidationError("Content is required");
+    }
+    
+    return updatePage(path, body.content, body.frontMatter);
+  });
+
+  app.patch("/api/pages/*", async (request) => {
+    const path = (request.params as { "*": string })["*"];
+    validatePathOrThrow(path);
+    
+    const body = request.body as { newPath: string };
+    
+    if (!body.newPath || typeof body.newPath !== "string") {
+      throw new ValidationError("newPath is required");
+    }
+    
+    validatePathOrThrow(body.newPath);
+    return renamePage(path, body.newPath);
+  });
+
+  app.delete("/api/pages/*", async (request) => {
+    const path = (request.params as { "*": string })["*"];
+    validatePathOrThrow(path);
+    deletePage(path);
+  });
+}
+

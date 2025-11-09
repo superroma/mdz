@@ -1,8 +1,0 @@
-node_modules/
-dist/
-storybook-static/
-app/frontend/storybook-static/
-app/frontend/dist/
-app/backend/dist/
-*.log
-.DS_Store

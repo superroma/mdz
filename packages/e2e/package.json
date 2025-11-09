@@ -1,0 +1,24 @@
+{
+  "name": "@app/e2e",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "test:e2e": "cucumber-js --config cucumber.cjs",
+    "test:playwright": "playwright test",
+    "lint": "eslint \"step-definitions/**/*.ts\" \"support/**/*.ts\""
+  },
+  "dependencies": {
+    "@cucumber/cucumber": "^10.1.0",
+    "@playwright/test": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^7.8.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-vitest": "^0.5.4",
+    "ts-node": "^10.9.2",
+    "typescript": "5.5.4"
+  }
+}
+
