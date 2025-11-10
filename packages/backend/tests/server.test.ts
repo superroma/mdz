@@ -180,19 +180,21 @@ test("delete page", async () => {
 });
 
 test("path traversal prevention returns 403", async () => {
-  // Test path traversal - should be caught by request-level detection or route validation
-  const response = await app.inject({
+  // Test path traversal with encoded dots
+  const response1 = await app.inject({
     method: "GET",
-    url: "/api/pages/../../../etc/passwd"
+    url: "/api/pages/%2E%2E%2F%2E%2E%2F%2E%2E%2Fetc%2Fpasswd"
   });
+  expect(response1.statusCode).toBe(403);
+  expect(response1.json()).toHaveProperty("error");
 
-  // Path traversal should be blocked (either 403 from request-level or route validation)
-  // If it gets through, validatePathOrThrow should catch it and return 403
-  // If page doesn't exist after normalization, it might return 404, but path validation should catch it first
-  expect([403, 404]).toContain(response.statusCode);
-  if (response.statusCode === 403) {
-    expect(response.json()).toHaveProperty("error");
-  }
+  // Test with double-encoded path traversal
+  const response2 = await app.inject({
+    method: "GET",
+    url: "/api/pages/%252E%252E%252F%252E%252E%252Fetc%252Fpasswd"
+  });
+  // Could be 403 or 404 depending on normalization
+  expect([403, 404]).toContain(response2.statusCode);
 });
 
 test("file upload", async () => {

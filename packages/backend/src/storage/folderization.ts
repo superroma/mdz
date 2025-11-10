@@ -51,17 +51,9 @@ export function ensurePageFolderized(pagePath: string): void {
   const singleFileExists = existsSync(singleFilePath);
   const folderExists = existsSync(folderPath);
   
-  console.log(`[ensurePageFolderized] pagePath="${pagePath}", relativePath="${relativePath}"`);
-  console.log(`[ensurePageFolderized] resolvedPath="${resolvedPath}"`);
-  console.log(`[ensurePageFolderized] singleFileExists=${singleFileExists}, folderExists=${folderExists}`);
-  
   if (singleFileExists && !folderExists) {
-    console.log(`[ensurePageFolderized] CONVERTING: ${singleFilePath} -> ${readmePath}`);
     mkdirSync(folderPath, { recursive: true });
     renameSync(singleFilePath, readmePath);
-    console.log(`[ensurePageFolderized] CONVERSION COMPLETE`);
-  } else {
-    console.log(`[ensurePageFolderized] SKIPPED: singleFileExists=${singleFileExists}, folderExists=${folderExists}`);
   }
 }
 

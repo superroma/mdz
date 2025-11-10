@@ -25,6 +25,7 @@
     "@typescript-eslint/eslint-plugin": "^7.8.0",
     "@typescript-eslint/parser": "^7.8.0",
     "eslint": "^8.57.1",
+    "get-func-name": "^3.0.0",
     "tsx": "^4.19.0",
     "typescript": "5.5.4",
     "vitest": "^1.6.0"

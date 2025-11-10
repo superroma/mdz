@@ -9,7 +9,13 @@ interface TreeItemProps {
   currentPath?: string;
 }
 
-function TreeItem({ page, level, onCreateChild, onNavigate, currentPath }: TreeItemProps) {
+function TreeItem({
+  page,
+  level,
+  onCreateChild,
+  onNavigate,
+  currentPath,
+}: TreeItemProps) {
   const navigate = useNavigate();
   const isSelected = currentPath === page.path;
 
@@ -24,13 +30,16 @@ function TreeItem({ page, level, onCreateChild, onNavigate, currentPath }: TreeI
     onCreateChild(page.path);
   };
 
+  const baseClasses =
+    "group flex items-center gap-2 py-1.5 px-3 transition-colors";
+  const selectedClasses = isSelected
+    ? "bg-slate-700 border-l-2 border-sky-400"
+    : "active:bg-slate-700/50 md:hover:bg-slate-700/50";
+
   return (
     <div>
       <div
-        className={`
-          group flex items-center gap-2 py-1.5 px-3 transition-colors
-          ${isSelected ? "bg-slate-700 border-l-2 border-sky-400" : "active:bg-slate-700/50 md:hover:bg-slate-700/50"}
-        `}
+        className={`${baseClasses} ${selectedClasses}`}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
       >
         <div
@@ -38,7 +47,7 @@ function TreeItem({ page, level, onCreateChild, onNavigate, currentPath }: TreeI
           tabIndex={0}
           className="flex-1 text-left text-sm truncate cursor-pointer"
           onClick={handleClick}
-          onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+          onKeyDown={(e) => e.key === "Enter" && handleClick()}
           aria-label={`Navigate to ${page.title}`}
         >
           {page.title}
@@ -46,7 +55,11 @@ function TreeItem({ page, level, onCreateChild, onNavigate, currentPath }: TreeI
         <button
           type="button"
           onClick={handleAddChild}
-          className="opacity-0 md:group-hover:opacity-100 md:focus:opacity-100 text-slate-400 active:text-slate-200 md:hover:text-slate-200 text-xs px-1"
+          className={`${
+            isSelected
+              ? "opacity-100"
+              : "opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+          } text-slate-400 active:text-slate-200 md:hover:text-slate-200 text-xs px-1`}
           aria-label={`Add child page to ${page.title}`}
           title="Add child page"
         >
@@ -63,7 +76,11 @@ interface TreeNavigationProps {
   onNavigate?: () => void;
 }
 
-export function TreeNavigation({ pages, onCreateChild, onNavigate }: TreeNavigationProps) {
+export function TreeNavigation({
+  pages,
+  onCreateChild,
+  onNavigate,
+}: TreeNavigationProps) {
   const { "*": currentPath } = useParams();
 
   const buildTree = (pages: Page[]) => {
@@ -99,4 +116,3 @@ export function TreeNavigation({ pages, onCreateChild, onNavigate }: TreeNavigat
     </div>
   );
 }
-

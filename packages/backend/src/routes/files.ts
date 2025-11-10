@@ -105,7 +105,6 @@ export async function registerFileRoutes(app: FastifyInstance) {
       throw new NotFoundError("Page not found");
     }
     
-    console.log(`[file upload] Calling ensurePageFolderized for page: "${path}"`);
     ensurePageFolderized(path);
     
     const data = await request.file();

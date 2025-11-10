@@ -147,7 +147,6 @@ export function createPage(pagePath: string, content: string = "", frontMatter: 
   const parentPath = dirname(relativePath);
   
   if (parentPath && parentPath !== ".") {
-    console.log(`[createPage] Calling ensurePageFolderized for parent: "${parentPath}" (creating child: "${relativePath}")`);
     ensurePageFolderized(parentPath);
   }
   
