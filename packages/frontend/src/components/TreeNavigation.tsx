@@ -1,4 +1,4 @@
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { Page } from "../types";
 
 interface TreeItemProps {
@@ -81,7 +81,9 @@ export function TreeNavigation({
   onCreateChild,
   onNavigate,
 }: TreeNavigationProps) {
-  const { "*": currentPath } = useParams();
+  const location = useLocation();
+  // Remove leading slash and decode URL encoding to match page paths
+  const currentPath = decodeURIComponent(location.pathname.substring(1));
 
   const buildTree = (pages: Page[]) => {
     const rootPages = pages.filter((p) => !p.parent);

@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect, vi } from "vitest";
-import { BrowserRouter, MemoryRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, MemoryRouter } from "react-router-dom";
 import { TreeNavigation } from "./TreeNavigation";
 import type { Page } from "../types";
 import userEvent from "@testing-library/user-event";
@@ -40,22 +40,12 @@ const mockPages: Page[] = [
 ];
 
 function renderWithRouter(ui: React.ReactElement) {
-  return render(
-    <BrowserRouter>
-      <Routes>
-        <Route path="/*" element={ui} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return render(<BrowserRouter>{ui}</BrowserRouter>);
 }
 
 function renderWithRoute(ui: React.ReactElement, initialEntries: string[] = ["/"]) {
   return render(
-    <MemoryRouter initialEntries={initialEntries}>
-      <Routes>
-        <Route path="/*" element={ui} />
-      </Routes>
-    </MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>{ui}</MemoryRouter>
   );
 }
 
