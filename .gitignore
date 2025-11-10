@@ -13,4 +13,3 @@ test-results
 /.turbo
 /.idea
 /.vscode
-package-lock.json
