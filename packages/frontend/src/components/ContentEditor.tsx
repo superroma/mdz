@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MDXContent } from "./MDXContent";
-import { parseFrontMatter } from "../utils/front-matter";
+import { parseFrontMatter, serializeFrontMatter } from "../utils/front-matter";
+import { toggleCheckboxAtLine } from "../utils/checkbox-updater";
 
 interface ContentEditorProps {
   content: string;
@@ -12,23 +13,80 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const pendingValueRef = useRef<string | null>(null);
 
   useEffect(() => {
     setValue(content);
   }, [content]);
 
-  const handleSave = async () => {
-    if (value === content || isSaving) return;
+  // Cleanup: save any pending changes before unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+      if (pendingValueRef.current && pendingValueRef.current !== content) {
+        // Save immediately on unmount
+        onSave(pendingValueRef.current).catch((error) => {
+          console.error("Failed to save pending changes on unmount:", error);
+        });
+      }
+    };
+  }, [content, onSave]);
+
+  const handleSave = useCallback(async (contentToSave?: string) => {
+    const contentToSaveValue = contentToSave ?? value;
+    const currentContent = content;
+    if (contentToSaveValue === currentContent || isSaving) return;
+
+    // Clear any pending timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+    pendingValueRef.current = null;
 
     setIsSaving(true);
     try {
-      await onSave(value);
+      await onSave(contentToSaveValue);
+      setValue(contentToSaveValue);
     } catch (error) {
       console.error("Failed to save content:", error);
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [content, value, isSaving, onSave]);
+
+  const debouncedSave = useCallback((newValue: string) => {
+    // Clear existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    
+    // Store pending value
+    pendingValueRef.current = newValue;
+    
+    // Set new timeout for debounced save
+    saveTimeoutRef.current = setTimeout(() => {
+      handleSave(newValue);
+    }, 300);
+  }, [handleSave]);
+
+  const handleCheckboxToggle = useCallback((lineIndex: number) => {
+    if (isEditing) {
+      // In edit mode, don't handle checkbox clicks - user edits text directly
+      return;
+    }
+
+    // Use the current content prop to ensure we have the latest from backend
+    const { content: markdownContent, frontMatter } = parseFrontMatter(content);
+    const updatedMarkdown = toggleCheckboxAtLine(markdownContent, lineIndex);
+    const updatedContent = serializeFrontMatter(frontMatter, updatedMarkdown);
+    
+    setValue(updatedContent);
+    debouncedSave(updatedContent);
+  }, [content, isEditing, debouncedSave]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "s") {
@@ -52,7 +110,11 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
         </div>
         <div className="prose prose-invert max-w-none">
           {markdownContent ? (
-            <MDXContent content={markdownContent} parentPath={parentPath} />
+            <MDXContent 
+              content={markdownContent} 
+              parentPath={parentPath}
+              onCheckboxToggle={handleCheckboxToggle}
+            />
           ) : (
             <p className="text-slate-400">
               No content yet. Click Edit to add some.

@@ -13,6 +13,7 @@ import { getFileUrl } from "../api/client";
 interface MDXContentProps {
   content: string;
   parentPath?: string;
+  onCheckboxToggle?: (lineIndex: number) => void;
 }
 
 // Resolve relative path against parent path
@@ -139,7 +140,11 @@ const resolveLinkUrl = (href: string, parentPath?: string): { url: string; isExt
   return { url: href, isExternal: false, isMdLink: false };
 };
 
-const createMdxComponents = (parentPath?: string, navigate?: ReturnType<typeof useNavigate>) => ({
+const createMdxComponents = (
+  parentPath?: string,
+  navigate?: ReturnType<typeof useNavigate>,
+  onCheckboxToggle?: (lineIndex: number) => void
+) => ({
   Progress,
   BoardView: (props: React.ComponentProps<typeof BoardView>) => (
     <BoardView {...props} parentPath={parentPath} />
@@ -188,16 +193,42 @@ const createMdxComponents = (parentPath?: string, navigate?: ReturnType<typeof u
     // For anchor links, default behavior
     return <a {...props} />;
   },
+  input: (props: React.InputHTMLAttributes<HTMLInputElement> & { 'data-line-index'?: string }) => {
+    // Only handle task list checkboxes (those with data-line-index)
+    const lineIndexStr = props['data-line-index'];
+    const isTaskListCheckbox = lineIndexStr !== undefined && props.type === 'checkbox';
+    
+    if (isTaskListCheckbox && onCheckboxToggle) {
+      const lineIndex = parseInt(lineIndexStr, 10);
+      // Remove disabled from props to ensure checkbox is interactive
+      const { disabled, ...restProps } = props;
+      return (
+        <input
+          {...restProps}
+          disabled={false}
+          onClick={(e) => {
+            // Call the toggle handler with the line index
+            // Don't prevent default - let checkbox toggle visually, markdown will update
+            onCheckboxToggle(lineIndex);
+            props.onClick?.(e);
+          }}
+        />
+      );
+    }
+    
+    // For all other inputs, use default behavior
+    return <input {...props} />;
+  },
 });
 
-export function MDXContent({ content, parentPath }: MDXContentProps) {
+export function MDXContent({ content, parentPath, onCheckboxToggle }: MDXContentProps) {
   const navigate = useNavigate();
   const [MDXComponent, setMDXComponent] = useState<React.ComponentType | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
 
-  const mdxComponents = useMemo(() => createMdxComponents(parentPath, navigate), [parentPath, navigate]);
+  const mdxComponents = useMemo(() => createMdxComponents(parentPath, navigate, onCheckboxToggle), [parentPath, navigate, onCheckboxToggle]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -209,11 +240,27 @@ export function MDXContent({ content, parentPath }: MDXContentProps) {
     async function compileMDX() {
       try {
 
-        // Create rehype plugin to transform paths
-        const rehypeTransformPaths = (parentPath?: string) => {
+        // Create rehype plugin to transform paths and add checkbox line indices
+        const rehypeTransformPaths = (parentPath?: string, markdownContent?: string) => {
           return () => {
             return (tree: any) => {
-              const visit = (node: any) => {
+              // Get all checkbox lines from markdown
+              const lines = markdownContent?.split('\n') || [];
+              const checkboxRegex = /^(\s*)-\s+\[([ x])\]\s+(.+)$/;
+              const checkboxes: Array<{ line: number; text: string; checked: boolean }> = [];
+              
+              lines.forEach((line, index) => {
+                const match = line.match(checkboxRegex);
+                if (match) {
+                  const text = match[3].trim();
+                  const checked = match[2] === 'x';
+                  checkboxes.push({ line: index, text, checked });
+                }
+              });
+              
+              let checkboxCounter = 0;
+              
+              const visit = (node: any, parent?: any) => {
                 if (!node || typeof node !== "object") return;
                 
                 // Transform img src attributes
@@ -237,8 +284,24 @@ export function MDXContent({ content, parentPath }: MDXContentProps) {
                   }
                 }
                 
+                // Handle task list checkboxes
+                if (node.type === "element" && node.tagName === "input" && node.properties?.type === "checkbox") {
+                  // Remove disabled attribute to make checkboxes interactive
+                  delete node.properties.disabled;
+                  
+                  // Match by checked state - find the next checkbox with matching state
+                  const isChecked = node.properties?.checked === true || node.properties?.checked === '';
+                  for (let i = checkboxCounter; i < checkboxes.length; i++) {
+                    if (checkboxes[i].checked === isChecked) {
+                      node.properties["data-line-index"] = String(checkboxes[i].line);
+                      checkboxCounter = i + 1;
+                      break;
+                    }
+                  }
+                }
+                
                 if (Array.isArray(node.children)) {
-                  node.children.forEach(visit);
+                  node.children.forEach((child) => visit(child, node));
                 }
               };
               
@@ -252,6 +315,7 @@ export function MDXContent({ content, parentPath }: MDXContentProps) {
         };
 
         // Compile MDX to JavaScript
+        // Note: position information is preserved from remark -> rehype with this config
         const compiled = await compile(content, {
           outputFormat: "function-body",
           development: false,
@@ -260,8 +324,10 @@ export function MDXContent({ content, parentPath }: MDXContentProps) {
             (await import("remark-gfm")).default,
           ],
           rehypePlugins: [
-            rehypeTransformPaths(parentPath),
+            rehypeTransformPaths(parentPath, content),
           ],
+          // Preserve position information from source
+          SourceMapGenerator: undefined,
         });
 
         if (isCancelled) return;

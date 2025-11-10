@@ -11,6 +11,9 @@ export class AppWorld extends World {
   context?: BrowserContext;
   page?: Page;
   lastResponse?: HttpResponse;
+  checkboxStateBefore?: boolean;
+  clickedItemText?: string;
+  checkboxCountInEditMode?: number;
 
   constructor(options: IWorldOptions) {
     super(options);
