@@ -1,7 +1,7 @@
 import { resolve, relative, normalize, extname } from "node:path";
 import { ForbiddenError, ValidationError } from "../errors.js";
 
-export const DEFAULT_PAGES_ROOT = "pages";
+export const DEFAULT_PAGES_ROOT = "../../pages";
 
 export function getPagesRoot(): string {
   const root = process.env.PAGES_ROOT ?? DEFAULT_PAGES_ROOT;

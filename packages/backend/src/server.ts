@@ -6,13 +6,12 @@ import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
 import { registerPageRoutes } from "./routes/pages.js";
 import { registerFileRoutes } from "./routes/files.js";
-import { getPagesRoot } from "./storage/path-validator.js";
+import { getPagesRoot, DEFAULT_PAGES_ROOT } from "./storage/path-validator.js";
 import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { AppError } from "./errors.js";
 
 export const DEFAULT_PORT = 3001;
-export const DEFAULT_PAGES_ROOT = "pages";
 
 type TraversalFlaggedRequest = {
   __hasTraversal?: boolean;
