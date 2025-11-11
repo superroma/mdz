@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { MDXContent } from "./MDXContent";
+import { MonacoEditor } from "./MonacoEditor";
 import { parseFrontMatter, serializeFrontMatter } from "../utils/front-matter";
 import { toggleCheckboxAtLine } from "../utils/checkbox-updater";
 
@@ -147,13 +148,11 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
           {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
-      <textarea
+      <MonacoEditor
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={setValue}
         onKeyDown={handleKeyDown}
         placeholder="Start writing..."
-        className="flex-1 w-full bg-slate-800 text-slate-100 p-4 rounded border border-slate-700 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
-        aria-label="Page content"
       />
       <div className="text-xs text-slate-400">
         Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Cmd+S</kbd> or{" "}
