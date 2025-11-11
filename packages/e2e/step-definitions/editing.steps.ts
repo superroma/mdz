@@ -60,9 +60,38 @@ When(
   "I modify the content and press Cmd+S",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByLabel("Page content");
-    await editor.fill("Modified content for testing");
-    await editor.press("Meta+s");
+    
+    // Wait for Monaco editor to load
+    await page.waitForSelector('.monaco-editor', { timeout: 10000 });
+    await page.waitForTimeout(1500); // Give Monaco time to fully initialize
+    
+    // Use Monaco's API directly to set the content
+    await page.evaluate(() => {
+      // Access Monaco editor instance through the window object
+      // Monaco editors are typically stored in a global array
+      const monacoDiv = document.querySelector('.monaco-editor');
+      if (monacoDiv) {
+        // Try to find the editor instance through React fiber
+        const editorInstance = (monacoDiv as any)['data-editor'] || 
+                             (window as any).monaco?.editor?.getEditors?.()?.[0];
+        
+        if (editorInstance && editorInstance.setValue) {
+          editorInstance.setValue("Modified content for testing");
+        } else {
+          // Fallback: try to find textarea and set value
+          const textarea = monacoDiv.querySelector('textarea');
+          if (textarea) {
+            (textarea as HTMLTextAreaElement).value = "Modified content for testing";
+            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }
+      }
+    });
+    
+    await page.waitForTimeout(300);
+    
+    // Press Cmd+S to save
+    await page.keyboard.press("Meta+s");
     await page.waitForTimeout(500);
   }
 );
@@ -91,8 +120,14 @@ Then(
   "I should see the markdown source editor",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
+    // Monaco editor renders as a div with role="textbox" and aria-label="Page content"
     const editor = page.getByLabel("Page content");
-    await expect(editor).toBeVisible();
+    await expect(editor).toBeVisible({ timeout: 10000 });
+    
+    // Also check that Monaco editor's actual editor is loaded
+    // Monaco creates a .monaco-editor element
+    const monacoEditor = page.locator('.monaco-editor');
+    await expect(monacoEditor).toBeVisible({ timeout: 10000 });
   }
 );
 
@@ -100,10 +135,16 @@ Then(
   "the content should be saved",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
-    const editor = page.getByLabel("Page content");
-    const value = await editor.inputValue();
-    expect(value).toBe("Modified content for testing");
+    await page.waitForTimeout(1000);
+    
+    // Get the Monaco editor's text content
+    // Monaco stores the model content, we can read it from the visible text
+    const editorContent = page.locator('.monaco-editor .view-lines');
+    await expect(editorContent).toBeVisible();
+    
+    // Get the text content from Monaco's view
+    const text = await editorContent.textContent();
+    expect(text?.trim()).toBe("Modified content for testing");
   }
 );
 

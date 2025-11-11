@@ -65,7 +65,13 @@ export function MonacoEditor({
   }, [onKeyDown]);
 
   return (
-    <div ref={containerRef} className="flex-1 border border-slate-700 rounded overflow-hidden">
+    <div 
+      ref={containerRef} 
+      className="flex-1 border border-slate-700 rounded overflow-hidden"
+      role="textbox"
+      aria-label="Page content"
+      aria-multiline="true"
+    >
       <Editor
         height="100%"
         defaultLanguage="markdown"

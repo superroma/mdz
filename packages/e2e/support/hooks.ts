@@ -10,7 +10,7 @@ import {
 import { ensureServersRunning, shutdownServers } from "./server-manager";
 import { AppWorld } from "./world";
 
-setDefaultTimeout(5_000);
+setDefaultTimeout(10_000); // Increased for Monaco editor loading time
 
 let testPagesDir: string | undefined;
 
