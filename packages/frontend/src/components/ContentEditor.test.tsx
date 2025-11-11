@@ -4,6 +4,17 @@ import { MemoryRouter } from "react-router-dom";
 import { ContentEditor } from "./ContentEditor";
 import userEvent from "@testing-library/user-event";
 
+// Mock Monaco Editor to avoid CDN loading issues in tests
+vi.mock("./MonacoEditor", () => ({
+  MonacoEditor: ({ value, onChange }: { value: string; onChange: (val: string) => void }) => (
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      aria-label="Page content"
+    />
+  ),
+}));
+
 // Wrapper component with Router
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>);

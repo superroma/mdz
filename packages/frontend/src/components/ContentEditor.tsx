@@ -80,14 +80,14 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
       return;
     }
 
-    // Use the current content prop to ensure we have the latest from backend
-    const { content: markdownContent, frontMatter } = parseFrontMatter(content);
+    // Use the current value state (which might have pending changes)
+    const { content: markdownContent, frontMatter } = parseFrontMatter(value);
     const updatedMarkdown = toggleCheckboxAtLine(markdownContent, lineIndex);
     const updatedContent = serializeFrontMatter(frontMatter, updatedMarkdown);
     
     setValue(updatedContent);
     debouncedSave(updatedContent);
-  }, [content, isEditing, debouncedSave]);
+  }, [value, isEditing, debouncedSave]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "s") {
@@ -97,7 +97,7 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
   };
 
   if (!isEditing) {
-    const { content: markdownContent } = parseFrontMatter(content);
+    const { content: markdownContent } = parseFrontMatter(value);
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
@@ -141,7 +141,7 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
         </button>
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={isSaving || value === content}
           className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
