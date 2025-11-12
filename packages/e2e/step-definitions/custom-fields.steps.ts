@@ -9,7 +9,7 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/p/Welcome/Tasks/Write Tests`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks/Write%20Tests`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
   }
 );
@@ -89,7 +89,7 @@ When(
     const addButton = targetGroup.getByRole("button", { name: /Add child page/i });
     await addButton.click();
     
-    await page.waitForURL(/\/p\/Test.*Parent\/Untitled/, { timeout: 10000 });
+    await page.waitForURL(/\/Test.*Parent\/Untitled/, { timeout: 10000 });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
     await page.waitForTimeout(1000);
   }
@@ -100,7 +100,7 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const panelButton = page.getByText("Custom Fields");
+    const panelButton = page.getByText("Fields");
     await panelButton.click();
     await page.waitForTimeout(300);
     
@@ -115,7 +115,7 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const panelButton = page.getByText("Custom Fields");
+    const panelButton = page.getByText("Fields");
     await panelButton.click();
     await page.waitForTimeout(300);
     
@@ -133,7 +133,7 @@ Then(
     
     await page.waitForTimeout(2000);
     
-    const customFieldsButton = page.locator('button:has-text("Custom Fields")').first();
+    const customFieldsButton = page.locator('button:has-text("Fields")').first();
     
     await expect(customFieldsButton).toBeVisible({ timeout: 15000 });
   }
@@ -180,7 +180,7 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/p/Welcome/Tasks/Write Tests`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks/Write%20Tests`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
   }
 );

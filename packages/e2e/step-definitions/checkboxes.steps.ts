@@ -42,20 +42,44 @@ Given(
     // Wait for content to be rendered
     await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 10000 });
     
-    // Find the list item containing the text
-    const listItem = page.locator('li').filter({ 
-      hasText: new RegExp(itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') 
-    }).first();
-    await expect(listItem).toBeVisible({ timeout: 10000 });
+    // Find checkbox by the text that follows it (same logic as When step)
+    const escapedText = itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const allListItems = await page.locator('.prose li').all();
+    let targetCheckbox = null;
     
-    // Check if the checkbox is already checked
-    const checkbox = listItem.locator('input[type="checkbox"]').first();
-    await expect(checkbox).toBeVisible({ timeout: 10000 });
-    const isChecked = await checkbox.isChecked();
+    for (const li of allListItems) {
+      const checkbox = li.locator('input[type="checkbox"]').first();
+      const checkboxCount = await checkbox.count();
+      
+      if (checkboxCount === 0) continue;
+      
+      const fullText = await li.textContent();
+      const nestedLists = await li.locator('ul, ol').all();
+      let nestedText = '';
+      for (const nested of nestedLists) {
+        nestedText += await nested.textContent() || '';
+      }
+      
+      let directText = fullText || '';
+      if (nestedText) {
+        directText = directText.replace(nestedText, '').trim();
+      }
+      
+      if (new RegExp(escapedText, 'i').test(directText)) {
+        targetCheckbox = checkbox;
+        break;
+      }
+    }
+    
+    if (!targetCheckbox) {
+      throw new Error(`Could not find checkbox for "${itemText}"`);
+    }
+    
+    const isChecked = await targetCheckbox.isChecked();
     
     if (!isChecked) {
       // Toggle it to checked state
-      await checkbox.click({ force: true });
+      await targetCheckbox.click({ force: true });
       // Wait for debounce + save + re-render
       await page.waitForTimeout(1000);
       // Wait for content to be re-rendered
@@ -71,25 +95,55 @@ When(
     // Wait for content to be rendered and checkboxes to be available
     await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 10000 });
     
-    // Find the list item containing the text - use a more flexible selector
-    // The text might be case-insensitive or have extra whitespace
-    const listItem = page.locator('li').filter({ 
-      hasText: new RegExp(itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') 
-    }).first();
+    // Find checkbox by the text that follows it
+    // Use a more precise selector that looks for the checkbox followed by the specific text
+    const escapedText = itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     
-    await expect(listItem).toBeVisible({ timeout: 10000 });
+    // Try to find a label or text node containing this exact text next to a checkbox
+    // Get all list items and check them one by one
+    const allListItems = await page.locator('.prose li').all();
+    let targetCheckbox = null;
     
-    // Find the checkbox within that list item
-    const checkbox = listItem.locator('input[type="checkbox"]').first();
-    await expect(checkbox).toBeVisible({ timeout: 10000 });
+    for (const li of allListItems) {
+      const checkbox = li.locator('input[type="checkbox"]').first();
+      const checkboxCount = await checkbox.count();
+      
+      if (checkboxCount === 0) continue;
+      
+      // Get the text content of this specific li
+      const fullText = await li.textContent();
+      
+      // Get text of nested lists to subtract them
+      const nestedLists = await li.locator('ul, ol').all();
+      let nestedText = '';
+      for (const nested of nestedLists) {
+        nestedText += await nested.textContent() || '';
+      }
+      
+      // The direct text is full text minus nested text
+      let directText = fullText || '';
+      if (nestedText) {
+        directText = directText.replace(nestedText, '').trim();
+      }
+      
+      // Check if this direct text contains our target (case insensitive)
+      if (new RegExp(escapedText, 'i').test(directText)) {
+        targetCheckbox = checkbox;
+        break;
+      }
+    }
+    
+    if (!targetCheckbox) {
+      throw new Error(`Could not find checkbox for "${itemText}"`);
+    }
     
     // Get the current checked state before clicking
-    const wasChecked = await checkbox.isChecked();
+    const wasChecked = await targetCheckbox.isChecked();
     this.checkboxStateBefore = wasChecked;
     this.clickedItemText = itemText;
     
     // Click the checkbox - use force if needed since we're preventing default
-    await checkbox.click({ force: true });
+    await targetCheckbox.click({ force: true });
     
     // Wait a bit for the state to update
     await page.waitForTimeout(100);

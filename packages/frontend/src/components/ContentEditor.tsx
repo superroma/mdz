@@ -9,26 +9,30 @@ interface ContentEditorProps {
   parentPath?: string;
 }
 
-export function ContentEditor({ content, onSave, parentPath }: ContentEditorProps) {
+export function ContentEditor({
+  content,
+  onSave,
+  parentPath,
+}: ContentEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<string | null>(null);
-  
+
   // Use refs to avoid stale closures in timeout callbacks
   const contentRef = useRef(content);
   const onSaveRef = useRef(onSave);
   const isSavingRef = useRef(isSaving);
-  
+
   useEffect(() => {
     contentRef.current = content;
   }, [content]);
-  
+
   useEffect(() => {
     onSaveRef.current = onSave;
   }, [onSave]);
-  
+
   useEffect(() => {
     isSavingRef.current = isSaving;
   }, [isSaving]);
@@ -43,7 +47,10 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      if (pendingValueRef.current && pendingValueRef.current !== contentRef.current) {
+      if (
+        pendingValueRef.current &&
+        pendingValueRef.current !== contentRef.current
+      ) {
         // Save immediately on unmount
         onSaveRef.current(pendingValueRef.current).catch((error) => {
           console.error("Failed to save pending changes on unmount:", error);
@@ -54,7 +61,7 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
 
   const handleSave = useCallback(async (contentToSave: string) => {
     const currentContent = contentRef.current;
-    
+
     if (contentToSave === currentContent || isSavingRef.current) {
       return;
     }
@@ -77,41 +84,51 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
     }
   }, []);
 
-  const debouncedSave = useCallback((newValue: string) => {
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    // Store pending value
-    pendingValueRef.current = newValue;
-    
-    // Set new timeout for debounced save
-    saveTimeoutRef.current = setTimeout(() => {
-      handleSave(newValue);
-    }, 300);
-  }, [handleSave]);
+  const debouncedSave = useCallback(
+    (newValue: string) => {
+      // Clear existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
 
-  const handleCheckboxToggle = useCallback((lineIndex: number) => {
-    if (isEditing) {
-      // In edit mode, don't handle checkbox clicks - user edits text directly
-      return;
-    }
+      // Store pending value
+      pendingValueRef.current = newValue;
 
-    // Use the current value state to handle rapid checkbox toggles correctly
-    // (rather than content prop which might be stale)
-    setValue((currentValue) => {
-      const { content: markdownContent, frontMatter } = parseFrontMatter(currentValue);
-      
-      // The lineIndex is already relative to markdownContent (without frontmatter)
-      // because MDXContent receives the parsed content
-      const updatedMarkdown = toggleCheckboxAtLine(markdownContent, lineIndex);
-      const updatedContent = serializeFrontMatter(frontMatter, updatedMarkdown);
-      
-      debouncedSave(updatedContent);
-      return updatedContent;
-    });
-  }, [isEditing, debouncedSave]);
+      // Set new timeout for debounced save
+      saveTimeoutRef.current = setTimeout(() => {
+        handleSave(newValue);
+      }, 300);
+    },
+    [handleSave]
+  );
+
+  const handleCheckboxToggle = useCallback(
+    (lineIndex: number) => {
+      if (isEditing) {
+        // In edit mode, don't handle checkbox clicks - user edits text directly
+        return;
+      }
+
+      // Use pending value if available, otherwise use current value state to ensure rapid checkbox toggles don't lose changes
+      setValue((currentValue) => {
+        const baseContent = pendingValueRef.current || currentValue;
+        const { content: markdownContent, frontMatter } =
+          parseFrontMatter(baseContent);
+        const updatedMarkdown = toggleCheckboxAtLine(
+          markdownContent,
+          lineIndex
+        );
+        const updatedContent = serializeFrontMatter(
+          frontMatter,
+          updatedMarkdown
+        );
+
+        debouncedSave(updatedContent);
+        return updatedContent;
+      });
+    },
+    [isEditing, debouncedSave]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "s") {
@@ -135,8 +152,8 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
         </div>
         <div className="prose prose-invert max-w-none">
           {markdownContent ? (
-            <MDXContent 
-              content={markdownContent} 
+            <MDXContent
+              content={markdownContent}
               parentPath={parentPath}
               onCheckboxToggle={handleCheckboxToggle}
             />
