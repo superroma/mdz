@@ -103,7 +103,7 @@ export function ContentEditor({
   );
 
   const handleCheckboxToggle = useCallback(
-    (lineIndex: number) => {
+    (checkboxIndex: number) => {
       if (isEditing) {
         // In edit mode, don't handle checkbox clicks - user edits text directly
         return;
@@ -116,13 +116,16 @@ export function ContentEditor({
           parseFrontMatter(baseContent);
         const updatedMarkdown = toggleCheckboxAtLine(
           markdownContent,
-          lineIndex
+          checkboxIndex
         );
         const updatedContent = serializeFrontMatter(
           frontMatter,
           updatedMarkdown
         );
 
+        // Update pending ref BEFORE calling debouncedSave
+        // This ensures subsequent rapid clicks see the latest value
+        pendingValueRef.current = updatedContent;
         debouncedSave(updatedContent);
         return updatedContent;
       });

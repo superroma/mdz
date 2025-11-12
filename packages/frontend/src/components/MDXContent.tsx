@@ -13,7 +13,7 @@ import { getFileUrl } from "../api/client";
 interface MDXContentProps {
   content: string;
   parentPath?: string;
-  onCheckboxToggle?: (lineIndex: number) => void;
+  onCheckboxToggle?: (checkboxIndex: number) => void;
 }
 
 // Resolve relative path against parent path
@@ -201,16 +201,16 @@ const createMdxComponents = (
   },
   input: (
     props: React.InputHTMLAttributes<HTMLInputElement> & {
-      "data-line-index"?: string;
+      "data-checkbox-index"?: string;
     }
   ) => {
-    // Only handle task list checkboxes (those with data-line-index)
-    const lineIndexStr = props["data-line-index"];
+    // Only handle task list checkboxes (those with data-checkbox-index)
+    const checkboxIndexStr = props["data-checkbox-index"];
     const isTaskListCheckbox =
-      lineIndexStr !== undefined && props.type === "checkbox";
+      checkboxIndexStr !== undefined && props.type === "checkbox";
 
     if (isTaskListCheckbox && onCheckboxToggle) {
-      const lineIndex = parseInt(lineIndexStr, 10);
+      const checkboxIndex = parseInt(checkboxIndexStr, 10);
       // Remove disabled from props to ensure checkbox is interactive
       const { disabled, ...restProps } = props;
       return (
@@ -218,9 +218,8 @@ const createMdxComponents = (
           {...restProps}
           disabled={false}
           onClick={(e) => {
-            // Call the toggle handler with the line index
-            // Don't prevent default - let checkbox toggle visually, markdown will update
-            onCheckboxToggle(lineIndex);
+            // Call the toggle handler with the checkbox index
+            onCheckboxToggle(checkboxIndex);
             props.onClick?.(e);
           }}
         />
@@ -264,23 +263,26 @@ export function MDXContent({
         ) => {
           return () => {
             return (tree: any) => {
-              // Get all checkbox lines from markdown
-              const lines = markdownContent?.split("\n") || [];
-              const checkboxRegex = /^(\s*)-\s+\[([ x])\]\s+(.+)$/;
-              const checkboxes: Array<{
-                line: number;
-                text: string;
-                checked: boolean;
-              }> = [];
-
-              lines.forEach((line, index) => {
-                const match = line.match(checkboxRegex);
-                if (match) {
-                  const text = match[3].trim();
-                  const checked = match[2] === "x";
-                  checkboxes.push({ line: index, text, checked });
+              // Count total checkboxes using remark AST instead of regex
+              // This ensures consistency with the checkbox updater
+              let totalCheckboxes = 0;
+              const countVisit = (node: any) => {
+                if (!node || typeof node !== "object") return;
+                
+                if (node.type === "element" && 
+                    node.tagName === "input" && 
+                    node.properties?.type === "checkbox") {
+                  totalCheckboxes++;
                 }
-              });
+                
+                if (Array.isArray(node.children)) {
+                  node.children.forEach(countVisit);
+                }
+              };
+              
+              if (tree) {
+                countVisit(tree);
+              }
 
               let checkboxCounter = 0;
 
@@ -325,14 +327,10 @@ export function MDXContent({
                   // Remove disabled attribute to make checkboxes interactive
                   delete node.properties.disabled;
 
-                  // Match checkboxes sequentially - every checkbox element maps to its position
-                  // in the list of checkboxes, regardless of checked state
-                  if (checkboxCounter < checkboxes.length) {
-                    node.properties["data-line-index"] = String(
-                      checkboxes[checkboxCounter].line
-                    );
-                    checkboxCounter++;
-                  }
+                  // Assign checkbox index - every checkbox element gets a sequential index
+                  // This is stable across reformatting (0 = first checkbox, 1 = second, etc.)
+                  node.properties["data-checkbox-index"] = String(checkboxCounter);
+                  checkboxCounter++;
                 }
 
                 if (Array.isArray(node.children)) {

@@ -145,8 +145,9 @@ When(
     // Click the checkbox - use force if needed since we're preventing default
     await targetCheckbox.click({ force: true });
     
-    // Wait a bit for the state to update
-    await page.waitForTimeout(100);
+    // Wait a bit for the state to update and for React to process the click
+    // Need enough time for setState to process but not so much that debounce completes
+    await page.waitForTimeout(200);
   }
 );
 
@@ -315,6 +316,42 @@ Then(
     const page = await this.ensurePage();
     const checkboxCount = this.checkboxCountInEditMode as number;
     expect(checkboxCount).toBe(0);
+  }
+);
+
+Given(
+  "I scroll down the page",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    // Wait for content to be fully rendered
+    await page.waitForSelector('.prose', { timeout: 5000 });
+    
+    // Scroll down by 200px
+    await page.evaluate(() => {
+      window.scrollBy(0, 200);
+    });
+    
+    // Wait for scroll to complete
+    await page.waitForTimeout(100);
+    
+    // Store the scroll position for later verification
+    const scrollY = await page.evaluate(() => window.scrollY);
+    this.scrollPositionBefore = scrollY;
+  }
+);
+
+Then(
+  "the page should not have scrolled",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Get the current scroll position
+    const scrollY = await page.evaluate(() => window.scrollY);
+    const scrollBefore = this.scrollPositionBefore as number;
+    
+    // Verify that the scroll position hasn't changed
+    // Allow for a small tolerance (1-2px) due to rounding
+    expect(Math.abs(scrollY - scrollBefore)).toBeLessThan(3);
   }
 );
 
