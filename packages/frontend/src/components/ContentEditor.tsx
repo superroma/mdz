@@ -79,8 +79,10 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
       return;
     }
 
-    // Use the current content prop to ensure we have the latest from backend
-    const { content: markdownContent, frontMatter } = parseFrontMatter(content);
+    // Use pending value if available, otherwise use content from backend
+    // This ensures that rapid checkbox clicks don't lose changes
+    const baseContent = pendingValueRef.current || content;
+    const { content: markdownContent, frontMatter } = parseFrontMatter(baseContent);
     const updatedMarkdown = toggleCheckboxAtLine(markdownContent, lineIndex);
     const updatedContent = serializeFrontMatter(frontMatter, updatedMarkdown);
     
@@ -140,7 +142,7 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
         </button>
         <button
           type="button"
-          onClick={handleSave}
+          onClick={() => handleSave()}
           disabled={isSaving || value === content}
           className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >

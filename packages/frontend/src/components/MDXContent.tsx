@@ -289,14 +289,11 @@ export function MDXContent({ content, parentPath, onCheckboxToggle }: MDXContent
                   // Remove disabled attribute to make checkboxes interactive
                   delete node.properties.disabled;
                   
-                  // Match by checked state - find the next checkbox with matching state
-                  const isChecked = node.properties?.checked === true || node.properties?.checked === '';
-                  for (let i = checkboxCounter; i < checkboxes.length; i++) {
-                    if (checkboxes[i].checked === isChecked) {
-                      node.properties["data-line-index"] = String(checkboxes[i].line);
-                      checkboxCounter = i + 1;
-                      break;
-                    }
+                  // Match checkboxes by position in document order
+                  // MDX processes checkboxes in the same order they appear in the markdown
+                  if (checkboxCounter < checkboxes.length) {
+                    node.properties["data-line-index"] = String(checkboxes[checkboxCounter].line);
+                    checkboxCounter++;
                   }
                 }
                 

@@ -19,7 +19,7 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/p/Welcome/Tasks/Write Tests`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks/Write%20Tests`, { waitUntil: "domcontentloaded" });
   }
 );
 

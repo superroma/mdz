@@ -9,7 +9,7 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/p/Tasks`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
   }
 );
@@ -64,7 +64,7 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/p/Tasks`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1000);
   }
 );
@@ -93,7 +93,7 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/p/Tasks`, { waitUntil: "domcontentloaded" });
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1000);
   }
 );

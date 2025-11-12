@@ -12,6 +12,15 @@ export interface ParsedContent {
 const FRONT_MATTER_REGEX = /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/;
 
 export function parseFrontMatter(markdown: string): ParsedContent {
+  // Type guard: ensure markdown is a string
+  if (typeof markdown !== 'string') {
+    console.error('parseFrontMatter received non-string:', typeof markdown, markdown);
+    return {
+      frontMatter: {},
+      content: String(markdown || '')
+    };
+  }
+  
   const match = markdown.match(FRONT_MATTER_REGEX);
   
   if (!match) {
