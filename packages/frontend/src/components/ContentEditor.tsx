@@ -16,9 +16,11 @@ export function ContentEditor({
 }: ContentEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(content);
+  const [displayValue, setDisplayValue] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<string | null>(null);
+  const displayUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Use refs to avoid stale closures in timeout callbacks
   const contentRef = useRef(content);
@@ -39,6 +41,7 @@ export function ContentEditor({
 
   useEffect(() => {
     setValue(content);
+    setDisplayValue(content);
   }, [content]);
 
   // Cleanup: save any pending changes before unmount
@@ -109,7 +112,7 @@ export function ContentEditor({
         return;
       }
 
-      // Use pending value if available, otherwise use current value state to ensure rapid checkbox toggles don't lose changes
+      // Apply toggle immediately to value state
       setValue((currentValue) => {
         const baseContent = pendingValueRef.current || currentValue;
         const { content: markdownContent, frontMatter } =
@@ -123,10 +126,18 @@ export function ContentEditor({
           updatedMarkdown
         );
 
-        // Update pending ref BEFORE calling debouncedSave
-        // This ensures subsequent rapid clicks see the latest value
+        // Update pending ref immediately so next rapid click sees this change
         pendingValueRef.current = updatedContent;
         debouncedSave(updatedContent);
+        
+        // Delay updating the display value to prevent re-render during rapid clicks
+        if (displayUpdateTimeoutRef.current) {
+          clearTimeout(displayUpdateTimeoutRef.current);
+        }
+        displayUpdateTimeoutRef.current = setTimeout(() => {
+          setDisplayValue(updatedContent);
+        }, 100);
+        
         return updatedContent;
       });
     },
@@ -141,7 +152,7 @@ export function ContentEditor({
   };
 
   if (!isEditing) {
-    const { content: markdownContent } = parseFrontMatter(content);
+    const { content: markdownContent } = parseFrontMatter(displayValue);
     return (
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">

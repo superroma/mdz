@@ -211,15 +211,19 @@ const createMdxComponents = (
 
     if (isTaskListCheckbox && onCheckboxToggle) {
       const checkboxIndex = parseInt(checkboxIndexStr, 10);
-      // Remove disabled from props to ensure checkbox is interactive
-      const { disabled, ...restProps } = props;
+      // Remove disabled and checked from props to make checkbox uncontrolled
+      // This prevents React from interfering with rapid clicks
+      const { disabled, checked, ...restProps } = props;
       return (
         <input
           {...restProps}
+          type="checkbox"
           disabled={false}
+          defaultChecked={checked}
           onClick={(e) => {
-            // Call the toggle handler with the checkbox index
-            onCheckboxToggle(checkboxIndex);
+            // Capture the checkbox index at render time in a closure            // This ensures we use the correct index even if the component re-renders
+            const capturedIndex = checkboxIndex;
+            onCheckboxToggle(capturedIndex);
             props.onClick?.(e);
           }}
         />

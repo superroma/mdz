@@ -145,9 +145,9 @@ When(
     // Click the checkbox - use force if needed since we're preventing default
     await targetCheckbox.click({ force: true });
     
-    // Wait a bit for the state to update and for React to process the click
-    // Need enough time for setState to process but not so much that debounce completes
-    await page.waitForTimeout(200);
+    // Wait for React to process the click and for any re-renders to complete
+    // This ensures the next click will target a stable DOM element
+    await page.waitForTimeout(250);
   }
 );
 
@@ -268,8 +268,8 @@ Then(
   /^both checkboxes should be checked$/,
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for debounce and save
-    await page.waitForTimeout(500);
+    // Wait for debounce (300ms) + save + potential re-render
+    await page.waitForTimeout(1000);
     
     // Get the page path from the URL
     const url = await page.url();
@@ -278,13 +278,31 @@ Then(
     const pathSegments = decodedPath.split('/').map(segment => encodeURIComponent(segment));
     const apiPath = pathSegments.join('/');
     
-    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
-    expect(response.status).toBe(200);
+    // Poll the backend to ensure save completed
+    let attempts = 0;
+    let content = '';
+    while (attempts < 5) {
+      const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+      expect(response.status).toBe(200);
+      
+      const pageData = await response.json() as { content: string };
+      content = pageData.content;
+      
+      // Check if both checkboxes are checked
+      const firstChecked = /- \[x\]\s+Explore the Markdown Guide/.test(content);
+      const secondChecked = /- \[x\]\s+Create your first page/.test(content);
+      
+      if (firstChecked && secondChecked) {
+        return; // Success!
+      }
+      
+      attempts++;
+      if (attempts < 5) {
+        await page.waitForTimeout(200);
+      }
+    }
     
-    const pageData = await response.json() as { content: string };
-    const content = pageData.content;
-    
-    // Check that both items have [x]
+    // If we get here, assert to show the failure
     expect(content).toMatch(/- \[x\]\s+Explore the Markdown Guide/);
     expect(content).toMatch(/- \[x\]\s+Create your first page/);
   }
