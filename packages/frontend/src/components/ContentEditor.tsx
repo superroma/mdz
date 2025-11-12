@@ -9,12 +9,33 @@ interface ContentEditorProps {
   parentPath?: string;
 }
 
-export function ContentEditor({ content, onSave, parentPath }: ContentEditorProps) {
+export function ContentEditor({
+  content,
+  onSave,
+  parentPath,
+}: ContentEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<string | null>(null);
+
+  // Use refs to avoid stale closures in timeout callbacks
+  const contentRef = useRef(content);
+  const onSaveRef = useRef(onSave);
+  const isSavingRef = useRef(isSaving);
+
+  useEffect(() => {
+    contentRef.current = content;
+  }, [content]);
+
+  useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
+
+  useEffect(() => {
+    isSavingRef.current = isSaving;
+  }, [isSaving]);
 
   useEffect(() => {
     setValue(content);
@@ -26,19 +47,24 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
-      if (pendingValueRef.current && pendingValueRef.current !== content) {
+      if (
+        pendingValueRef.current &&
+        pendingValueRef.current !== contentRef.current
+      ) {
         // Save immediately on unmount
-        onSave(pendingValueRef.current).catch((error) => {
+        onSaveRef.current(pendingValueRef.current).catch((error) => {
           console.error("Failed to save pending changes on unmount:", error);
         });
       }
     };
-  }, [content, onSave]);
+  }, []);
 
-  const handleSave = useCallback(async (contentToSave?: string) => {
-    const contentToSaveValue = contentToSave ?? value;
-    const currentContent = content;
-    if (contentToSaveValue === currentContent || isSaving) return;
+  const handleSave = useCallback(async (contentToSave: string) => {
+    const currentContent = contentRef.current;
+
+    if (contentToSave === currentContent || isSavingRef.current) {
+      return;
+    }
 
     // Clear any pending timeout
     if (saveTimeoutRef.current) {
@@ -49,51 +75,65 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
 
     setIsSaving(true);
     try {
-      await onSave(contentToSaveValue);
-      setValue(contentToSaveValue);
+      await onSaveRef.current(contentToSave);
+      setValue(contentToSave);
     } catch (error) {
       console.error("Failed to save content:", error);
     } finally {
       setIsSaving(false);
     }
-  }, [content, value, isSaving, onSave]);
+  }, []);
 
-  const debouncedSave = useCallback((newValue: string) => {
-    // Clear existing timeout
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
-    
-    // Store pending value
-    pendingValueRef.current = newValue;
-    
-    // Set new timeout for debounced save
-    saveTimeoutRef.current = setTimeout(() => {
-      handleSave(newValue);
-    }, 300);
-  }, [handleSave]);
+  const debouncedSave = useCallback(
+    (newValue: string) => {
+      // Clear existing timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
 
-  const handleCheckboxToggle = useCallback((lineIndex: number) => {
-    if (isEditing) {
-      // In edit mode, don't handle checkbox clicks - user edits text directly
-      return;
-    }
+      // Store pending value
+      pendingValueRef.current = newValue;
 
-    // Use pending value if available, otherwise use content from backend
-    // This ensures that rapid checkbox clicks don't lose changes
-    const baseContent = pendingValueRef.current || content;
-    const { content: markdownContent, frontMatter } = parseFrontMatter(baseContent);
-    const updatedMarkdown = toggleCheckboxAtLine(markdownContent, lineIndex);
-    const updatedContent = serializeFrontMatter(frontMatter, updatedMarkdown);
-    
-    setValue(updatedContent);
-    debouncedSave(updatedContent);
-  }, [content, isEditing, debouncedSave]);
+      // Set new timeout for debounced save
+      saveTimeoutRef.current = setTimeout(() => {
+        handleSave(newValue);
+      }, 300);
+    },
+    [handleSave]
+  );
+
+  const handleCheckboxToggle = useCallback(
+    (lineIndex: number) => {
+      if (isEditing) {
+        // In edit mode, don't handle checkbox clicks - user edits text directly
+        return;
+      }
+
+      // Use pending value if available, otherwise use current value state to ensure rapid checkbox toggles don't lose changes
+      setValue((currentValue) => {
+        const baseContent = pendingValueRef.current || currentValue;
+        const { content: markdownContent, frontMatter } =
+          parseFrontMatter(baseContent);
+        const updatedMarkdown = toggleCheckboxAtLine(
+          markdownContent,
+          lineIndex
+        );
+        const updatedContent = serializeFrontMatter(
+          frontMatter,
+          updatedMarkdown
+        );
+
+        debouncedSave(updatedContent);
+        return updatedContent;
+      });
+    },
+    [isEditing, debouncedSave]
+  );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "s") {
       e.preventDefault();
-      handleSave();
+      handleSave(value);
     }
   };
 
@@ -112,8 +152,8 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
         </div>
         <div className="prose prose-invert max-w-none">
           {markdownContent ? (
-            <MDXContent 
-              content={markdownContent} 
+            <MDXContent
+              content={markdownContent}
               parentPath={parentPath}
               onCheckboxToggle={handleCheckboxToggle}
             />
@@ -142,7 +182,7 @@ export function ContentEditor({ content, onSave, parentPath }: ContentEditorProp
         </button>
         <button
           type="button"
-          onClick={() => handleSave()}
+          onClick={() => handleSave(value)}
           disabled={isSaving || value === content}
           className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
