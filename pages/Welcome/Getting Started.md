@@ -1,6 +1,7 @@
 ---
 status: Guide
 ---
+
 # Getting Started with MDZ
 
 Welcome to MDZ! This guide will help you get started with using the application.
