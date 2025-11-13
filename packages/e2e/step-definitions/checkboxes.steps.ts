@@ -413,4 +413,67 @@ Then(
   }
 );
 
+When(
+  "I note the current document state",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Get the page path from the URL
+    const url = await page.url();
+    const urlPath = url.replace(FRONTEND_URL, '').replace(/^\//, '');
+    const decodedPath = decodeURIComponent(urlPath);
+    const pathSegments = decodedPath.split('/').map(segment => encodeURIComponent(segment));
+    const apiPath = pathSegments.join('/');
+    
+    // Fetch the document content from backend
+    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+    expect(response.status).toBe(200);
+    
+    const pageData = await response.json() as { content: string };
+    this.originalDocumentContent = pageData.content;
+  }
+);
+
+When(
+  "I wait for the changes to be saved",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    // Wait for debounce (300ms) + save operation + re-render
+    await page.waitForTimeout(1000);
+  }
+);
+
+Then(
+  "the document should match the original state",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Get the page path from the URL
+    const url = await page.url();
+    const urlPath = url.replace(FRONTEND_URL, '').replace(/^\//, '');
+    const decodedPath = decodeURIComponent(urlPath);
+    const pathSegments = decodedPath.split('/').map(segment => encodeURIComponent(segment));
+    const apiPath = pathSegments.join('/');
+    
+    // Fetch the current document content from backend
+    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+    expect(response.status).toBe(200);
+    
+    const pageData = await response.json() as { content: string };
+    const currentContent = pageData.content;
+    const originalContent = this.originalDocumentContent as string;
+    
+    // Compare the content
+    if (currentContent !== originalContent) {
+      throw new Error(
+        `Document content does not match original state!\n` +
+        `Original:\n${originalContent}\n\n` +
+        `Current:\n${currentContent}`
+      );
+    }
+    
+    expect(currentContent).toBe(originalContent);
+  }
+);
+
 
