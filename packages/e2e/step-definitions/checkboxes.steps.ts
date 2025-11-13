@@ -337,20 +337,51 @@ Then(
   }
 );
 
-Given(
-  "I scroll down the page",
-  async function (this: AppWorld) {
+When(
+  /^I scroll to the checkbox for "([^"]*)"$/,
+  async function (this: AppWorld, itemText: string) {
     const page = await this.ensurePage();
     // Wait for content to be fully rendered
-    await page.waitForSelector('.prose', { timeout: 5000 });
+    await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 10000 });
     
-    // Scroll down by 200px
-    await page.evaluate(() => {
-      window.scrollBy(0, 200);
-    });
+    // Find the checkbox for this item
+    const escapedText = itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const allListItems = await page.locator('.prose li').all();
+    let targetCheckbox = null;
     
-    // Wait for scroll to complete
-    await page.waitForTimeout(100);
+    for (const li of allListItems) {
+      const checkbox = li.locator('input[type="checkbox"]').first();
+      const checkboxCount = await checkbox.count();
+      
+      if (checkboxCount === 0) continue;
+      
+      const fullText = await li.textContent();
+      const nestedLists = await li.locator('ul, ol').all();
+      let nestedText = '';
+      for (const nested of nestedLists) {
+        nestedText += await nested.textContent() || '';
+      }
+      
+      let directText = fullText || '';
+      if (nestedText) {
+        directText = directText.replace(nestedText, '').trim();
+      }
+      
+      if (new RegExp(escapedText, 'i').test(directText)) {
+        targetCheckbox = checkbox;
+        break;
+      }
+    }
+    
+    if (!targetCheckbox) {
+      throw new Error(`Could not find checkbox for "${itemText}"`);
+    }
+    
+    // Scroll the checkbox into view
+    await targetCheckbox.scrollIntoViewIfNeeded();
+    
+    // Wait for scroll animation to complete
+    await page.waitForTimeout(300);
     
     // Store the scroll position for later verification
     const scrollY = await page.evaluate(() => window.scrollY);
@@ -363,13 +394,22 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
+    // Wait for any debounced updates and re-renders to complete
+    await page.waitForTimeout(800);
+    
     // Get the current scroll position
     const scrollY = await page.evaluate(() => window.scrollY);
     const scrollBefore = this.scrollPositionBefore as number;
     
     // Verify that the scroll position hasn't changed
     // Allow for a small tolerance (1-2px) due to rounding
-    expect(Math.abs(scrollY - scrollBefore)).toBeLessThan(3);
+    const scrollDiff = Math.abs(scrollY - scrollBefore);
+    if (scrollDiff >= 3) {
+      throw new Error(
+        `Scroll position changed! Before: ${scrollBefore}px, After: ${scrollY}px, Diff: ${scrollDiff}px`
+      );
+    }
+    expect(scrollDiff).toBeLessThan(3);
   }
 );
 

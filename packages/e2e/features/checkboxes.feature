@@ -47,8 +47,18 @@ Feature: Interactive Checkboxes
   Scenario: Page does not scroll after checkbox click
     Given I am viewing the "Getting Started" page
     And I am in preview mode
-    And I scroll down the page
-    When I click the checkbox for "Read this getting started guide"
+    When I scroll to the checkbox for "Start documenting your projects"
+    And I click the checkbox for "Start documenting your projects"
     Then the page should not have scrolled
     And the checkbox should be checked
+
+  Scenario: Double-clicking checkbox returns document to original state
+    Given I am viewing the "Getting Started" page
+    And I am in preview mode
+    When I note the current document state
+    And I click the checkbox for "Read this getting started guide"
+    And I wait for the changes to be saved
+    And I click the checkbox for "Read this getting started guide"
+    And I wait for the changes to be saved
+    Then the document should match the original state
 

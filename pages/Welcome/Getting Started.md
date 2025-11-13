@@ -1,7 +1,6 @@
 ---
 status: Guide
 ---
-
 # Getting Started with MDZ
 
 Welcome to MDZ! This guide will help you get started with using the application.
@@ -45,6 +44,6 @@ Here are some tasks you can complete:
 
 - [ ] Explore the example pages
 - [ ] Customize your workspace
-- [ ] Start documenting your projects
+- [x] Start documenting your projects
 
 Happy documenting!
