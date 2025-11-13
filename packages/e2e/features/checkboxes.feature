@@ -44,3 +44,11 @@ Feature: Interactive Checkboxes
     Then the checkbox should not toggle
     And I should see the markdown source editor
 
+  Scenario: Page does not scroll after checkbox click
+    Given I am viewing the "Getting Started" page
+    And I am in preview mode
+    And I scroll down the page
+    When I click the checkbox for "Read this getting started guide"
+    Then the page should not have scrolled
+    And the checkbox should be checked
+

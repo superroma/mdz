@@ -145,8 +145,9 @@ When(
     // Click the checkbox - use force if needed since we're preventing default
     await targetCheckbox.click({ force: true });
     
-    // Wait a bit for the state to update
-    await page.waitForTimeout(100);
+    // Wait for React to process the click and for any re-renders to complete
+    // This ensures the next click will target a stable DOM element
+    await page.waitForTimeout(250);
   }
 );
 
@@ -267,8 +268,8 @@ Then(
   /^both checkboxes should be checked$/,
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for debounce and save
-    await page.waitForTimeout(500);
+    // Wait for debounce (300ms) + save + potential re-render
+    await page.waitForTimeout(1000);
     
     // Get the page path from the URL
     const url = await page.url();
@@ -277,13 +278,31 @@ Then(
     const pathSegments = decodedPath.split('/').map(segment => encodeURIComponent(segment));
     const apiPath = pathSegments.join('/');
     
-    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
-    expect(response.status).toBe(200);
+    // Poll the backend to ensure save completed
+    let attempts = 0;
+    let content = '';
+    while (attempts < 5) {
+      const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+      expect(response.status).toBe(200);
+      
+      const pageData = await response.json() as { content: string };
+      content = pageData.content;
+      
+      // Check if both checkboxes are checked
+      const firstChecked = /- \[x\]\s+Explore the Markdown Guide/.test(content);
+      const secondChecked = /- \[x\]\s+Create your first page/.test(content);
+      
+      if (firstChecked && secondChecked) {
+        return; // Success!
+      }
+      
+      attempts++;
+      if (attempts < 5) {
+        await page.waitForTimeout(200);
+      }
+    }
     
-    const pageData = await response.json() as { content: string };
-    const content = pageData.content;
-    
-    // Check that both items have [x]
+    // If we get here, assert to show the failure
     expect(content).toMatch(/- \[x\]\s+Explore the Markdown Guide/);
     expect(content).toMatch(/- \[x\]\s+Create your first page/);
   }
@@ -315,6 +334,42 @@ Then(
     const page = await this.ensurePage();
     const checkboxCount = this.checkboxCountInEditMode as number;
     expect(checkboxCount).toBe(0);
+  }
+);
+
+Given(
+  "I scroll down the page",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    // Wait for content to be fully rendered
+    await page.waitForSelector('.prose', { timeout: 5000 });
+    
+    // Scroll down by 200px
+    await page.evaluate(() => {
+      window.scrollBy(0, 200);
+    });
+    
+    // Wait for scroll to complete
+    await page.waitForTimeout(100);
+    
+    // Store the scroll position for later verification
+    const scrollY = await page.evaluate(() => window.scrollY);
+    this.scrollPositionBefore = scrollY;
+  }
+);
+
+Then(
+  "the page should not have scrolled",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Get the current scroll position
+    const scrollY = await page.evaluate(() => window.scrollY);
+    const scrollBefore = this.scrollPositionBefore as number;
+    
+    // Verify that the scroll position hasn't changed
+    // Allow for a small tolerance (1-2px) due to rounding
+    expect(Math.abs(scrollY - scrollBefore)).toBeLessThan(3);
   }
 );
 
