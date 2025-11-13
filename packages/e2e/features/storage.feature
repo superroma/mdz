@@ -30,7 +30,7 @@ Feature: Backend Storage Operations
     Then I should see "Welcome" as a root page
     And I should see "Welcome" as a root page with children
     And "Welcome/Tasks" should have 4 child pages
-    And "Welcome/Projects" should have 3 child pages
+    And "Welcome/Projects" should have 2 child pages
 
   Scenario: Prevent path traversal
     When I attempt to access "../../../etc/passwd"

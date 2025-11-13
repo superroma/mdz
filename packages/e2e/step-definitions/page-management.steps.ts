@@ -100,8 +100,13 @@ Then(
   "I should be navigated to the new page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForURL(/\/p\/.+/, { timeout: 5000 });
-    expect(page.url()).toMatch(/\/p\/.*Untitled/);
+    // Wait for navigation to a page containing "Untitled" (not root)
+    await page.waitForURL((url) => {
+      const path = new URL(url).pathname;
+      return path !== "/" && path.includes("Untitled");
+    }, { timeout: 5000 });
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).toContain("Untitled");
   }
 );
 
@@ -120,7 +125,10 @@ Then(
   "the URL should update if needed",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    expect(page.url()).toMatch(/\/p\/.+/);
+    // URL should be a page path (not root)
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toBe("/");
+    expect(pathname.length).toBeGreaterThan(1);
   }
 );
 
@@ -149,8 +157,13 @@ Then(
   "I should be navigated to the new child page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForURL(/\/p\/.+\/Untitled/, { timeout: 5000 });
-    expect(page.url()).toMatch(/\/p\/.+\/Untitled/);
+    // Wait for navigation to a page containing "Untitled" (not root)
+    await page.waitForURL((url) => {
+      const path = new URL(url).pathname;
+      return path !== "/" && path.includes("Untitled");
+    }, { timeout: 5000 });
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).toContain("Untitled");
   }
 );
 

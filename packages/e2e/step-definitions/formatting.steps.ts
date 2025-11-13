@@ -38,10 +38,40 @@ Then(
   /^I should see bold text "([^"]*)"$/,
   async function (this: AppWorld, text: string) {
     const page = await this.ensurePage();
+    // Wait for MDX content to load
+    await page.waitForSelector('.prose', { timeout: 5000 });
+    // Wait a bit more for MDX compilation
+    await page.waitForTimeout(500);
+    
+    // Check if strong or b element exists with the text
     const strongElement = page.locator('strong', { hasText: text });
     const boldElement = page.locator('b', { hasText: text });
-    const boldVisible = await strongElement.isVisible().catch(() => false) || await boldElement.isVisible().catch(() => false);
-    expect(boldVisible).toBe(true);
+    
+    // First check if elements exist (count > 0)
+    const strongCount = await strongElement.count();
+    const boldCount = await boldElement.count();
+    
+    if (strongCount > 0) {
+      await expect(strongElement.first()).toBeVisible();
+    } else if (boldCount > 0) {
+      await expect(boldElement.first()).toBeVisible();
+    } else {
+      // If neither exists, try scrolling to make sure they're in viewport
+      const allStrong = page.locator('strong');
+      const allBold = page.locator('b');
+      const strongWithText = allStrong.filter({ hasText: text });
+      const boldWithText = allBold.filter({ hasText: text });
+      
+      if (await strongWithText.count() > 0) {
+        await strongWithText.first().scrollIntoViewIfNeeded();
+        await expect(strongWithText.first()).toBeVisible();
+      } else if (await boldWithText.count() > 0) {
+        await boldWithText.first().scrollIntoViewIfNeeded();
+        await expect(boldWithText.first()).toBeVisible();
+      } else {
+        throw new Error(`Bold text "${text}" not found`);
+      }
+    }
   }
 );
 
@@ -49,10 +79,40 @@ Then(
   /^I should see italic text "([^"]*)"$/,
   async function (this: AppWorld, text: string) {
     const page = await this.ensurePage();
+    // Wait for MDX content to load
+    await page.waitForSelector('.prose', { timeout: 5000 });
+    // Wait a bit more for MDX compilation
+    await page.waitForTimeout(500);
+    
+    // Check if em or i element exists with the text
     const emElement = page.locator('em', { hasText: text });
     const iElement = page.locator('i', { hasText: text });
-    const italicVisible = await emElement.isVisible().catch(() => false) || await iElement.isVisible().catch(() => false);
-    expect(italicVisible).toBe(true);
+    
+    // First check if elements exist (count > 0)
+    const emCount = await emElement.count();
+    const iCount = await iElement.count();
+    
+    if (emCount > 0) {
+      await expect(emElement.first()).toBeVisible();
+    } else if (iCount > 0) {
+      await expect(iElement.first()).toBeVisible();
+    } else {
+      // If neither exists, try scrolling to make sure they're in viewport
+      const allEm = page.locator('em');
+      const allI = page.locator('i');
+      const emWithText = allEm.filter({ hasText: text });
+      const iWithText = allI.filter({ hasText: text });
+      
+      if (await emWithText.count() > 0) {
+        await emWithText.first().scrollIntoViewIfNeeded();
+        await expect(emWithText.first()).toBeVisible();
+      } else if (await iWithText.count() > 0) {
+        await iWithText.first().scrollIntoViewIfNeeded();
+        await expect(iWithText.first()).toBeVisible();
+      } else {
+        throw new Error(`Italic text "${text}" not found`);
+      }
+    }
   }
 );
 
@@ -98,11 +158,57 @@ Then(
   /^I should see a code block containing "([^"]*)"$/,
   async function (this: AppWorld, text: string) {
     const page = await this.ensurePage();
+    // Wait for MDX content to load
+    await page.waitForSelector('.prose', { timeout: 5000 });
+    // Wait a bit more for MDX compilation
+    await page.waitForTimeout(500);
+    
     // Code blocks are typically wrapped in <pre><code> or just <pre>
     const preCodeBlock = page.locator('pre code', { hasText: text });
     const preBlock = page.locator('pre', { hasText: text });
-    const codeBlockVisible = await preCodeBlock.isVisible().catch(() => false) || await preBlock.isVisible().catch(() => false);
-    expect(codeBlockVisible).toBe(true);
+    
+    // First check if elements exist (count > 0)
+    const preCodeCount = await preCodeBlock.count();
+    const preCount = await preBlock.count();
+    
+    if (preCodeCount > 0) {
+      await preCodeBlock.first().scrollIntoViewIfNeeded();
+      await expect(preCodeBlock.first()).toBeVisible();
+    } else if (preCount > 0) {
+      await preBlock.first().scrollIntoViewIfNeeded();
+      await expect(preBlock.first()).toBeVisible();
+    } else {
+      // Try finding by text content more broadly
+      const allPre = page.locator('pre');
+      const allPreCode = page.locator('pre code');
+      
+      let found = false;
+      for (let i = 0; i < await allPre.count(); i++) {
+        const preText = await allPre.nth(i).textContent();
+        if (preText && preText.includes(text)) {
+          await allPre.nth(i).scrollIntoViewIfNeeded();
+          await expect(allPre.nth(i)).toBeVisible();
+          found = true;
+          break;
+        }
+      }
+      
+      if (!found) {
+        for (let i = 0; i < await allPreCode.count(); i++) {
+          const codeText = await allPreCode.nth(i).textContent();
+          if (codeText && codeText.includes(text)) {
+            await allPreCode.nth(i).scrollIntoViewIfNeeded();
+            await expect(allPreCode.nth(i)).toBeVisible();
+            found = true;
+            break;
+          }
+        }
+      }
+      
+      if (!found) {
+        throw new Error(`Code block containing "${text}" not found`);
+      }
+    }
   }
 );
 

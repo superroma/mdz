@@ -3,7 +3,7 @@ module.exports = {
     requireModule: ["ts-node/register"],
     require: ["./support/**/*.ts", "./step-definitions/**/*.ts"],
     format: ["progress"],
-    failFast: true,
+    failFast: false,
     worldParameters: {},
     import: []
   }

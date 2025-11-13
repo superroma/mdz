@@ -28,8 +28,27 @@ Given(
   "the sidebar is hidden",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
+    // Wait for page to load
+    await page.waitForLoadState("networkidle");
+    // Wait a bit for CSS transitions
+    await page.waitForTimeout(1000);
     const sidebar = page.locator("aside");
-    await expect(sidebar).toBeHidden();
+    // On mobile, sidebar should not be visible when closed
+    // Wait for sidebar to be hidden (with retry logic)
+    await page.waitForFunction(
+      () => {
+        const aside = document.querySelector('aside');
+        if (!aside) return false;
+        const style = window.getComputedStyle(aside);
+        const transform = style.transform;
+        // Check if translated off-screen or has -translate-x-full class
+        return transform.includes('translateX(-') || 
+               transform.includes('translate(-') ||
+               aside.classList.contains('-translate-x-full') ||
+               !aside.offsetParent; // element is not visible
+      },
+      { timeout: 10000 }
+    );
   }
 );
 
@@ -64,8 +83,24 @@ Then(
   "the sidebar should be hidden",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const sidebar = page.locator("aside");
-    await expect(sidebar).toBeHidden();
+    // Wait for CSS transitions to complete
+    await page.waitForTimeout(1000);
+    // On mobile, sidebar should not be visible when closed
+    // Wait for sidebar to be hidden (with retry logic)
+    await page.waitForFunction(
+      () => {
+        const aside = document.querySelector('aside');
+        if (!aside) return false;
+        const style = window.getComputedStyle(aside);
+        const transform = style.transform;
+        // Check if translated off-screen or has -translate-x-full class
+        return transform.includes('translateX(-') || 
+               transform.includes('translate(-') ||
+               aside.classList.contains('-translate-x-full') ||
+               !aside.offsetParent; // element is not visible
+      },
+      { timeout: 10000 }
+    );
   }
 );
 

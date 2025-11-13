@@ -12,7 +12,8 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const attachmentsButton = page.getByText("Attachments");
+    // Find the Attachments panel button (not the list item)
+    const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
     await attachmentsButton.click();
     await page.waitForTimeout(300);
     
@@ -56,7 +57,8 @@ Given(
     await firstPage.click();
     await page.waitForTimeout(500);
     
-    const attachmentsButton = page.getByText("Attachments");
+    // Find the Attachments panel button (not the list item)
+    const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
     await attachmentsButton.click();
     await page.waitForTimeout(300);
     
@@ -132,11 +134,12 @@ Given(
     await firstPage.click();
     await page.waitForTimeout(500);
     
-    const attachmentsButton = page.getByText("Attachments");
+    // Find the Attachments panel button (not the list item)
+    const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
     await attachmentsButton.click();
     await page.waitForTimeout(300);
     
-    const tempImage = path.join(tmpdir(), "test-image.png");
+    const tempImage = path.join(tmpdir(), "pic.png");
     fs.writeFileSync(tempImage, Buffer.from("fake-image-data"));
     
     const fileInput = page.locator('input[type="file"]');
@@ -156,8 +159,14 @@ When(
     const textarea = page.locator("textarea");
     await textarea.fill(`# Test Page\n\n${markdown}\n\nContent here.`);
     
-    const saveButton = page.getByRole("button", { name: "Save" });
+    // Find Save button in the ContentEditor - it's next to the Preview button
+    const previewButton = page.getByRole("button", { name: "Preview" });
+    const saveButton = previewButton.locator("..").getByRole("button", { name: "Save", exact: true });
     await saveButton.click();
+    // Wait for save to complete
+    await page.waitForTimeout(1000);
+    // After saving, click Preview to see the rendered view
+    await previewButton.click();
     await page.waitForTimeout(500);
   }
 );
@@ -166,9 +175,13 @@ Then(
   "the image should display in the rendered view",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
+    // Wait for MDX to compile and render - prose should be visible
+    await page.waitForSelector('.prose', { timeout: 5000 });
+    // Wait a bit for MDX compilation
     await page.waitForTimeout(500);
-    const image = page.locator("img");
-    await expect(image).toBeVisible();
+    // Look for image element in prose
+    const imageInProse = page.locator('.prose img').first();
+    await expect(imageInProse).toBeVisible();
   }
 );
 

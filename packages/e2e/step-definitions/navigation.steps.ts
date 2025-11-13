@@ -67,7 +67,9 @@ When(
   async function (this: AppWorld, url: string) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}${url}`, { waitUntil: "domcontentloaded" });
+    // Remove /p/ prefix if present (for backward compatibility with test scenarios)
+    const cleanUrl = url.replace(/^\/p\//, "/");
+    await page.goto(`${FRONTEND_URL}${cleanUrl}`, { waitUntil: "domcontentloaded" });
   }
 );
 
@@ -96,8 +98,14 @@ Then(
   "I should be redirected to the first page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForURL(/\/p\/.+/, { timeout: 5000 });
-    expect(page.url()).toMatch(/\/p\/.+/);
+    // Wait for navigation to a page (not root)
+    await page.waitForURL((url) => {
+      const path = new URL(url).pathname;
+      return path !== "/" && path.length > 1;
+    }, { timeout: 5000 });
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toBe("/");
+    expect(pathname.length).toBeGreaterThan(1);
   }
 );
 
@@ -115,7 +123,10 @@ Then(
   "the URL should update to match the page path",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    expect(page.url()).toMatch(/\/p\/.+/);
+    // URL should be a page path (not root)
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toBe("/");
+    expect(pathname.length).toBeGreaterThan(1);
   }
 );
 
@@ -123,8 +134,11 @@ Then(
   /^I should see the "([^"]*)" page content$/,
   async function (this: AppWorld, pageTitle: string) {
     const page = await this.ensurePage();
+    // Wait for page to load
+    await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
     const titleField = page.getByLabel("Page title");
-    await expect(titleField).toHaveValue(pageTitle);
+    // Wait for title to have the expected value
+    await expect(titleField).toHaveValue(pageTitle, { timeout: 5000 });
   }
 );
 
@@ -142,8 +156,16 @@ Then(
   "I should navigate to that parent page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForURL(/\/p\/.+/, { timeout: 5000 });
-    expect(page.url()).toMatch(/\/p\/.+/);
+    // Wait for navigation to complete and page to load
+    await page.waitForURL((url) => {
+      const path = new URL(url).pathname;
+      return path !== "/" && path.length > 1;
+    }, { timeout: 10000 });
+    // Wait for page content to be visible
+    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toBe("/");
+    expect(pathname.length).toBeGreaterThan(1);
   }
 );
 
@@ -152,7 +174,10 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(500);
-    expect(page.url()).toMatch(/\/p\/.+/);
+    // URL should be a page path (not root)
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toBe("/");
+    expect(pathname.length).toBeGreaterThan(1);
   }
 );
 
