@@ -9,3 +9,6 @@ Dont use pnpm, dont cd to install packages
 
 ## Functional tests
 `npm run test:e2e`
+
+## Single functional test
+`npm run test:e2e -- --name "My scenario name"`
