@@ -20,8 +20,10 @@ Given(
     
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
     
-    // Wait for content to be rendered
-    await page.waitForSelector('.prose', { timeout: 5000 });
+    // Wait for MDXEditor to be rendered
+    await page.waitForSelector('.mdxeditor', { timeout: 5000 });
+    // Wait for toolbar to ensure editor is fully loaded
+    await page.waitForSelector('[role="toolbar"]', { timeout: 5000 });
   }
 );
 
@@ -38,9 +40,9 @@ Then(
   /^I should see bold text "([^"]*)"$/,
   async function (this: AppWorld, text: string) {
     const page = await this.ensurePage();
-    // Wait for MDX content to load
-    await page.waitForSelector('.prose', { timeout: 5000 });
-    // Wait a bit more for MDX compilation
+    // Wait for MDXEditor content to load
+    await page.waitForSelector('.mdxeditor', { timeout: 5000 });
+    // Wait a bit for editor to render content
     await page.waitForTimeout(500);
     
     // Check if strong or b element exists with the text
@@ -79,9 +81,9 @@ Then(
   /^I should see italic text "([^"]*)"$/,
   async function (this: AppWorld, text: string) {
     const page = await this.ensurePage();
-    // Wait for MDX content to load
-    await page.waitForSelector('.prose', { timeout: 5000 });
-    // Wait a bit more for MDX compilation
+    // Wait for MDXEditor content to load
+    await page.waitForSelector('.mdxeditor', { timeout: 5000 });
+    // Wait a bit for editor to render content
     await page.waitForTimeout(500);
     
     // Check if em or i element exists with the text
@@ -158,9 +160,9 @@ Then(
   /^I should see a code block containing "([^"]*)"$/,
   async function (this: AppWorld, text: string) {
     const page = await this.ensurePage();
-    // Wait for MDX content to load
-    await page.waitForSelector('.prose', { timeout: 5000 });
-    // Wait a bit more for MDX compilation
+    // Wait for MDXEditor content to load
+    await page.waitForSelector('.mdxeditor', { timeout: 5000 });
+    // Wait a bit for editor to render content
     await page.waitForTimeout(500);
     
     // Code blocks are typically wrapped in <pre><code> or just <pre>

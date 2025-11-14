@@ -8,12 +8,12 @@ Feature: Page Editing
     When I edit the title field and blur focus
     Then the title should be saved automatically
 
-  Scenario: Switch to edit mode
+  Scenario: MDXEditor is always in edit mode
     Given I am viewing a page in view mode
     When I click the Edit button
     Then I should see the markdown source editor
 
-  Scenario: Save content changes
+  Scenario: Auto-save content changes
     Given I am editing a page
     When I modify the content and press Cmd+S
     Then the content should be saved

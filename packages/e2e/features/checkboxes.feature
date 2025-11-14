@@ -37,11 +37,11 @@ Feature: Interactive Checkboxes
     And the markdown should be updated for both items
     And only one save operation should occur
 
-  Scenario: Checkboxes are not interactive in edit mode
+  Scenario: Checkboxes are always interactive in MDXEditor
     Given I am viewing the "Getting Started" page
     And I am in edit mode
     When I try to click a checkbox
-    Then the checkbox should not toggle
+    Then checkboxes should be present and interactive
     And I should see the markdown source editor
 
   Scenario: Page does not scroll after checkbox click
