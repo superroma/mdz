@@ -60,20 +60,19 @@ When(
   "I modify the content and press Cmd+S",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editorContainer = page.getByLabel("Page content");
-    // MDXEditor uses a contentEditable div - we need to interact with it differently
-    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
-    await contentEditable.click();
-    await page.waitForTimeout(200);
-    // Select all using both Ctrl+A and Meta+A to ensure it works
+    // MDXEditor starts in source mode with CodeMirror
+    const cmEditor = page.locator('.cm-content, .cm-editor').first();
+    await cmEditor.waitFor({ state: 'visible', timeout: 10000 });
+    await cmEditor.click();
+    await page.waitForTimeout(300);
+    // Select all and replace
     await page.keyboard.press("Control+a");
     await page.keyboard.press("Meta+a");
     await page.waitForTimeout(200);
-    // Delete selected content
     await page.keyboard.press("Backspace");
     await page.waitForTimeout(200);
     // Type new content
-    await page.keyboard.type("Modified content for testing", { delay: 1 });
+    await page.keyboard.insertText("Modified content for testing");
     await page.waitForTimeout(300);
     await page.keyboard.press("Meta+s");
     await page.waitForTimeout(500);
@@ -114,13 +113,13 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(500);
-    const editorContainer = page.getByLabel("Page content");
-    // MDXEditor uses a contentEditable div - get the full inner text
-    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
-    const textContent = await contentEditable.evaluate((el) => {
-      return (el as HTMLElement).innerText || el.textContent || '';
-    });
-    expect(textContent?.trim()).toBe("Modified content for testing");
+    // MDXEditor is in source mode with CodeMirror
+    const cmContent = page.locator('.cm-content').first();
+    await cmContent.waitFor({ state: 'visible', timeout: 5000 });
+    const textContent = await cmContent.textContent();
+    // Filter out CodeMirror accessibility announcements
+    const cleanContent = textContent?.replace(/Selection deleted.*?›/g, '').trim();
+    expect(cleanContent).toBe("Modified content for testing");
   }
 );
 

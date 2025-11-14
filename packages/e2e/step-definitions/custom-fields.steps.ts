@@ -33,27 +33,13 @@ Given(
     
     const editButton = page.getByRole("button", { name: "Edit" });
     await editButton.click();
+    await page.waitForTimeout(1000);
+    
+    // MDXEditor starts in source mode, so we should have CodeMirror
+    const cmEditor = page.locator('.cm-content, .cm-editor').first();
+    await cmEditor.waitFor({ state: 'visible', timeout: 10000 });
+    await cmEditor.click();
     await page.waitForTimeout(300);
-    
-    // Click the source toggle button to enter source editing mode
-    // Look for the toolbar and the first button (source toggle)
-    await page.waitForTimeout(500);
-    const toolbar = page.locator('.mdxeditor').locator('[role="toolbar"]').or(page.locator('.mdxeditor-toolbar')).first();
-    await toolbar.waitFor({ state: 'visible', timeout: 10000 });
-    const sourceToggle = toolbar.locator('button').first();
-    await sourceToggle.click();
-    await page.waitForTimeout(500);
-    
-    // In source mode, we have a textarea
-    const textarea = page.locator('textarea').first();
-    await textarea.click();
-    await page.waitForTimeout(200);
-    // Select all and delete existing content
-    await textarea.press("Control+a");
-    await textarea.press("Meta+a");
-    await page.waitForTimeout(100);
-    await textarea.press("Backspace");
-    await page.waitForTimeout(100);
     // Type the new content
     const content = `---
 __schema:
@@ -68,7 +54,11 @@ __schema:
 # Test Parent
 
 Content here.`;
-    await textarea.fill(content);
+    // Use keyboard to insert text into CodeMirror
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Meta+a');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.insertText(content);
     await page.waitForTimeout(500);
     
     const saveButton = page.getByRole("button", { name: "Save" });
@@ -178,19 +168,12 @@ Then(
     const page = await this.ensurePage();
     const editButton = page.getByRole("button", { name: "Edit" });
     await editButton.click();
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(1000);
     
-    // Click the source toggle button to view source
-    await page.waitForTimeout(500);
-    const toolbar = page.locator('.mdxeditor').locator('[role="toolbar"]').or(page.locator('.mdxeditor-toolbar')).first();
-    await toolbar.waitFor({ state: 'visible', timeout: 10000 });
-    const sourceToggle = toolbar.locator('button').first();
-    await sourceToggle.click();
-    await page.waitForTimeout(500);
-    
-    // In source mode, check the textarea content
-    const textarea = page.locator('textarea').first();
-    const content = await textarea.inputValue();
+    // MDXEditor starts in source mode, check the CodeMirror content
+    const cmEditor = page.locator('.cm-content, .cm-editor').first();
+    await cmEditor.waitFor({ state: 'visible', timeout: 10000 });
+    const content = await cmEditor.textContent();
     expect(content).toContain("status: Done");
   }
 );

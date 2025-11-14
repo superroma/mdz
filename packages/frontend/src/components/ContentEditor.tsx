@@ -246,8 +246,10 @@ export function ContentEditor({
           markdown={value}
           onChange={setValue}
           placeholder="Start writing..."
+          contentEditableClassName="prose"
           plugins={[
             toolbarPlugin({
+              toolbarClassName: 'mdx-toolbar',
               toolbarContents: () => (
                 <>
                   <DiffSourceToggleWrapper>
@@ -265,7 +267,8 @@ export function ContentEditor({
                 </>
               ),
             }),
-            diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: '' }),
+            diffSourcePlugin({ viewMode: 'source', diffMarkdown: '', codeMirrorExtensions: [] }),
+            codeMirrorPlugin({ codeBlockLanguages: { txt: 'Plain Text', yaml: 'YAML', json: 'JSON' } }),
             headingsPlugin(),
             listsPlugin(),
             quotePlugin(),

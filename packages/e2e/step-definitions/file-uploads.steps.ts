@@ -155,23 +155,19 @@ When(
     const page = await this.ensurePage();
     const editButton = page.getByRole("button", { name: "Edit" });
     await editButton.click();
+    await page.waitForTimeout(1000);
+    
+    // MDXEditor starts in source mode with CodeMirror
+    const cmEditor = page.locator('.cm-content, .cm-editor').first();
+    await cmEditor.waitFor({ state: 'visible', timeout: 10000 });
+    await cmEditor.click();
     await page.waitForTimeout(300);
-    
-    // Click the source toggle button to enter source editing mode
-    await page.waitForTimeout(500);
-    const toolbar = page.locator('.mdxeditor').locator('[role="toolbar"]').or(page.locator('.mdxeditor-toolbar')).first();
-    await toolbar.waitFor({ state: 'visible', timeout: 10000 });
-    const sourceToggle = toolbar.locator('button').first();
-    await sourceToggle.click();
-    await page.waitForTimeout(500);
-    
-    // In source mode, we have a textarea
-    const textarea = page.locator('textarea').first();
-    await textarea.click();
-    await page.waitForTimeout(200);
     // Type the new content
     const content = `# Test Page\n\n${markdown}\n\nContent here.`;
-    await textarea.fill(content);
+    await page.keyboard.press('Control+a');
+    await page.keyboard.press('Meta+a');
+    await page.keyboard.press('Backspace');
+    await page.keyboard.insertText(content);
     await page.waitForTimeout(300);
     
     // Find Save button in the ContentEditor - it's next to the Preview button
