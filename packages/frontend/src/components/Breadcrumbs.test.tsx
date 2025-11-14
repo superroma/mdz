@@ -4,6 +4,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Breadcrumbs } from "./Breadcrumbs";
 import type { Page } from "../types";
 import userEvent from "@testing-library/user-event";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 const mockNavigate = vi.fn();
 
@@ -54,16 +55,16 @@ describe("Breadcrumbs", () => {
   it("renders single breadcrumb for root page", () => {
     renderWithRouter(<Breadcrumbs pages={mockPages} currentPath="Welcome" />);
     
-    expect(screen.getByRole("button", { name: "Welcome" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Welcome") })).toBeInTheDocument();
     expect(screen.queryByText("/")).not.toBeInTheDocument();
   });
 
   it("renders breadcrumbs with separator for nested page", () => {
     renderWithRouter(<Breadcrumbs pages={mockPages} currentPath="Welcome/Tasks/Write Tests" />);
     
-    expect(screen.getByRole("button", { name: "Welcome" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Tasks" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Write Tests" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Welcome") })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Tasks") })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Write Tests") })).toBeInTheDocument();
     expect(screen.getAllByText("/").length).toBeGreaterThan(0);
   });
 
@@ -71,7 +72,7 @@ describe("Breadcrumbs", () => {
     const user = userEvent.setup();
     renderWithRouter(<Breadcrumbs pages={mockPages} currentPath="Welcome/Tasks/Write Tests" />);
     
-    const tasksButton = screen.getByRole("button", { name: "Tasks" });
+    const tasksButton = screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Tasks") });
     await user.click(tasksButton);
     
     expect(mockNavigate).toHaveBeenCalledWith("/Welcome/Tasks");
@@ -81,7 +82,7 @@ describe("Breadcrumbs", () => {
     const user = userEvent.setup();
     renderWithRouter(<Breadcrumbs pages={mockPages} currentPath="Welcome/Tasks/Write Tests" />);
     
-    const currentButton = screen.getByRole("button", { name: "Write Tests" });
+    const currentButton = screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Write Tests") });
     await user.click(currentButton);
     
     expect(mockNavigate).toHaveBeenCalledWith("/Welcome/Tasks/Write Tests");
@@ -98,7 +99,7 @@ describe("Breadcrumbs", () => {
   it("has correct ARIA label", () => {
     renderWithRouter(<Breadcrumbs pages={mockPages} currentPath="Welcome/Tasks" />);
     
-    const nav = screen.getByRole("navigation", { name: "Breadcrumb" });
+    const nav = screen.getByRole("navigation", { name: ARIA_LABELS.breadcrumbNavigation });
     expect(nav).toBeInTheDocument();
   });
 
@@ -117,10 +118,10 @@ describe("Breadcrumbs", () => {
     
     renderWithRouter(<Breadcrumbs pages={deepPages} currentPath="Welcome/Tasks/Write Tests/Unit Tests" />);
     
-    expect(screen.getByRole("button", { name: "Welcome" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Tasks" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Write Tests" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Unit Tests" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Welcome") })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Tasks") })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Write Tests") })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.navigateTo("Unit Tests") })).toBeInTheDocument();
   });
 });
 

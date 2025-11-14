@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import type { Page } from "../types";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface BreadcrumbsProps {
   pages: Page[];
@@ -32,7 +33,7 @@ export function Breadcrumbs({ pages, currentPath }: BreadcrumbsProps) {
   const breadcrumbs = buildBreadcrumbPath(currentPath);
 
   return (
-    <nav className="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb" data-testid="breadcrumb">
+    <nav className="flex items-center gap-2 text-sm text-slate-400" aria-label={ARIA_LABELS.breadcrumbNavigation} data-testid="breadcrumb">
       {breadcrumbs.map((page, index) => (
         <div key={page.path} className="flex items-center gap-2">
           {index > 0 && <span aria-hidden="true">/</span>}
@@ -40,7 +41,7 @@ export function Breadcrumbs({ pages, currentPath }: BreadcrumbsProps) {
             type="button"
             onClick={() => navigate(`/${page.path}`)}
             className="hover:text-slate-200 transition-colors"
-            aria-label={`Navigate to ${page.title}`}
+            aria-label={ARIA_LABELS.navigateTo(page.title)}
             aria-current={index === breadcrumbs.length - 1 ? "page" : undefined}
             data-testid={`breadcrumb-${page.path}`}
           >

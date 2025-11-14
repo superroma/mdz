@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { ContentEditor } from "./ContentEditor";
 import userEvent from "@testing-library/user-event";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 // Wrapper component with Router
 const renderWithRouter = (ui: React.ReactElement) => {
@@ -14,7 +15,7 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Test content" onSave={onSave} />);
     
-    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.editPageContent })).toBeInTheDocument();
     // MDX compilation is async, so use findByText
     expect(await screen.findByText("Test content")).toBeInTheDocument();
   });
@@ -24,7 +25,7 @@ describe("ContentEditor", () => {
     const contentWithFrontmatter = "---\ntitle: Test\n---\nTest content";
     renderWithRouter(<ContentEditor content={contentWithFrontmatter} onSave={onSave} />);
     
-    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.editPageContent })).toBeInTheDocument();
     // Should show only the markdown content, not frontmatter
     expect(await screen.findByText("Test content")).toBeInTheDocument();
     expect(screen.queryByText("title: Test")).not.toBeInTheDocument();
@@ -50,12 +51,12 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Test content" onSave={onSave} />);
     
-    const editButton = screen.getByRole("button", { name: "Edit" });
+    const editButton = screen.getByRole("button", { name: ARIA_LABELS.editPageContent });
     await user.click(editButton);
     
-    expect(screen.getByRole("button", { name: "Preview" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Save/i })).toBeInTheDocument();
-    expect(screen.getByRole("textbox", { name: /Page content/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.previewPageContent })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.savePageContent })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: ARIA_LABELS.pageContent })).toBeInTheDocument();
   });
 
   it("shows textarea with content in edit mode", async () => {
@@ -63,9 +64,9 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Original content" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textarea = screen.getByRole("textbox", { name: /Page content/i });
+    const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     expect(textarea).toHaveValue("Original content");
   });
 
@@ -75,9 +76,9 @@ describe("ContentEditor", () => {
     const contentWithFrontmatter = "---\ntitle: Test\n---\nOriginal content";
     renderWithRouter(<ContentEditor content={contentWithFrontmatter} onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textarea = screen.getByRole("textbox", { name: /Page content/i });
+    const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     // Should show full content including frontmatter
     expect(textarea).toHaveValue(contentWithFrontmatter);
   });
@@ -87,13 +88,13 @@ describe("ContentEditor", () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textarea = screen.getByRole("textbox", { name: /Page content/i });
+    const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     await user.clear(textarea);
     await user.type(textarea, "Modified content");
     
-    await user.click(screen.getByRole("button", { name: /Save/i }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.savePageContent }));
     
     expect(onSave).toHaveBeenCalledWith("Modified content");
   });
@@ -104,13 +105,13 @@ describe("ContentEditor", () => {
     const contentWithFrontmatter = "---\ntitle: Test\n---\nOriginal";
     renderWithRouter(<ContentEditor content={contentWithFrontmatter} onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textarea = screen.getByRole("textbox", { name: /Page content/i });
+    const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     await user.clear(textarea);
     await user.type(textarea, "---\ntitle: Updated\n---\nModified content");
     
-    await user.click(screen.getByRole("button", { name: /Save/i }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.savePageContent }));
     
     expect(onSave).toHaveBeenCalledWith("---\ntitle: Updated\n---\nModified content");
   });
@@ -120,9 +121,9 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Same content" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const saveButton = screen.getByRole("button", { name: /Save/i });
+    const saveButton = screen.getByRole("button", { name: ARIA_LABELS.savePageContent });
     expect(saveButton).toBeDisabled();
   });
 
@@ -131,12 +132,12 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textarea = screen.getByRole("textbox", { name: /Page content/i });
+    const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     await user.type(textarea, " modified");
     
-    const saveButton = screen.getByRole("button", { name: /Save/i });
+    const saveButton = screen.getByRole("button", { name: ARIA_LABELS.savePageContent });
     expect(saveButton).not.toBeDisabled();
   });
 
@@ -145,10 +146,10 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Test content" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
-    await user.click(screen.getByRole("button", { name: "Preview" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.previewPageContent }));
     
-    expect(screen.getByRole("button", { name: "Edit" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: ARIA_LABELS.editPageContent })).toBeInTheDocument();
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 
@@ -157,16 +158,16 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textarea = screen.getByRole("textbox", { name: /Page content/i });
+    const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     await user.clear(textarea);
     await user.type(textarea, "Modified");
     
-    await user.click(screen.getByRole("button", { name: "Preview" }));
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.previewPageContent }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const textareaAgain = screen.getByRole("textbox", { name: /Page content/i });
+    const textareaAgain = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     expect(textareaAgain).toHaveValue("Original");
   });
 
@@ -175,7 +176,7 @@ describe("ContentEditor", () => {
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Test" onSave={onSave} />);
     
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
     expect(screen.getByText(/Cmd\+S/i)).toBeInTheDocument();
   });
