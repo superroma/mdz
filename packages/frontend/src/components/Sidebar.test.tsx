@@ -102,7 +102,7 @@ describe("Sidebar", () => {
     );
     
     const aside = container.querySelector("aside");
-    expect(aside).toHaveClass("bg-slate-800", "border-r", "border-slate-700");
+    expect(aside).toHaveClass("bg-slate-50", "border-r", "border-slate-200");
   });
 
   it("passes onCreateChild to TreeNavigation", () => {

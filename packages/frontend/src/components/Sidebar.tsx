@@ -21,7 +21,7 @@ export function Sidebar({
       {/* Mobile backdrop overlay */}
       {isOpen && (
         <div
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
+          className="md:hidden fixed inset-0 bg-black/20 z-30"
           onClick={onClose}
           aria-hidden="true"
         />
@@ -35,19 +35,19 @@ export function Sidebar({
           fixed md:relative 
           z-40 md:z-0
           w-[280px] h-full 
-          bg-slate-800 border-r border-slate-700 
+          bg-slate-50 border-r border-slate-200 
           flex flex-col
           transition-transform duration-300 ease-in-out
         `}
         aria-label="Page navigation sidebar"
         data-testid="sidebar"
       >
-        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
-          <h2 className="text-lg font-semibold text-slate-200">Pages</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
+          <h2 className="text-lg font-semibold text-slate-800">Pages</h2>
           <button
             type="button"
             onClick={onCreateRoot}
-            className="text-slate-400 hover:text-slate-200 text-xl px-2 py-1 leading-none"
+            className="text-slate-600 hover:text-slate-900 text-xl px-2 py-1 leading-none"
             aria-label="Create new page"
             title="Create new page"
             data-testid="create-root-page-button"

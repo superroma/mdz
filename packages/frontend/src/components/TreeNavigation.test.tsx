@@ -103,7 +103,7 @@ describe("TreeNavigation", () => {
     
     const welcomeButton = screen.getByRole("button", { name: /Navigate to Welcome/i });
     const welcomeRow = welcomeButton.closest("div.group");
-    expect(welcomeRow).toHaveClass("bg-slate-700", "border-l-2", "border-sky-400");
+    expect(welcomeRow).toHaveClass("bg-slate-200", "border-l-2", "border-sky-500");
   });
 
   it("marks nested page as selected when route matches nested page path", () => {
@@ -115,7 +115,7 @@ describe("TreeNavigation", () => {
     
     const task1Button = screen.getByRole("button", { name: /Navigate to Task1/i });
     const task1Row = task1Button.closest("div.group");
-    expect(task1Row).toHaveClass("bg-slate-700", "border-l-2", "border-sky-400");
+    expect(task1Row).toHaveClass("bg-slate-200", "border-l-2", "border-sky-500");
   });
 
   it("does not mark page as selected when route does not match", () => {
@@ -127,7 +127,7 @@ describe("TreeNavigation", () => {
     
     const tasksButton = screen.getByRole("button", { name: /Navigate to Tasks/i });
     const tasksRow = tasksButton.closest("div.group");
-    expect(tasksRow).not.toHaveClass("bg-slate-700", "border-l-2", "border-sky-400");
+    expect(tasksRow).not.toHaveClass("bg-slate-200", "border-l-2", "border-sky-500");
   });
 
   it("shows '+' button when page is selected", () => {

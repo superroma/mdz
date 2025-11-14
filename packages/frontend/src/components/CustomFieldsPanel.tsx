@@ -94,21 +94,21 @@ export function CustomFieldsPanel({ page, pages, onFieldChange }: CustomFieldsPa
   };
   
   return (
-    <div className="mb-4 border border-slate-700 rounded-lg" data-testid="custom-fields-panel">
+    <div className="mb-4 border border-slate-300 rounded-lg" data-testid="custom-fields-panel">
       <button
         type="button"
         onClick={handleToggle}
-        className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-slate-800 transition-colors rounded-t-lg"
+        className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-slate-50 transition-colors rounded-t-lg"
         aria-label={isExpanded ? "Collapse custom fields" : "Expand custom fields"}
         aria-expanded={isExpanded}
         data-testid="custom-fields-toggle"
       >
-        <span className="text-sm font-medium text-slate-300">Fields</span>
-        <span className="text-slate-400" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
+        <span className="text-sm font-medium text-slate-700">Fields</span>
+        <span className="text-slate-600" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t border-slate-700" data-testid="custom-fields-content">
+        <div className="p-4 space-y-3 border-t border-slate-300" data-testid="custom-fields-content">
           {schema.length > 0 ? (
             schema.map((field) => (
               <FieldEditor
@@ -173,7 +173,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
   
   return (
     <div className="flex flex-col gap-1" data-testid={`field-${field.name}`}>
-      <label className="text-xs text-slate-400 uppercase tracking-wide">
+      <label className="text-xs text-slate-600 uppercase tracking-wide">
         {field.name}
       </label>
       
@@ -182,7 +182,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           type="text"
           value={String(localValue ?? "")}
           onChange={(e) => handleChange(e.target.value)}
-          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
           aria-label={field.name}
           data-testid={`field-input-${field.name}`}
@@ -194,7 +194,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           type="number"
           value={Number(localValue ?? 0)}
           onChange={(e) => handleChange(Number(e.target.value))}
-          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
           aria-label={field.name}
           data-testid={`field-input-${field.name}`}
@@ -206,7 +206,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           type="date"
           value={localValue ? String(localValue).split('T')[0] : ""}
           onChange={(e) => handleChange(e.target.value)}
-          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
           aria-label={field.name}
           data-testid={`field-input-${field.name}`}
@@ -217,7 +217,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
         <select
           value={String(localValue ?? "")}
           onChange={(e) => handleChange(e.target.value)}
-          className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+          className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
           aria-label={field.name}
           data-testid={`field-input-${field.name}`}
@@ -237,12 +237,12 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
             type="checkbox"
             checked={Boolean(localValue)}
             onChange={(e) => handleChange(e.target.checked)}
-            className="w-4 h-4 text-sky-600 bg-slate-800 border-slate-600 rounded focus:ring-2 focus:ring-sky-500"
+            className="w-4 h-4 text-sky-600 bg-white border-slate-300 rounded focus:ring-2 focus:ring-sky-500"
             disabled={isSaving}
             aria-label={field.name}
             data-testid={`field-input-${field.name}`}
           />
-          <span className="text-sm text-slate-300">
+          <span className="text-sm text-slate-700">
             {Boolean(localValue) ? "Yes" : "No"}
           </span>
         </label>
@@ -277,14 +277,14 @@ function TextFieldEditor({ fieldName, value, onChange }: TextFieldEditorProps) {
   
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-xs text-slate-400 uppercase tracking-wide">
+      <label className="text-xs text-slate-600 uppercase tracking-wide">
         {fieldName}
       </label>
       <input
         type="text"
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
-        className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
+        className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
         disabled={isSaving}
       />
     </div>
@@ -303,11 +303,11 @@ function ComplexFieldDisplay({ fieldName, value }: ComplexFieldDisplayProps) {
 
   return (
     <div className="flex flex-row items-center gap-2 relative">
-      <label className="text-xs text-slate-400 tracking-wide whitespace-nowrap">
+      <label className="text-xs text-slate-600 tracking-wide whitespace-nowrap">
         {fieldName}
       </label>
       <div
-        className="flex-1 px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-300 cursor-help font-mono"
+        className="flex-1 px-3 py-1.5 bg-slate-50 border border-slate-300 rounded text-sm text-slate-700 cursor-help font-mono"
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
         onFocus={() => setShowTooltip(true)}
@@ -320,7 +320,7 @@ function ComplexFieldDisplay({ fieldName, value }: ComplexFieldDisplayProps) {
       </div>
       {showTooltip && (
         <div
-          className="absolute z-10 top-full mt-1 left-0 px-3 py-2 bg-slate-900 border border-slate-600 rounded text-xs text-slate-200 font-mono whitespace-pre-wrap max-w-md shadow-lg"
+          className="absolute z-10 top-full mt-1 left-0 px-3 py-2 bg-white border border-slate-300 rounded text-xs text-slate-900 font-mono whitespace-pre-wrap max-w-md shadow-lg"
           style={{ wordBreak: "break-word" }}
         >
           {tooltipContent}

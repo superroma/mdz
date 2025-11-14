@@ -395,14 +395,14 @@ export function MDXContent({
 
   if (error) {
     return (
-      <div className="text-red-400 p-4 border border-red-800 rounded">
+      <div className="text-red-600 p-4 border border-red-300 rounded bg-red-50">
         <strong>MDX Error:</strong> {error}
       </div>
     );
   }
 
   if (!MDXComponent) {
-    return <div className="text-slate-400">Loading...</div>;
+    return <div className="text-slate-600">Loading...</div>;
   }
 
   return <MDXComponent components={mdxComponents} />;

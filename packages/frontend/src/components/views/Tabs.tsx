@@ -19,7 +19,7 @@ export function Tabs({ children }: TabsProps) {
   
   return (
     <div className="w-full">
-      <div className="flex border-b border-slate-700 overflow-x-auto">
+      <div className="flex border-b border-slate-300 overflow-x-auto">
         {tabs.map((tab) => (
           <button
             key={tab.props.name}
@@ -27,8 +27,8 @@ export function Tabs({ children }: TabsProps) {
             onClick={() => setActiveTab(tab.props.name)}
             className={`px-4 py-2 text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === tab.props.name
-                ? "text-sky-400 border-b-2 border-sky-400"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-sky-600 border-b-2 border-sky-600"
+                : "text-slate-600 hover:text-slate-900"
             }`}
           >
             {tab.props.name}

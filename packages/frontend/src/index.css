@@ -3,6 +3,52 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
+  
+  /* Theme Colors - Light Theme */
+  /* Backgrounds */
+  --color-bg-primary: #ffffff;        /* Main background */
+  --color-bg-secondary: #f8fafc;      /* Sidebar, panels background (slate-50) */
+  --color-bg-tertiary: #f1f5f9;       /* Hover states (slate-100) */
+  --color-bg-elevated: #ffffff;       /* Cards, elevated elements */
+  
+  /* Borders */
+  --color-border-primary: #e2e8f0;    /* Main borders (slate-200) */
+  --color-border-secondary: #cbd5e1;  /* Secondary borders (slate-300) */
+  
+  /* Text */
+  --color-text-primary: #0f172a;      /* Main text (slate-900) */
+  --color-text-secondary: #334155;    /* Secondary text (slate-700) */
+  --color-text-tertiary: #64748b;     /* Muted text (slate-600) */
+  --color-text-muted: #94a3b8;        /* Very muted (slate-500) */
+  
+  /* Interactive */
+  --color-interactive-primary: #0284c7;     /* Links, primary actions (sky-600) */
+  --color-interactive-primary-hover: #0369a1; /* Hover state (sky-700) */
+  --color-interactive-secondary: #0ea5e9;   /* Secondary interactive (sky-500) */
+  
+  /* Status */
+  --color-success: #22c55e;           /* Success states (green-500) */
+  --color-error: #dc2626;             /* Error states (red-600) */
+  --color-error-bg: #fef2f2;          /* Error background (red-50) */
+  --color-error-border: #fecaca;      /* Error border (red-300) */
+  --color-warning: #f59e0b;           /* Warning states (orange-500) */
+  
+  /* Selected/Active */
+  --color-selected-bg: #e2e8f0;       /* Selected background (slate-200) */
+  --color-selected-border: #0ea5e9;   /* Selected accent (sky-500) */
 }
+
+/* Future: Dark theme example */
+/* 
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-tertiary: #334155;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #e2e8f0;
+  ...
+}
+*/
 

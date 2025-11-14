@@ -28,7 +28,7 @@ describe("EmptyState", () => {
     const heading = screen.getByText("No page selected");
     const subtext = screen.getByText(/Select a page from the sidebar/i);
     
-    expect(heading).toHaveClass("text-slate-400");
+    expect(heading).toHaveClass("text-slate-600");
     expect(subtext).toHaveClass("text-slate-500");
   });
 });

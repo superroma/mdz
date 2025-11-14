@@ -34,17 +34,17 @@ export function BoardView({ groupBy, filter, sort, parentPath }: BoardViewProps)
   };
   
   if (isLoading) {
-    return <div className="text-slate-400 p-4">Loading...</div>;
+    return <div className="text-slate-600 p-4">Loading...</div>;
   }
   
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-slate-200">Board View</h3>
+        <h3 className="text-lg font-semibold text-slate-800">Board View</h3>
         <button
           type="button"
           onClick={handleRefresh}
-          className="text-slate-400 hover:text-slate-200 transition-colors"
+          className="text-slate-600 hover:text-slate-900 transition-colors"
           aria-label="Refresh"
           title="Refresh"
         >
@@ -56,9 +56,9 @@ export function BoardView({ groupBy, filter, sort, parentPath }: BoardViewProps)
         {Object.entries(grouped).map(([groupValue, pages]) => (
           <div
             key={groupValue}
-            className="flex-shrink-0 w-64 bg-slate-800 rounded-lg p-4"
+            className="flex-shrink-0 w-64 bg-slate-50 rounded-lg p-4"
           >
-            <h4 className="text-sm font-medium text-slate-300 mb-3">
+            <h4 className="text-sm font-medium text-slate-700 mb-3">
               {groupValue} ({pages.length})
             </h4>
             <div className="space-y-2">
@@ -66,12 +66,16 @@ export function BoardView({ groupBy, filter, sort, parentPath }: BoardViewProps)
                 <div
                   key={page.path}
                   onClick={() => navigate(`/${page.path}`)}
-                  className="p-3 bg-slate-700 hover:bg-slate-600 rounded cursor-pointer transition-colors"
+                  className="p-3 bg-white hover:bg-slate-100 rounded cursor-pointer transition-colors border border-slate-200"
+                  data-testid={`board-card-${page.path}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open page ${page.title}`}
                 >
-                  <div className="text-sm font-medium text-slate-200 mb-1">
+                  <div className="text-sm font-medium text-slate-800 mb-1">
                     {page.title}
                   </div>
-                  <div className="text-xs text-slate-400 line-clamp-2">
+                  <div className="text-xs text-slate-600 line-clamp-2">
                     {page.content.substring(0, 100)}
                   </div>
                 </div>

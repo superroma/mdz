@@ -96,11 +96,11 @@ export function PageView() {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
+          <p className="text-red-600 mb-4">{error}</p>
           <button
             type="button"
             onClick={() => navigate("/")}
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors"
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded transition-colors"
           >
             Go Home
           </button>
@@ -112,19 +112,19 @@ export function PageView() {
   if (!currentPage) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <p className="text-slate-400">Loading...</p>
+        <p className="text-slate-600">Loading...</p>
       </div>
     );
   }
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden" data-testid="page-view">
-      <header className="flex-shrink-0 px-8 py-4 border-b border-slate-700" data-testid="page-header">
+      <header className="flex-shrink-0 px-8 py-4 border-b border-slate-200" data-testid="page-header">
         <div className="flex items-center gap-4 mb-2">
           <button
             type="button"
             onClick={handleBack}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors"
             aria-label="Go back"
             title="Go back"
             data-testid="back-button"
@@ -144,7 +144,7 @@ export function PageView() {
           <button
             type="button"
             onClick={handleDelete}
-            className="px-3 py-1.5 text-sm bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors"
+            className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors"
             aria-label="Delete page"
             title="Delete current page"
             data-testid="delete-page-button"

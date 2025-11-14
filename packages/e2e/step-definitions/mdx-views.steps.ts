@@ -53,7 +53,8 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(500);
-    const cards = page.locator('[class*="bg-slate-700"]');
+    // Use semantic selector: board cards have role="button" and aria-label starting with "Open page"
+    const cards = page.getByRole('button', { name: /Open page/i });
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
   }
@@ -75,12 +76,11 @@ When(
     const page = await this.ensurePage();
     // Wait for board view to load
     await page.waitForSelector('text=Board View', { timeout: 10000 });
-    // Wait for cards to appear (they have bg-slate-700 class and are clickable)
-    await page.waitForSelector('.bg-slate-700.cursor-pointer', { timeout: 10000 });
-    const card = page.locator('.bg-slate-700.cursor-pointer').first();
-    // Wait for card to be visible and clickable
-    await expect(card).toBeVisible({ timeout: 5000 });
-    await card.click();
+    // Wait for cards to appear using semantic selector
+    const cards = page.getByRole('button', { name: /Open page/i });
+    await expect(cards.first()).toBeVisible({ timeout: 10000 });
+    // Click the first card
+    await cards.first().click();
     // Wait for navigation to start
     await page.waitForTimeout(1000);
   }

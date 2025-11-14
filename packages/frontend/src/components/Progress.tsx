@@ -26,11 +26,11 @@ export function Progress({
         <div className="flex justify-between text-sm mb-1">
           {label && <span className="font-medium">{label}</span>}
           {showPercent && (
-            <span className="text-slate-400">{normalizedValue}%</span>
+            <span className="text-slate-600">{normalizedValue}%</span>
           )}
         </div>
       )}
-      <div className="w-full bg-slate-700 rounded-full h-2.5">
+      <div className="w-full bg-slate-200 rounded-full h-2.5">
         <div
           className={`${colors[color]} h-2.5 rounded-full transition-all`}
           style={{ width: `${normalizedValue}%` }}

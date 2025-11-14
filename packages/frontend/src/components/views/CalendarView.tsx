@@ -57,7 +57,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
   };
   
   if (isLoading) {
-    return <div className="text-slate-400 p-4">Loading...</div>;
+    return <div className="text-slate-600 p-4">Loading...</div>;
   }
   
   const monthNames = [
@@ -74,18 +74,18 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
           <button
             type="button"
             onClick={prevMonth}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors"
             aria-label="Previous month"
           >
             ←
           </button>
-          <h3 className="text-lg font-semibold text-slate-200">
+          <h3 className="text-lg font-semibold text-slate-800">
             {monthNames[month]} {year}
           </h3>
           <button
             type="button"
             onClick={nextMonth}
-            className="text-slate-400 hover:text-slate-200 transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors"
             aria-label="Next month"
           >
             →
@@ -94,7 +94,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
         <button
           type="button"
           onClick={handleRefresh}
-          className="text-slate-400 hover:text-slate-200 transition-colors"
+          className="text-slate-600 hover:text-slate-900 transition-colors"
           aria-label="Refresh"
           title="Refresh"
         >
@@ -104,7 +104,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
       
       <div className="grid grid-cols-7 gap-1 mb-2">
         {dayNames.map((day) => (
-          <div key={day} className="text-center text-xs font-medium text-slate-400 p-2">
+          <div key={day} className="text-center text-xs font-medium text-slate-600 p-2">
             {day}
           </div>
         ))}
@@ -122,9 +122,9 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
           return (
             <div
               key={day}
-              className="aspect-square border border-slate-700 rounded p-1 bg-slate-800 min-h-[60px]"
+              className="aspect-square border border-slate-300 rounded p-1 bg-slate-50 min-h-[60px]"
             >
-              <div className="text-xs text-slate-400 mb-1">{day}</div>
+              <div className="text-xs text-slate-600 mb-1">{day}</div>
               <div className="space-y-1">
                 {pages.slice(0, 2).map((page) => (
                   <div
@@ -140,7 +140,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
                   </div>
                 ))}
                 {pages.length > 2 && (
-                  <div className="text-xs text-slate-400">+{pages.length - 2}</div>
+                  <div className="text-xs text-slate-600">+{pages.length - 2}</div>
                 )}
               </div>
             </div>

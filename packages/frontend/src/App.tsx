@@ -48,11 +48,11 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-900 text-slate-50">
+    <div className="flex h-screen bg-white text-slate-900">
       <button
         type="button"
         onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 rounded text-slate-200 hover:bg-slate-700"
+        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-100 rounded text-slate-700 hover:bg-slate-200"
         aria-label="Toggle sidebar"
         aria-expanded={isSidebarOpen}
         data-testid="toggle-sidebar-button"

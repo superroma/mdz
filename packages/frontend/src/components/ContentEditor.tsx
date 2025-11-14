@@ -167,7 +167,7 @@ export function ContentEditor({
             Edit
           </button>
         </div>
-        <div className="prose prose-invert max-w-none" data-testid="markdown-content" role="article">
+        <div className="prose max-w-none" data-testid="markdown-content" role="article">
           {markdownContent ? (
             <MDXContent
               content={markdownContent}
@@ -175,7 +175,7 @@ export function ContentEditor({
               onCheckboxToggle={handleCheckboxToggle}
             />
           ) : (
-            <p className="text-slate-400">
+            <p className="text-slate-600">
               No content yet. Click Edit to add some.
             </p>
           )}
@@ -193,7 +193,7 @@ export function ContentEditor({
             setValue(content);
             setIsEditing(false);
           }}
-          className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors"
+          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded transition-colors"
           aria-label={ARIA_LABELS.previewPageContent}
           data-testid="preview-button"
         >
@@ -215,13 +215,13 @@ export function ContentEditor({
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder="Start writing..."
-        className="flex-1 w-full bg-slate-800 text-slate-100 p-4 rounded border border-slate-700 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
+        className="flex-1 w-full bg-white text-slate-900 p-4 rounded border border-slate-300 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
         aria-label={ARIA_LABELS.pageContent}
         data-testid="content-textarea"
       />
-      <div className="text-xs text-slate-400" role="status" aria-live="polite">
-        Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Cmd+S</kbd> or{" "}
-        <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Ctrl+S</kbd> to save
+      <div className="text-xs text-slate-600" role="status" aria-live="polite">
+        Press <kbd className="px-1.5 py-0.5 bg-slate-100 rounded">Cmd+S</kbd> or{" "}
+        <kbd className="px-1.5 py-0.5 bg-slate-100 rounded">Ctrl+S</kbd> to save
       </div>
     </div>
   );

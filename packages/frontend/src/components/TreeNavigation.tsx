@@ -33,8 +33,8 @@ function TreeItem({
   const baseClasses =
     "group flex items-center gap-2 py-1.5 px-3 transition-colors";
   const selectedClasses = isSelected
-    ? "bg-slate-700 border-l-2 border-sky-400"
-    : "active:bg-slate-700/50 md:hover:bg-slate-700/50";
+    ? "bg-slate-200 border-l-2 border-sky-500"
+    : "active:bg-slate-100 md:hover:bg-slate-100";
 
   return (
     <div>
@@ -64,7 +64,7 @@ function TreeItem({
             isSelected
               ? "opacity-100"
               : "opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
-          } text-slate-400 active:text-slate-200 md:hover:text-slate-200 text-xs px-1`}
+          } text-slate-600 active:text-slate-900 md:hover:text-slate-900 text-xs px-1`}
           aria-label={`Add child page to ${page.title}`}
           title="Add child page"
           data-testid={`add-child-to-${page.path}`}
@@ -121,7 +121,7 @@ export function TreeNavigation({
       data-testid="page-tree"
     >
       {pages.length === 0 ? (
-        <div className="px-3 py-4 text-sm text-slate-400" role="status">No pages yet</div>
+        <div className="px-3 py-4 text-sm text-slate-600" role="status">No pages yet</div>
       ) : (
         buildTree(pages)
       )}

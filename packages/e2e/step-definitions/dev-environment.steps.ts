@@ -76,7 +76,8 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(500);
-    const cards = page.locator('[class*="bg-slate-700"]');
+    // Use semantic selector: board cards have role="button" and aria-label starting with "Open page"
+    const cards = page.getByRole('button', { name: /Open page/i });
     const count = await cards.count();
     expect(count).toBeGreaterThan(0);
   }
