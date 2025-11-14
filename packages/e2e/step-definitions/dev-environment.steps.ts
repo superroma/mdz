@@ -1,8 +1,9 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, waitForNetworkIdle } from "../support/test-helpers";
+import { ensureServersRunning } from "../support/server-manager";
 
 When(
   /^I run "([^"]*)"$/,
@@ -14,9 +15,8 @@ When(
 When(
   "I visit the application",
   async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome`, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+    const page = await setupPage(this, "/Welcome");
+    await waitForNetworkIdle(page);
   }
 );
 
@@ -52,8 +52,7 @@ Given(
 When(
   "I navigate to the Tasks page",
   async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this);
     
     const tasksButton = page.getByRole("button", { name: /Navigate to.*Tasks/i });
     await tasksButton.click();

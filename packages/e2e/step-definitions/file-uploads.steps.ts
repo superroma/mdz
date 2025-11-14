@@ -1,8 +1,8 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, waitForNetworkIdle } from "../support/test-helpers";
 import * as fs from "fs";
 import * as path from "path";
 import { tmpdir } from "os";
@@ -50,9 +50,7 @@ Then(
 Given(
   "a page with an attached file",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this);
     
     const firstPage = page.getByRole("button", { name: /Navigate to/i }).first();
     await firstPage.click();
@@ -101,7 +99,7 @@ When(
     const deleteButton = page.getByRole("button", { name: /Delete.*test-file/i }).first();
     await deleteButton.click();
     // Wait for delete operation
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
   }
 );
 
@@ -126,9 +124,7 @@ Then(
 Given(
   "a page with an attached image",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this);
     
     const firstPage = page.getByRole("button", { name: /Navigate to/i }).first();
     await firstPage.click();
@@ -163,7 +159,7 @@ When(
     const saveButton = page.getByTestId("save-button");
     await saveButton.click();
     // Wait for save to complete
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
     // After saving, click Preview to see the rendered view
     const previewButton = page.getByTestId("preview-button");
     await previewButton.click();

@@ -1,34 +1,23 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage } from "../support/test-helpers";
 
-Given(
-  "I am on a page",
-  async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-view"]', { timeout: 5000 });
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Given "I am on a page"
 
 Given(
   "I am viewing a nested page",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks/Write%20Tests`, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this, "/Welcome/Tasks/Write%20Tests");
   }
 );
 
 Given(
   "I have navigated through multiple pages",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this);
     
     const firstPage = page.getByRole("button", { name: /Navigate to/i }).first();
     await firstPage.click();
@@ -43,9 +32,7 @@ Given(
 When(
   /^I visit the root URL "([^"]*)"$/,
   async function (this: AppWorld, url: string) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}${url}`, { waitUntil: "domcontentloaded" });
+    await setupPage(this, url);
   }
 );
 
@@ -65,11 +52,9 @@ When(
 When(
   /^I visit a direct page URL "([^"]*)"$/,
   async function (this: AppWorld, url: string) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
     // Remove /p/ prefix if present (for backward compatibility with test scenarios)
     const cleanUrl = url.replace(/^\/p\//, "/");
-    await page.goto(`${FRONTEND_URL}${cleanUrl}`, { waitUntil: "domcontentloaded" });
+    await setupPage(this, cleanUrl);
   }
 );
 

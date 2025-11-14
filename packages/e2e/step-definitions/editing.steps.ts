@@ -1,37 +1,25 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, waitForPageLoad, clickButton, waitForNetworkIdle } from "../support/test-helpers";
 
-Given(
-  "I am viewing a page in view mode",
-  async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Given "I am viewing a page in view mode"
 
 Given(
   "I am editing a page",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    await page.getByTestId("edit-button").click();
+    const page = await setupPage(this);
+    await waitForPageLoad(page);
+    await clickButton(page, "Edit");
   }
 );
 
 Given(
   "the title field is focused",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    const page = await setupPage(this);
+    await waitForPageLoad(page);
     const titleField = page.getByTestId("page-title-input");
     await titleField.focus();
   }
@@ -44,17 +32,12 @@ When(
     const titleField = page.getByTestId("page-title-input");
     await titleField.fill("Test Title Auto Save");
     await titleField.blur();
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
   }
 );
 
-When(
-  "I click the Edit button",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.getByTestId("edit-button").click();
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// When "I click the Edit button"
 
 When(
   "I modify the content and press Cmd+S",
@@ -63,7 +46,7 @@ When(
     const editor = page.getByTestId("content-textarea");
     await editor.fill("Modified content for testing");
     await editor.press("Meta+s");
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
   }
 );
 
@@ -86,14 +69,8 @@ Then(
   }
 );
 
-Then(
-  "I should see the markdown source editor",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
-    await expect(editor).toBeVisible();
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Then "I should see the markdown source editor"
 
 Then(
   "the content should be saved",

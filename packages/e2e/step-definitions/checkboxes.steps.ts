@@ -1,61 +1,17 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL, BACKEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, navigateToPageByTitle, waitForNetworkIdle } from "../support/test-helpers";
 
-Given(
-  /^I am viewing the "([^"]*)" page$/,
-  async function (this: AppWorld, pageTitle: string) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    
-    // Navigate to the page using the sidebar
-    await page.goto(FRONTEND_URL, { waitUntil: "load" });
-    await page.waitForSelector('[aria-label*="Navigate to"]', { timeout: 5000 });
-    
-    // Find and click the page in the sidebar
-    const pageButton = page.getByRole("button", { name: new RegExp(`Navigate to ${pageTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, "i") });
-    await pageButton.click();
-    
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
-    
-    // Wait for content to be rendered
-    await page.waitForSelector('.prose', { timeout: 5000 });
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Given "I am viewing the {string} page"
 
-Given(
-  "I am in preview mode",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    // Ensure we're in preview mode (not edit mode)
-    const editButton = page.getByRole("button", { name: "Edit" });
-    if (await editButton.isVisible()) {
-      // Already in preview mode
-      return;
-    }
-    // If we're in edit mode, click Preview button
-    const previewButton = page.getByRole("button", { name: "Preview" });
-    if (await previewButton.isVisible()) {
-      await previewButton.click();
-      await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
-      await page.waitForSelector('.prose', { timeout: 5000 });
-    }
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Given "I am in preview mode"
 
-Given(
-  "I am in edit mode",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    const editButton = page.getByRole("button", { name: "Edit" });
-    if (await editButton.isVisible()) {
-      await editButton.click();
-      await page.waitForSelector('[aria-label="Page content"]', { timeout: 5000 });
-    }
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Given "I am in edit mode"
 
 Given(
   /^the checkbox for "([^"]*)" is checked$/,
@@ -270,7 +226,7 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     // Wait for save operation to complete
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
     
     // Verify by checking backend - if we got here, the previous step already verified the content
     // But we can also check that the save button is disabled (indicating no unsaved changes)

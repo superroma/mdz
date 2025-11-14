@@ -1,15 +1,13 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, waitForNetworkIdle } from "../support/test-helpers";
 
 Given(
   "a page with custom fields",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks/Write%20Tests`, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this, "/Welcome/Tasks/Write%20Tests");
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
   }
 );
@@ -17,9 +15,7 @@ Given(
 Given(
   "I create a parent page with a schema",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this);
     
     const createButton = page.getByRole("button", { name: "Create new page" });
     await createButton.click();
@@ -52,10 +48,10 @@ Content here.
     
     const saveButton = page.getByRole("button", { name: "Save" });
     await saveButton.click();
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
     
     await page.goto(FRONTEND_URL, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+    await waitForNetworkIdle(page);
   }
 );
 
@@ -178,9 +174,7 @@ Then(
 Given(
   "a page with a select field",
   async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks/Write%20Tests`, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this, "/Welcome/Tasks/Write%20Tests");
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
   }
 );

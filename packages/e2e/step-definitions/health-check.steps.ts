@@ -1,8 +1,9 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
-import { FRONTEND_URL, HEALTH_ENDPOINT } from "../support/constants";
+import { HEALTH_ENDPOINT } from "../support/constants";
 import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage } from "../support/test-helpers";
 
 Given(
   "the backend server is running",
@@ -44,8 +45,7 @@ Given(
 When(
   "I navigate to the homepage",
   async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    await setupPage(this);
   }
 );
 

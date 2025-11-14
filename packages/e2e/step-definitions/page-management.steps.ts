@@ -1,18 +1,11 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, waitForPageLoad, waitForNetworkIdle } from "../support/test-helpers";
 
-Given(
-  "I am viewing a page",
-  async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-  }
-);
+// Removed: Now using common step from common-steps.ts
+// Given "I am viewing a page"
 
 When(
   /^I click the root "\+" button$/,
@@ -22,7 +15,7 @@ When(
     const pageLoaded = await page.url();
     if (!pageLoaded || pageLoaded === 'about:blank') {
       await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-      await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+      await waitForNetworkIdle(page);
     }
     
     const createButton = page.getByTestId("create-root-page-button");
@@ -48,7 +41,7 @@ When(
     const titleField = page.getByTestId("page-title-input");
     await titleField.fill("Test Page Renamed");
     await titleField.press("Enter");
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await waitForNetworkIdle(page);
   }
 );
 

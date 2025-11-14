@@ -1,15 +1,15 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import { setupPage, waitForNetworkIdle } from "../support/test-helpers";
+import { ensureServersRunning } from "../support/server-manager";
 
 Given(
   "a parent page with a schema",
   async function (this: AppWorld) {
     await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "domcontentloaded" });
+    const page = await setupPage(this, "/Welcome/Tasks");
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
   }
 );
@@ -63,9 +63,8 @@ Given(
   "a BoardView displaying pages",
   async function (this: AppWorld) {
     await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+    const page = await setupPage(this, "/Welcome/Tasks");
+    await waitForNetworkIdle(page);
   }
 );
 
@@ -107,9 +106,8 @@ Given(
   "a page with Tabs containing multiple views",
   async function (this: AppWorld) {
     await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+    const page = await setupPage(this, "/Welcome/Tasks");
+    await waitForNetworkIdle(page);
   }
 );
 
