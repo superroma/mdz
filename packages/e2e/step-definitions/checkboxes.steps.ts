@@ -1,7 +1,29 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL, BACKEND_URL } from "../support/constants";
+import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+
+Given(
+  /^I am viewing the "([^"]*)" page$/,
+  async function (this: AppWorld, pageTitle: string) {
+    await ensureServersRunning();
+    const page = await this.ensurePage();
+    
+    // Navigate to the page using the sidebar
+    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('[aria-label*="Navigate to"]', { timeout: 5000 });
+    
+    // Find and click the page in the sidebar
+    const pageButton = page.getByRole("button", { name: new RegExp(`Navigate to ${pageTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, "i") });
+    await pageButton.click();
+    
+    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
+    
+    // Wait for content to be rendered
+    await page.waitForSelector('.prose', { timeout: 5000 });
+  }
+);
 
 Given(
   "I am in preview mode",

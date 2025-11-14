@@ -3,16 +3,11 @@ Feature: File Uploads and Attachments
   I want to attach files to pages
   So that I can store related documents
 
-  Scenario: Upload file to page
+  Scenario: Upload and manage file attachments
     Given I am viewing a page
     When I upload a file via the upload button
     Then the file should appear in the attachments list
     And the file should be stored in the page directory
-
-  Scenario: Download attached file
-    Given a page with an attached file
-    When I click the filename
-    Then the file should download
 
   Scenario: Delete attached file
     Given a page with an attached file

@@ -264,3 +264,153 @@ describe("MDXContent - Link Resolution", () => {
   });
 });
 
+describe("MDXContent - Markdown Formatting", () => {
+  it("renders headers (H1, H2) correctly", async () => {
+    const content = `# Heading 1\n## Heading 2\n### Heading 3`;
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { level: 1, name: "Heading 1" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 2, name: "Heading 2" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { level: 3, name: "Heading 3" })).toBeInTheDocument();
+    });
+  });
+
+  it("renders bold text with strong tag", async () => {
+    const content = "This is **bold text** here";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const strongElement = screen.getByText("bold text");
+      expect(strongElement).toBeInTheDocument();
+      expect(strongElement.tagName.toLowerCase()).toBe("strong");
+    });
+  });
+
+  it("renders italic text with em tag", async () => {
+    const content = "This is *italic text* here";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const emElement = screen.getByText("italic text");
+      expect(emElement).toBeInTheDocument();
+      expect(emElement.tagName.toLowerCase()).toBe("em");
+    });
+  });
+
+  it("renders inline code with code tag", async () => {
+    const content = "This is `inline code` here";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const codeElement = screen.getByText("inline code");
+      expect(codeElement).toBeInTheDocument();
+      expect(codeElement.tagName.toLowerCase()).toBe("code");
+    });
+  });
+
+  it("renders unordered lists", async () => {
+    const content = `
+- Item 1
+- Item 2
+- Item 3
+    `;
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      expect(screen.getByText("Item 1")).toBeInTheDocument();
+      expect(screen.getByText("Item 2")).toBeInTheDocument();
+      expect(screen.getByText("Item 3")).toBeInTheDocument();
+      
+      const item1 = screen.getByText("Item 1").closest("li");
+      expect(item1).toBeInTheDocument();
+    });
+  });
+
+  it("renders ordered lists", async () => {
+    const content = `
+1. First item
+2. Second item
+3. Third item
+    `;
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      expect(screen.getByText("First item")).toBeInTheDocument();
+      expect(screen.getByText("Second item")).toBeInTheDocument();
+      expect(screen.getByText("Third item")).toBeInTheDocument();
+      
+      const firstItem = screen.getByText("First item").closest("li");
+      const orderedList = firstItem?.closest("ol");
+      expect(orderedList).toBeInTheDocument();
+    });
+  });
+
+  it("renders links as anchor elements", async () => {
+    const content = "[Link text](https://example.com)";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const link = screen.getByText("Link text");
+      expect(link).toBeInTheDocument();
+      expect(link.tagName.toLowerCase()).toBe("a");
+      expect(link).toHaveAttribute("href", "https://example.com");
+    });
+  });
+
+  it("renders code blocks with pre and code tags", async () => {
+    const content = "```javascript\nfunction hello() {\n  console.log('world');\n}\n```";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const codeBlock = screen.getByText(/function hello/);
+      expect(codeBlock).toBeInTheDocument();
+      expect(codeBlock.tagName.toLowerCase()).toBe("code");
+      expect(codeBlock.parentElement?.tagName.toLowerCase()).toBe("pre");
+    });
+  });
+
+  it("renders blockquotes", async () => {
+    const content = "> This is a blockquote";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const quote = screen.getByText("This is a blockquote");
+      expect(quote).toBeInTheDocument();
+      const blockquote = quote.closest("blockquote");
+      expect(blockquote).toBeInTheDocument();
+    });
+  });
+
+  it("renders tables with proper structure", async () => {
+    const content = `
+| Column 1 | Column 2 | Column 3 |
+|----------|----------|----------|
+| Data 1   | Data 2   | Data 3   |
+    `;
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      // Check for table
+      const table = document.querySelector("table");
+      expect(table).toBeInTheDocument();
+      
+      // Check headers
+      expect(screen.getByText("Column 1")).toBeInTheDocument();
+      expect(screen.getByText("Column 2")).toBeInTheDocument();
+      expect(screen.getByText("Column 3")).toBeInTheDocument();
+      
+      // Check data cells
+      expect(screen.getByText("Data 1")).toBeInTheDocument();
+      expect(screen.getByText("Data 2")).toBeInTheDocument();
+      expect(screen.getByText("Data 3")).toBeInTheDocument();
+      
+      // Verify structure
+      const thead = table?.querySelector("thead");
+      const tbody = table?.querySelector("tbody");
+      expect(thead).toBeInTheDocument();
+      expect(tbody).toBeInTheDocument();
+    });
+  });
+});
+
