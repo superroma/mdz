@@ -10,7 +10,7 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
   }
 );
 
@@ -25,11 +25,11 @@ When(
       await page.waitForTimeout(1000);
     }
     
-    const createButton = page.getByRole("button", { name: "Create new page" });
+    const createButton = page.getByTestId("create-root-page-button");
     const isVisible = await createButton.isVisible().catch(() => false);
     
     if (!isVisible) {
-      const hamburger = page.getByRole("button", { name: "Toggle sidebar" });
+      const hamburger = page.getByTestId("toggle-sidebar-button");
       const hamburgerVisible = await hamburger.isVisible().catch(() => false);
       if (hamburgerVisible) {
         await hamburger.click();
@@ -45,7 +45,7 @@ When(
   "I edit the title field and press Enter",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByLabel("Page title");
+    const titleField = page.getByTestId("page-title-input");
     await titleField.fill("Test Page Renamed");
     await titleField.press("Enter");
     await page.waitForTimeout(500);
@@ -72,7 +72,7 @@ When(
       await dialog.accept();
     });
     
-    await page.getByRole("button", { name: "Delete page" }).click();
+    await page.getByTestId("delete-page-button").click();
     await page.waitForTimeout(500);
   }
 );
@@ -81,8 +81,8 @@ Then(
   /^a new page named "([^"]*)" should be created$/,
   async function (this: AppWorld, pageName: string) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
-    const titleField = page.getByLabel("Page title");
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    const titleField = page.getByTestId("page-title-input");
     await expect(titleField).toHaveValue(pageName);
   }
 );
@@ -91,7 +91,7 @@ Then(
   "the title field should be focused with text selected",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByLabel("Page title");
+    const titleField = page.getByTestId("page-title-input");
     await expect(titleField).toBeFocused();
   }
 );
@@ -115,7 +115,7 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(1000);
-    const titleField = page.getByLabel("Page title");
+    const titleField = page.getByTestId("page-title-input");
     const value = await titleField.inputValue();
     expect(value).not.toBe("Untitled");
   }
@@ -147,8 +147,8 @@ Then(
   "a new child page should be created",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
-    const titleField = page.getByLabel("Page title");
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    const titleField = page.getByTestId("page-title-input");
     await expect(titleField).toHaveValue("Untitled");
   }
 );

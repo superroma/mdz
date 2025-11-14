@@ -53,6 +53,7 @@ export function TitleField({ title, onSave, autoFocus = false }: TitleFieldProps
       placeholder="Untitled"
       className="w-full bg-transparent text-3xl font-bold text-slate-100 border-none outline-none focus:ring-0 px-0"
       aria-label="Page title"
+      data-testid="page-title-input"
       disabled={isSaving}
     />
   );

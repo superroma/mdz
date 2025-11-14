@@ -10,7 +10,7 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[aria-label*="Navigate to"]', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="page-view"]', { timeout: 5000 });
   }
 );
 
@@ -77,7 +77,7 @@ When(
   "I click a parent breadcrumb",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const breadcrumbs = page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("button");
+    const breadcrumbs = page.getByTestId("breadcrumb").getByRole("button");
     const count = await breadcrumbs.count();
     
     if (count > 1) {
@@ -90,7 +90,7 @@ When(
   "I click the back button",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.getByRole("button", { name: "Go back" }).click();
+    await page.getByTestId("back-button").click();
   }
 );
 
@@ -113,8 +113,8 @@ Then(
   "I should see that page's content",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
-    const titleField = page.getByLabel("Page title");
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    const titleField = page.getByTestId("page-title-input");
     await expect(titleField).toBeVisible();
   }
 );
@@ -135,8 +135,8 @@ Then(
   async function (this: AppWorld, pageTitle: string) {
     const page = await this.ensurePage();
     // Wait for page to load
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
-    const titleField = page.getByLabel("Page title");
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 10000 });
+    const titleField = page.getByTestId("page-title-input");
     // Wait for title to have the expected value
     await expect(titleField).toHaveValue(pageTitle, { timeout: 5000 });
   }
@@ -146,8 +146,10 @@ Then(
   "the sidebar should highlight that page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[aria-label*="Navigate to"]', { timeout: 5000 });
-    const currentPage = page.getByRole("button", { name: /Navigate to Write Tests/i });
+    await page.waitForSelector('[data-testid="sidebar"]', { timeout: 5000 });
+    // Look specifically in the sidebar to avoid conflict with breadcrumbs
+    const sidebar = page.getByTestId("sidebar");
+    const currentPage = sidebar.getByRole("button", { name: /Navigate to Write Tests/i }).first();
     await expect(currentPage).toBeVisible();
   }
 );
@@ -162,7 +164,7 @@ Then(
       return path !== "/" && path.length > 1;
     }, { timeout: 10000 });
     // Wait for page content to be visible
-    await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
     const pathname = new URL(page.url()).pathname;
     expect(pathname).not.toBe("/");
     expect(pathname.length).toBeGreaterThan(1);

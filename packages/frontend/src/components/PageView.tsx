@@ -118,8 +118,8 @@ export function PageView() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 px-8 py-4 border-b border-slate-700">
+    <div className="flex-1 flex flex-col h-full overflow-hidden" data-testid="page-view">
+      <header className="flex-shrink-0 px-8 py-4 border-b border-slate-700" data-testid="page-header">
         <div className="flex items-center gap-4 mb-2">
           <button
             type="button"
@@ -127,6 +127,7 @@ export function PageView() {
             className="text-slate-400 hover:text-slate-200 transition-colors"
             aria-label="Go back"
             title="Go back"
+            data-testid="back-button"
           >
             ←
           </button>
@@ -145,12 +146,14 @@ export function PageView() {
             onClick={handleDelete}
             className="px-3 py-1.5 text-sm bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded transition-colors"
             aria-label="Delete page"
+            title="Delete current page"
+            data-testid="delete-page-button"
           >
             Delete
           </button>
         </div>
-      </div>
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      </header>
+      <main className="flex-1 overflow-y-auto px-8 py-6" data-testid="page-content">
         {currentPage && pagePath && (
           <>
             <CustomFieldsPanel
@@ -166,7 +169,7 @@ export function PageView() {
           onSave={handleContentSave}
           parentPath={pagePath}
         />
-      </div>
+      </main>
     </div>
   );
 }

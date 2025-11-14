@@ -65,18 +65,21 @@ export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelPro
   };
   
   return (
-    <div className="mb-4 border border-slate-700 rounded-lg">
+    <div className="mb-4 border border-slate-700 rounded-lg" data-testid="attachments-panel">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-slate-800 transition-colors rounded-t-lg"
+        aria-label={isExpanded ? "Collapse attachments" : "Expand attachments"}
+        aria-expanded={isExpanded}
+        data-testid="attachments-toggle"
       >
         <span className="text-sm font-medium text-slate-300">Attachments</span>
-        <span className="text-slate-400">{isExpanded ? "−" : "+"}</span>
+        <span className="text-slate-400" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t border-slate-700">
+        <div className="p-4 space-y-3 border-t border-slate-700" data-testid="attachments-content">
           <div>
             <label className="block mb-2">
               <input
@@ -86,32 +89,38 @@ export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelPro
                 disabled={isUploading}
                 className="hidden"
                 id="file-upload"
+                aria-label="Upload files"
+                data-testid="file-upload-input"
               />
-              <span className="inline-block px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded cursor-pointer transition-colors disabled:opacity-50">
+              <span className="inline-block px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded cursor-pointer transition-colors disabled:opacity-50" data-testid="upload-files-button">
                 {isUploading ? "Uploading..." : "Upload Files"}
               </span>
             </label>
           </div>
           
           {files.length === 0 ? (
-            <p className="text-sm text-slate-400">No attachments</p>
+            <p className="text-sm text-slate-400" role="status">No attachments</p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-2" role="list" aria-label="Attachments list" data-testid="attachments-list">
               {files.map((file) => (
                 <div
                   key={file.name}
                   className="flex items-center justify-between p-2 bg-slate-800 rounded"
+                  role="listitem"
+                  data-testid={`attachment-${file.name}`}
                 >
                   <a
                     href={api.getFileUrl(pagePath, file.name)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 text-sm text-sky-400 hover:text-sky-300 truncate"
+                    aria-label={`Download ${file.name}`}
+                    data-testid={`download-${file.name}`}
                   >
                     {file.name}
                   </a>
                   <div className="flex items-center gap-3 ml-2">
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-slate-400" aria-label={`File size: ${formatFileSize(file.size)}`}>
                       {formatFileSize(file.size)}
                     </span>
                     <button
@@ -119,6 +128,7 @@ export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelPro
                       onClick={() => handleDelete(file.name)}
                       className="text-xs text-red-400 hover:text-red-300"
                       aria-label={`Delete ${file.name}`}
+                      data-testid={`delete-attachment-${file.name}`}
                     >
                       Delete
                     </button>

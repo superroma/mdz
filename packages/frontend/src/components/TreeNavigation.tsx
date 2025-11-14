@@ -41,6 +41,9 @@ function TreeItem({
       <div
         className={`${baseClasses} ${selectedClasses}`}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
+        data-testid={`tree-item-${page.path}`}
+        role="group"
+        aria-label={`Page item: ${page.title}`}
       >
         <div
           role="button"
@@ -49,6 +52,8 @@ function TreeItem({
           onClick={handleClick}
           onKeyDown={(e) => e.key === "Enter" && handleClick()}
           aria-label={`Navigate to ${page.title}`}
+          aria-current={isSelected ? "page" : undefined}
+          data-testid={`navigate-to-${page.path}`}
         >
           {page.title}
         </div>
@@ -62,6 +67,7 @@ function TreeItem({
           } text-slate-400 active:text-slate-200 md:hover:text-slate-200 text-xs px-1`}
           aria-label={`Add child page to ${page.title}`}
           title="Add child page"
+          data-testid={`add-child-to-${page.path}`}
         >
           +
         </button>
@@ -109,12 +115,16 @@ export function TreeNavigation({
   };
 
   return (
-    <div className="flex flex-col overflow-y-auto">
+    <nav
+      className="flex flex-col overflow-y-auto"
+      aria-label="Page tree"
+      data-testid="page-tree"
+    >
       {pages.length === 0 ? (
-        <div className="px-3 py-4 text-sm text-slate-400">No pages yet</div>
+        <div className="px-3 py-4 text-sm text-slate-400" role="status">No pages yet</div>
       ) : (
         buildTree(pages)
       )}
-    </div>
+    </nav>
   );
 }

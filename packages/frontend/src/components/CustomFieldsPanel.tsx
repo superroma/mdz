@@ -94,18 +94,21 @@ export function CustomFieldsPanel({ page, pages, onFieldChange }: CustomFieldsPa
   };
   
   return (
-    <div className="mb-4 border border-slate-700 rounded-lg">
+    <div className="mb-4 border border-slate-700 rounded-lg" data-testid="custom-fields-panel">
       <button
         type="button"
         onClick={handleToggle}
         className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-slate-800 transition-colors rounded-t-lg"
+        aria-label={isExpanded ? "Collapse custom fields" : "Expand custom fields"}
+        aria-expanded={isExpanded}
+        data-testid="custom-fields-toggle"
       >
         <span className="text-sm font-medium text-slate-300">Fields</span>
-        <span className="text-slate-400">{isExpanded ? "−" : "+"}</span>
+        <span className="text-slate-400" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t border-slate-700">
+        <div className="p-4 space-y-3 border-t border-slate-700" data-testid="custom-fields-content">
           {schema.length > 0 ? (
             schema.map((field) => (
               <FieldEditor
@@ -169,7 +172,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
   };
   
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col gap-1" data-testid={`field-${field.name}`}>
       <label className="text-xs text-slate-400 uppercase tracking-wide">
         {field.name}
       </label>
@@ -181,6 +184,8 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
+          aria-label={field.name}
+          data-testid={`field-input-${field.name}`}
         />
       )}
       
@@ -191,6 +196,8 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(Number(e.target.value))}
           className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
+          aria-label={field.name}
+          data-testid={`field-input-${field.name}`}
         />
       )}
       
@@ -201,6 +208,8 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
+          aria-label={field.name}
+          data-testid={`field-input-${field.name}`}
         />
       )}
       
@@ -210,6 +219,8 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-slate-800 border border-slate-600 rounded text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
+          aria-label={field.name}
+          data-testid={`field-input-${field.name}`}
         >
           <option value="">Select...</option>
           {field.options?.map((option) => (
@@ -228,6 +239,8 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
             onChange={(e) => handleChange(e.target.checked)}
             className="w-4 h-4 text-sky-600 bg-slate-800 border-slate-600 rounded focus:ring-2 focus:ring-sky-500"
             disabled={isSaving}
+            aria-label={field.name}
+            data-testid={`field-input-${field.name}`}
           />
           <span className="text-sm text-slate-300">
             {Boolean(localValue) ? "Yes" : "No"}

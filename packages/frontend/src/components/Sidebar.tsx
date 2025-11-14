@@ -39,6 +39,8 @@ export function Sidebar({
           flex flex-col
           transition-transform duration-300 ease-in-out
         `}
+        aria-label="Page navigation sidebar"
+        data-testid="sidebar"
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-700">
           <h2 className="text-lg font-semibold text-slate-200">Pages</h2>
@@ -48,6 +50,7 @@ export function Sidebar({
             className="text-slate-400 hover:text-slate-200 text-xl px-2 py-1 leading-none"
             aria-label="Create new page"
             title="Create new page"
+            data-testid="create-root-page-button"
           >
             +
           </button>

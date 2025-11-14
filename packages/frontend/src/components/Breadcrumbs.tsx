@@ -32,14 +32,17 @@ export function Breadcrumbs({ pages, currentPath }: BreadcrumbsProps) {
   const breadcrumbs = buildBreadcrumbPath(currentPath);
 
   return (
-    <nav className="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb">
+    <nav className="flex items-center gap-2 text-sm text-slate-400" aria-label="Breadcrumb" data-testid="breadcrumb">
       {breadcrumbs.map((page, index) => (
         <div key={page.path} className="flex items-center gap-2">
-          {index > 0 && <span>/</span>}
+          {index > 0 && <span aria-hidden="true">/</span>}
           <button
             type="button"
             onClick={() => navigate(`/${page.path}`)}
             className="hover:text-slate-200 transition-colors"
+            aria-label={`Navigate to ${page.title}`}
+            aria-current={index === breadcrumbs.length - 1 ? "page" : undefined}
+            data-testid={`breadcrumb-${page.path}`}
           >
             {page.title}
           </button>

@@ -12,15 +12,15 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Find the Attachments panel button (not the list item)
-    const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
+    // Find the Attachments panel toggle button
+    const attachmentsButton = page.getByTestId("attachments-toggle");
     await attachmentsButton.click();
     await page.waitForTimeout(300);
     
     const tempFile = path.join(tmpdir(), "test-upload.txt");
     fs.writeFileSync(tempFile, "Test file content");
     
-    const fileInput = page.locator('input[type="file"]');
+    const fileInput = page.getByTestId("file-upload-input");
     await fileInput.setInputFiles(tempFile);
     await page.waitForTimeout(1000);
   }
@@ -152,20 +152,20 @@ When(
   /^I reference the image with (.+)$/,
   async function (this: AppWorld, markdown: string) {
     const page = await this.ensurePage();
-    const editButton = page.getByRole("button", { name: "Edit" });
+    const editButton = page.getByTestId("edit-button");
     await editButton.click();
     await page.waitForTimeout(300);
     
-    const textarea = page.locator("textarea");
+    const textarea = page.getByTestId("content-textarea");
     await textarea.fill(`# Test Page\n\n${markdown}\n\nContent here.`);
     
-    // Find Save button in the ContentEditor - it's next to the Preview button
-    const previewButton = page.getByRole("button", { name: "Preview" });
-    const saveButton = previewButton.locator("..").getByRole("button", { name: "Save", exact: true });
+    // Use Save button with data-testid
+    const saveButton = page.getByTestId("save-button");
     await saveButton.click();
     // Wait for save to complete
     await page.waitForTimeout(1000);
     // After saving, click Preview to see the rendered view
+    const previewButton = page.getByTestId("preview-button");
     await previewButton.click();
     await page.waitForTimeout(500);
   }

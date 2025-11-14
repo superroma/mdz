@@ -154,17 +154,19 @@ export function ContentEditor({
   if (!isEditing) {
     const { content: markdownContent } = parseFrontMatter(displayValue);
     return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4" data-testid="content-viewer">
         <div className="flex justify-between items-center">
           <button
             type="button"
             onClick={() => setIsEditing(true)}
             className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors"
+            aria-label="Edit page content"
+            data-testid="edit-button"
           >
             Edit
           </button>
         </div>
-        <div className="prose prose-invert max-w-none">
+        <div className="prose prose-invert max-w-none" data-testid="markdown-content" role="article">
           {markdownContent ? (
             <MDXContent
               content={markdownContent}
@@ -182,7 +184,7 @@ export function ContentEditor({
   }
 
   return (
-    <div className="flex flex-col gap-4 h-full">
+    <div className="flex flex-col gap-4 h-full" data-testid="content-editor">
       <div className="flex justify-between items-center">
         <button
           type="button"
@@ -191,6 +193,8 @@ export function ContentEditor({
             setIsEditing(false);
           }}
           className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded transition-colors"
+          aria-label="Preview page content"
+          data-testid="preview-button"
         >
           Preview
         </button>
@@ -199,6 +203,8 @@ export function ContentEditor({
           onClick={() => handleSave(value)}
           disabled={isSaving || value === content}
           className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Save page content"
+          data-testid="save-button"
         >
           {isSaving ? "Saving..." : "Save"}
         </button>
@@ -210,8 +216,9 @@ export function ContentEditor({
         placeholder="Start writing..."
         className="flex-1 w-full bg-slate-800 text-slate-100 p-4 rounded border border-slate-700 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
         aria-label="Page content"
+        data-testid="content-textarea"
       />
-      <div className="text-xs text-slate-400">
+      <div className="text-xs text-slate-400" role="status" aria-live="polite">
         Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Cmd+S</kbd> or{" "}
         <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Ctrl+S</kbd> to save
       </div>
