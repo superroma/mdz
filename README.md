@@ -9,3 +9,6 @@ Dont use pnpm, dont cd to install packages
 
 ## Functional tests
 `npm run test:e2e`
+
+
+
