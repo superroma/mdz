@@ -1,4 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { 
+  MDXEditor,
+  headingsPlugin,
+  listsPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  markdownShortcutPlugin,
+  linkPlugin,
+  linkDialogPlugin,
+  imagePlugin,
+  tablePlugin,
+  codeBlockPlugin,
+  codeMirrorPlugin,
+  diffSourcePlugin,
+  toolbarPlugin,
+} from "@mdxeditor/editor";
+import "@mdxeditor/editor/style.css";
 import { MDXContent } from "./MDXContent";
 import { parseFrontMatter, serializeFrontMatter } from "../utils/front-matter";
 import { toggleCheckboxAtLine } from "../utils/checkbox-updater";
@@ -22,6 +39,10 @@ export function ContentEditor({
   const pendingValueRef = useRef<string | null>(null);
   const displayUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Store frontmatter separately so MDXEditor only edits markdown content
+  const [frontMatter, setFrontMatter] = useState<Record<string, unknown>>({});
+  const [markdownOnly, setMarkdownOnly] = useState("");
+
   // Use refs to avoid stale closures in timeout callbacks
   const contentRef = useRef(content);
   const onSaveRef = useRef(onSave);
@@ -42,6 +63,10 @@ export function ContentEditor({
   useEffect(() => {
     setValue(content);
     setDisplayValue(content);
+    // Parse frontmatter from content
+    const { frontMatter: fm, content: md } = parseFrontMatter(content);
+    setFrontMatter(fm);
+    setMarkdownOnly(md);
   }, [content]);
 
   // Cleanup: save any pending changes before unmount
@@ -203,14 +228,35 @@ export function ContentEditor({
           {isSaving ? "Saving..." : "Save"}
         </button>
       </div>
-      <textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Start writing..."
-        className="flex-1 w-full bg-slate-800 text-slate-100 p-4 rounded border border-slate-700 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
+      <div 
+        className="flex-1 w-full bg-slate-800 text-slate-100 rounded border border-slate-700 focus-within:border-sky-500"
+        role="textbox"
         aria-label="Page content"
-      />
+        onKeyDown={handleKeyDown}
+      >
+        <MDXEditor
+          markdown={value}
+          onChange={setValue}
+          placeholder="Start writing..."
+          plugins={[
+            headingsPlugin(),
+            listsPlugin(),
+            quotePlugin(),
+            markdownShortcutPlugin(),
+            linkPlugin(),
+            imagePlugin(),
+            tablePlugin(),
+            codeBlockPlugin({ defaultCodeBlockLanguage: 'txt' }),
+          ]}
+          toMarkdownOptions={{
+            bullet: '-',
+            listItemIndent: 'one',
+            rule: '-',
+            strong: '*',
+            emphasis: '_',
+          }}
+        />
+      </div>
       <div className="text-xs text-slate-400">
         Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Cmd+S</kbd> or{" "}
         <kbd className="px-1.5 py-0.5 bg-slate-700 rounded">Ctrl+S</kbd> to save

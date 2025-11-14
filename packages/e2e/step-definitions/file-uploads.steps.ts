@@ -156,8 +156,21 @@ When(
     await editButton.click();
     await page.waitForTimeout(300);
     
-    const textarea = page.locator("textarea");
-    await textarea.fill(`# Test Page\n\n${markdown}\n\nContent here.`);
+    // MDXEditor uses a contentEditable div
+    const editorContainer = page.getByLabel("Page content");
+    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
+    await contentEditable.click();
+    await page.waitForTimeout(200);
+    // Select all and delete existing content
+    await page.keyboard.press("Control+a");
+    await page.keyboard.press("Meta+a");
+    await page.waitForTimeout(200);
+    await page.keyboard.press("Backspace");
+    await page.waitForTimeout(200);
+    // Type the new content
+    const content = `# Test Page\n\n${markdown}\n\nContent here.`;
+    await page.keyboard.type(content, { delay: 1 });
+    await page.waitForTimeout(300);
     
     // Find Save button in the ContentEditor - it's next to the Preview button
     const previewButton = page.getByRole("button", { name: "Preview" });

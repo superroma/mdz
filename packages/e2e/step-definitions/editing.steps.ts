@@ -60,9 +60,22 @@ When(
   "I modify the content and press Cmd+S",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByLabel("Page content");
-    await editor.fill("Modified content for testing");
-    await editor.press("Meta+s");
+    const editorContainer = page.getByLabel("Page content");
+    // MDXEditor uses a contentEditable div - we need to interact with it differently
+    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
+    await contentEditable.click();
+    await page.waitForTimeout(200);
+    // Select all using both Ctrl+A and Meta+A to ensure it works
+    await page.keyboard.press("Control+a");
+    await page.keyboard.press("Meta+a");
+    await page.waitForTimeout(200);
+    // Delete selected content
+    await page.keyboard.press("Backspace");
+    await page.waitForTimeout(200);
+    // Type new content
+    await page.keyboard.type("Modified content for testing", { delay: 1 });
+    await page.waitForTimeout(300);
+    await page.keyboard.press("Meta+s");
     await page.waitForTimeout(500);
   }
 );
@@ -101,9 +114,13 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(500);
-    const editor = page.getByLabel("Page content");
-    const value = await editor.inputValue();
-    expect(value).toBe("Modified content for testing");
+    const editorContainer = page.getByLabel("Page content");
+    // MDXEditor uses a contentEditable div - get the full inner text
+    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
+    const textContent = await contentEditable.evaluate((el) => {
+      return (el as HTMLElement).innerText || el.textContent || '';
+    });
+    expect(textContent?.trim()).toBe("Modified content for testing");
   }
 );
 

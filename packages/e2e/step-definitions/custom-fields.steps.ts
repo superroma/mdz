@@ -16,6 +16,7 @@ Given(
 
 Given(
   "I create a parent page with a schema",
+  { timeout: 15000 },
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
@@ -34,8 +35,19 @@ Given(
     await editButton.click();
     await page.waitForTimeout(300);
     
-    const textarea = page.locator("textarea");
-    await textarea.fill(`---
+    // MDXEditor uses a contentEditable div
+    const editorContainer = page.getByLabel("Page content");
+    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
+    await contentEditable.click();
+    await page.waitForTimeout(200);
+    // Select all and delete existing content
+    await page.keyboard.press("Control+a");
+    await page.keyboard.press("Meta+a");
+    await page.waitForTimeout(200);
+    await page.keyboard.press("Backspace");
+    await page.waitForTimeout(200);
+    // Type the new content
+    const content = `---
 __schema:
   - name: status
     type: select
@@ -47,12 +59,13 @@ __schema:
 
 # Test Parent
 
-Content here.
-`);
+Content here.`;
+    await page.keyboard.type(content, { delay: 1 });
+    await page.waitForTimeout(500);
     
     const saveButton = page.getByRole("button", { name: "Save" });
     await saveButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(1500);
     
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
     await page.waitForTimeout(1000);
@@ -156,10 +169,15 @@ Then(
     const page = await this.ensurePage();
     const editButton = page.getByRole("button", { name: "Edit" });
     await editButton.click();
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
     
-    const textarea = page.locator("textarea");
-    const content = await textarea.inputValue();
+    // MDXEditor uses a contentEditable div - get the full inner text
+    const editorContainer = page.getByLabel("Page content");
+    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
+    // Get all text content including nested elements
+    const content = await contentEditable.evaluate((el) => {
+      return (el as HTMLElement).innerText || el.textContent || '';
+    });
     expect(content).toContain("status: Done");
   }
 );
