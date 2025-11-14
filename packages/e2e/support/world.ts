@@ -6,6 +6,9 @@ export type HttpResponse = {
   body: unknown;
 };
 
+// Shared browser instance across all scenarios for better performance
+let sharedBrowser: Browser | undefined;
+
 export class AppWorld extends World {
   browser?: Browser;
   context?: BrowserContext;
@@ -21,10 +24,16 @@ export class AppWorld extends World {
   }
 
   async ensurePage() {
-    if (!this.browser) {
-      this.browser = await chromium.launch();
+    // Reuse shared browser instance
+    if (!sharedBrowser) {
+      sharedBrowser = await chromium.launch({
+        headless: true,
+        args: ['--disable-dev-shm-usage', '--no-sandbox']
+      });
     }
+    this.browser = sharedBrowser;
 
+    // Create new context for each scenario (isolation)
     if (!this.context) {
       this.context = await this.browser.newContext();
     }
@@ -37,6 +46,7 @@ export class AppWorld extends World {
   }
 
   async resetBrowser() {
+    // Only close page and context, keep browser alive
     if (this.page) {
       await this.page.close();
       this.page = undefined;
@@ -45,9 +55,13 @@ export class AppWorld extends World {
       await this.context.close();
       this.context = undefined;
     }
-    if (this.browser) {
-      await this.browser.close();
-      this.browser = undefined;
+    // Don't close shared browser between scenarios
+  }
+
+  static async closeSharedBrowser() {
+    if (sharedBrowser) {
+      await sharedBrowser.close();
+      sharedBrowser = undefined;
     }
   }
 }

@@ -64,8 +64,8 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1000);
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "load" });
+    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
   }
 );
 
@@ -108,8 +108,8 @@ Given(
   async function (this: AppWorld) {
     await ensureServersRunning();
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1000);
+    await page.goto(`${FRONTEND_URL}/Welcome/Tasks`, { waitUntil: "load" });
+    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
   }
 );
 

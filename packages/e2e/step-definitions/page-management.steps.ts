@@ -22,7 +22,7 @@ When(
     const pageLoaded = await page.url();
     if (!pageLoaded || pageLoaded === 'about:blank') {
       await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-      await page.waitForTimeout(1000);
+      await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     }
     
     const createButton = page.getByTestId("create-root-page-button");
@@ -33,7 +33,7 @@ When(
       const hamburgerVisible = await hamburger.isVisible().catch(() => false);
       if (hamburgerVisible) {
         await hamburger.click();
-        await page.waitForTimeout(300);
+        await page.waitForSelector('aside', { state: 'visible', timeout: 1000 });
       }
     }
     
@@ -48,7 +48,7 @@ When(
     const titleField = page.getByTestId("page-title-input");
     await titleField.fill("Test Page Renamed");
     await titleField.press("Enter");
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
   }
 );
 
@@ -73,7 +73,7 @@ When(
     });
     
     await page.getByTestId("delete-page-button").click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('domcontentloaded');
   }
 );
 
@@ -114,7 +114,6 @@ Then(
   "the page should be renamed",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(1000);
     const titleField = page.getByTestId("page-title-input");
     const value = await titleField.inputValue();
     expect(value).not.toBe("Untitled");
@@ -136,7 +135,6 @@ Then(
   "the sidebar should show the new name",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
     const sidebarButtons = page.getByRole("button", { name: /Navigate to/i });
     const count = await sidebarButtons.count();
     expect(count).toBeGreaterThan(0);

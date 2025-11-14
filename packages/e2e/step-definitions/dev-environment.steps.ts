@@ -15,8 +15,8 @@ When(
   "I visit the application",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.goto(`${FRONTEND_URL}/Welcome`, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1000);
+    await page.goto(`${FRONTEND_URL}/Welcome`, { waitUntil: "load" });
+    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
   }
 );
 

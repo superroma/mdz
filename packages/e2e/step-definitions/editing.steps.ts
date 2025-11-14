@@ -44,7 +44,7 @@ When(
     const titleField = page.getByTestId("page-title-input");
     await titleField.fill("Test Title Auto Save");
     await titleField.blur();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
   }
 );
 
@@ -63,7 +63,7 @@ When(
     const editor = page.getByTestId("content-textarea");
     await editor.fill("Modified content for testing");
     await editor.press("Meta+s");
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
   }
 );
 
@@ -80,7 +80,6 @@ Then(
   "the title should be saved automatically",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
     const titleField = page.getByTestId("page-title-input");
     const value = await titleField.inputValue();
     expect(value).toBe("Test Title Auto Save");
@@ -100,7 +99,6 @@ Then(
   "the content should be saved",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
     const editor = page.getByTestId("content-textarea");
     const value = await editor.inputValue();
     expect(value).toBe("Modified content for testing");
@@ -120,7 +118,7 @@ Then(
   "the content editor should receive focus",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(200);
+    await page.waitForLoadState('domcontentloaded');
   }
 );
 

@@ -47,6 +47,7 @@ After(async function (this: AppWorld, { result }: ITestCaseHookParameter) {
 });
 
 AfterAll(async function () {
+  await AppWorld.closeSharedBrowser();
   await shutdownServers();
 });
 

@@ -32,11 +32,11 @@ Given(
     
     const firstPage = page.getByRole("button", { name: /Navigate to/i }).first();
     await firstPage.click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('domcontentloaded');
     
     const secondPage = page.getByRole("button", { name: /Navigate to/i }).nth(1);
     await secondPage.click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('domcontentloaded');
   }
 );
 
@@ -175,7 +175,6 @@ Then(
   "I should return to the previous page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
     // URL should be a page path (not root)
     const pathname = new URL(page.url()).pathname;
     expect(pathname).not.toBe("/");

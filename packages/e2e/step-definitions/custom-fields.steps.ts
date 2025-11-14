@@ -52,10 +52,10 @@ Content here.
     
     const saveButton = page.getByRole("button", { name: "Save" });
     await saveButton.click();
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(1000);
+    await page.goto(FRONTEND_URL, { waitUntil: "load" });
+    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
   }
 );
 

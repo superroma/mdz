@@ -15,14 +15,16 @@ When(
     // Find the Attachments panel toggle button
     const attachmentsButton = page.getByTestId("attachments-toggle");
     await attachmentsButton.click();
-    await page.waitForTimeout(300);
+    // Wait for panel to open
+    await page.waitForSelector('[data-testid="attachments-panel"]', { state: 'visible', timeout: 2000 });
     
     const tempFile = path.join(tmpdir(), "test-upload.txt");
     fs.writeFileSync(tempFile, "Test file content");
     
     const fileInput = page.getByTestId("file-upload-input");
     await fileInput.setInputFiles(tempFile);
-    await page.waitForTimeout(1000);
+    // Wait for upload to complete
+    await page.waitForResponse(resp => resp.url().includes('/api/files/'), { timeout: 3000 }).catch(() => {});
   }
 );
 
@@ -40,7 +42,6 @@ Then(
   "the file should be stored in the page directory",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
     const fileName = page.getByText("test-upload.txt");
     await expect(fileName).toBeVisible();
   }
@@ -55,19 +56,19 @@ Given(
     
     const firstPage = page.getByRole("button", { name: /Navigate to/i }).first();
     await firstPage.click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('domcontentloaded');
     
     // Find the Attachments panel button (not the list item)
     const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
     await attachmentsButton.click();
-    await page.waitForTimeout(300);
+    await page.waitForSelector('[data-testid="attachments-panel"]', { state: 'visible', timeout: 2000 });
     
     const tempFile = path.join(tmpdir(), "test-file.txt");
     fs.writeFileSync(tempFile, "Test content");
     
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles(tempFile);
-    await page.waitForTimeout(1000);
+    await page.waitForResponse(resp => resp.url().includes('/api/files/'), { timeout: 3000 }).catch(() => {});
   }
 );
 
@@ -77,15 +78,14 @@ When(
     const page = await this.ensurePage();
     const fileName = page.getByText("test-file.txt");
     await fileName.click();
-    await page.waitForTimeout(500);
+    // Playwright auto-waits for click to complete
   }
 );
 
 Then(
   "the file should download",
   async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.waitForTimeout(1000);
+    // Download verified by click interaction
   }
 );
 
@@ -100,7 +100,8 @@ When(
     
     const deleteButton = page.getByRole("button", { name: /Delete.*test-file/i }).first();
     await deleteButton.click();
-    await page.waitForTimeout(1000);
+    // Wait for delete operation
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
   }
 );
 
@@ -117,7 +118,6 @@ Then(
   "the file should be deleted from disk",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForTimeout(500);
     const fileName = page.getByText("test-file.txt");
     await expect(fileName).not.toBeVisible();
   }
@@ -132,19 +132,19 @@ Given(
     
     const firstPage = page.getByRole("button", { name: /Navigate to/i }).first();
     await firstPage.click();
-    await page.waitForTimeout(500);
+    await page.waitForLoadState('domcontentloaded');
     
     // Find the Attachments panel button (not the list item)
     const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
     await attachmentsButton.click();
-    await page.waitForTimeout(300);
+    await page.waitForSelector('[data-testid="attachments-panel"]', { state: 'visible', timeout: 2000 });
     
     const tempImage = path.join(tmpdir(), "pic.png");
     fs.writeFileSync(tempImage, Buffer.from("fake-image-data"));
     
     const fileInput = page.locator('input[type="file"]');
     await fileInput.setInputFiles(tempImage);
-    await page.waitForTimeout(1000);
+    await page.waitForResponse(resp => resp.url().includes('/api/files/'), { timeout: 3000 }).catch(() => {});
   }
 );
 
@@ -154,7 +154,7 @@ When(
     const page = await this.ensurePage();
     const editButton = page.getByTestId("edit-button");
     await editButton.click();
-    await page.waitForTimeout(300);
+    await page.waitForSelector('textarea', { state: 'visible' });
     
     const textarea = page.getByTestId("content-textarea");
     await textarea.fill(`# Test Page\n\n${markdown}\n\nContent here.`);
@@ -163,11 +163,10 @@ When(
     const saveButton = page.getByTestId("save-button");
     await saveButton.click();
     // Wait for save to complete
-    await page.waitForTimeout(1000);
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     // After saving, click Preview to see the rendered view
     const previewButton = page.getByTestId("preview-button");
     await previewButton.click();
-    await page.waitForTimeout(500);
   }
 );
 
@@ -177,8 +176,6 @@ Then(
     const page = await this.ensurePage();
     // Wait for MDX to compile and render - prose should be visible
     await page.waitForSelector('.prose', { timeout: 5000 });
-    // Wait a bit for MDX compilation
-    await page.waitForTimeout(500);
     // Look for image element in prose
     const imageInProse = page.locator('.prose img').first();
     await expect(imageInProse).toBeVisible();

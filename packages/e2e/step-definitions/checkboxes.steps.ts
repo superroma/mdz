@@ -11,7 +11,7 @@ Given(
     const page = await this.ensurePage();
     
     // Navigate to the page using the sidebar
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    await page.goto(FRONTEND_URL, { waitUntil: "load" });
     await page.waitForSelector('[aria-label*="Navigate to"]', { timeout: 5000 });
     
     // Find and click the page in the sidebar
@@ -102,10 +102,8 @@ Given(
     if (!isChecked) {
       // Toggle it to checked state
       await targetCheckbox.click({ force: true });
-      // Wait for debounce + save + re-render
-      await page.waitForTimeout(1000);
-      // Wait for content to be re-rendered
-      await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 3000 });
+      // Wait for content to be re-rendered after click
+      await page.waitForSelector('.prose input[type="checkbox"]', { state: 'attached', timeout: 3000 });
     }
   }
 );
@@ -167,9 +165,8 @@ When(
     // Click the checkbox - use force if needed since we're preventing default
     await targetCheckbox.click({ force: true });
     
-    // Wait for React to process the click and for any re-renders to complete
-    // This ensures the next click will target a stable DOM element
-    await page.waitForTimeout(250);
+    // Small wait to ensure React processes the click and DOM updates
+    await page.waitForTimeout(100);
   }
 );
 
@@ -272,8 +269,8 @@ Then(
   "the changes should be saved automatically",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for debounce (300ms) + save operation
-    await page.waitForTimeout(500);
+    // Wait for save operation to complete
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     
     // Verify by checking backend - if we got here, the previous step already verified the content
     // But we can also check that the save button is disabled (indicating no unsaved changes)
@@ -290,7 +287,7 @@ Then(
   /^both checkboxes should be checked$/,
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for debounce (300ms) + save + potential re-render
+    // Wait for debounce (300ms) + save operation + re-render
     await page.waitForTimeout(1000);
     
     // Get the page path from the URL
