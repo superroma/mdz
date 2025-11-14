@@ -35,17 +35,25 @@ Given(
     await editButton.click();
     await page.waitForTimeout(300);
     
-    // MDXEditor uses a contentEditable div
-    const editorContainer = page.getByLabel("Page content");
-    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
-    await contentEditable.click();
+    // Click the source toggle button to enter source editing mode
+    // Look for the toolbar and the first button (source toggle)
+    await page.waitForTimeout(500);
+    const toolbar = page.locator('.mdxeditor').locator('[role="toolbar"]').or(page.locator('.mdxeditor-toolbar')).first();
+    await toolbar.waitFor({ state: 'visible', timeout: 10000 });
+    const sourceToggle = toolbar.locator('button').first();
+    await sourceToggle.click();
+    await page.waitForTimeout(500);
+    
+    // In source mode, we have a textarea
+    const textarea = page.locator('textarea').first();
+    await textarea.click();
     await page.waitForTimeout(200);
     // Select all and delete existing content
-    await page.keyboard.press("Control+a");
-    await page.keyboard.press("Meta+a");
-    await page.waitForTimeout(200);
-    await page.keyboard.press("Backspace");
-    await page.waitForTimeout(200);
+    await textarea.press("Control+a");
+    await textarea.press("Meta+a");
+    await page.waitForTimeout(100);
+    await textarea.press("Backspace");
+    await page.waitForTimeout(100);
     // Type the new content
     const content = `---
 __schema:
@@ -60,7 +68,7 @@ __schema:
 # Test Parent
 
 Content here.`;
-    await page.keyboard.type(content, { delay: 1 });
+    await textarea.fill(content);
     await page.waitForTimeout(500);
     
     const saveButton = page.getByRole("button", { name: "Save" });
@@ -165,19 +173,24 @@ Then(
 
 Then(
   "the front-matter should be updated",
+  { timeout: 15000 },
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     const editButton = page.getByRole("button", { name: "Edit" });
     await editButton.click();
     await page.waitForTimeout(500);
     
-    // MDXEditor uses a contentEditable div - get the full inner text
-    const editorContainer = page.getByLabel("Page content");
-    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
-    // Get all text content including nested elements
-    const content = await contentEditable.evaluate((el) => {
-      return (el as HTMLElement).innerText || el.textContent || '';
-    });
+    // Click the source toggle button to view source
+    await page.waitForTimeout(500);
+    const toolbar = page.locator('.mdxeditor').locator('[role="toolbar"]').or(page.locator('.mdxeditor-toolbar')).first();
+    await toolbar.waitFor({ state: 'visible', timeout: 10000 });
+    const sourceToggle = toolbar.locator('button').first();
+    await sourceToggle.click();
+    await page.waitForTimeout(500);
+    
+    // In source mode, check the textarea content
+    const textarea = page.locator('textarea').first();
+    const content = await textarea.inputValue();
     expect(content).toContain("status: Done");
   }
 );

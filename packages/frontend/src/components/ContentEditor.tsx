@@ -14,6 +14,14 @@ import {
   codeMirrorPlugin,
   diffSourcePlugin,
   toolbarPlugin,
+  DiffSourceToggleWrapper,
+  UndoRedo,
+  BoldItalicUnderlineToggles,
+  BlockTypeSelect,
+  CreateLink,
+  InsertImage,
+  ListsToggle,
+  Separator,
 } from "@mdxeditor/editor";
 import "@mdxeditor/editor/style.css";
 import { MDXContent } from "./MDXContent";
@@ -239,6 +247,25 @@ export function ContentEditor({
           onChange={setValue}
           placeholder="Start writing..."
           plugins={[
+            toolbarPlugin({
+              toolbarContents: () => (
+                <>
+                  <DiffSourceToggleWrapper>
+                    <UndoRedo />
+                    <Separator />
+                    <BoldItalicUnderlineToggles />
+                    <Separator />
+                    <BlockTypeSelect />
+                    <Separator />
+                    <ListsToggle />
+                    <Separator />
+                    <CreateLink />
+                    <InsertImage />
+                  </DiffSourceToggleWrapper>
+                </>
+              ),
+            }),
+            diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: '' }),
             headingsPlugin(),
             listsPlugin(),
             quotePlugin(),

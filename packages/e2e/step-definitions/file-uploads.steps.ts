@@ -150,26 +150,28 @@ Given(
 
 When(
   /^I reference the image with (.+)$/,
+  { timeout: 15000 },
   async function (this: AppWorld, markdown: string) {
     const page = await this.ensurePage();
     const editButton = page.getByRole("button", { name: "Edit" });
     await editButton.click();
     await page.waitForTimeout(300);
     
-    // MDXEditor uses a contentEditable div
-    const editorContainer = page.getByLabel("Page content");
-    const contentEditable = editorContainer.locator('[contenteditable="true"]').first();
-    await contentEditable.click();
-    await page.waitForTimeout(200);
-    // Select all and delete existing content
-    await page.keyboard.press("Control+a");
-    await page.keyboard.press("Meta+a");
-    await page.waitForTimeout(200);
-    await page.keyboard.press("Backspace");
+    // Click the source toggle button to enter source editing mode
+    await page.waitForTimeout(500);
+    const toolbar = page.locator('.mdxeditor').locator('[role="toolbar"]').or(page.locator('.mdxeditor-toolbar')).first();
+    await toolbar.waitFor({ state: 'visible', timeout: 10000 });
+    const sourceToggle = toolbar.locator('button').first();
+    await sourceToggle.click();
+    await page.waitForTimeout(500);
+    
+    // In source mode, we have a textarea
+    const textarea = page.locator('textarea').first();
+    await textarea.click();
     await page.waitForTimeout(200);
     // Type the new content
     const content = `# Test Page\n\n${markdown}\n\nContent here.`;
-    await page.keyboard.type(content, { delay: 1 });
+    await textarea.fill(content);
     await page.waitForTimeout(300);
     
     // Find Save button in the ContentEditor - it's next to the Preview button
