@@ -124,3 +124,97 @@
   content: none;
 }
 
+/* List margins and padding - GitHub style */
+.prose ul,
+.prose ol {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 32px;
+}
+
+.prose li {
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-left: 0;
+}
+
+/* Nested lists - need higher specificity to override Tailwind prose */
+.prose ul li > ul,
+.prose ul li > ol,
+.prose ol li > ul,
+.prose ol li > ol {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* H4, H5, H6 margins - GitHub style */
+.prose h4,
+.prose h5,
+.prose h6 {
+  margin-top: 24px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.prose h5 {
+  font-size: 0.875em;
+}
+
+.prose h6 {
+  font-size: 0.85em;
+  color: rgb(89, 99, 110);
+}
+
+/* Blockquote - GitHub style */
+.prose blockquote {
+  font-weight: 400;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-left: 16px;
+  border-left: 4px solid var(--color-border-primary);
+  color: rgb(89, 99, 110);
+}
+
+/* Code blocks - GitHub style */
+.prose pre {
+  background-color: rgb(246, 248, 250);
+  color: rgb(31, 35, 40);
+  font-size: 0.85em;
+  line-height: 1.45;
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+/* Code inside pre should not have inline code styling */
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+  border-radius: 0;
+}
+
+/* Tables - GitHub style */
+.prose table {
+  font-size: 16px;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.prose th,
+.prose td {
+  font-size: 16px;
+  padding: 6px 13px;
+  border: 1px solid var(--color-border-primary);
+}
+
+.prose th {
+  font-weight: 600;
+}
+
+.prose thead th {
+  background-color: rgb(246, 248, 250);
+}
+
