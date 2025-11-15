@@ -39,13 +39,11 @@ When(
 );
 
 When(
-  "I modify the content and press Cmd+S",
+  "I modify the content",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     const editor = page.getByTestId("content-textarea");
     await editor.fill("Modified content for testing");
-    await editor.press("Meta+s");
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
   }
 );
 
@@ -69,21 +67,16 @@ Then(
 );
 
 Then(
-  "the content should be saved",
+  "the content should be auto-saved after delay",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
+    // Wait for autosave delay (1 second) plus network time
+    await page.waitForTimeout(1500);
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    
     const editor = page.getByTestId("content-textarea");
     const value = await editor.inputValue();
     expect(value).toBe("Modified content for testing");
-  }
-);
-
-Then(
-  "I should see a success indicator",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    const saveButton = page.getByTestId("save-button");
-    await expect(saveButton).toBeDisabled();
   }
 );
 

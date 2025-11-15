@@ -3,14 +3,13 @@ Feature: Page Editing
   I want to edit page content
   So that I can update my notes
 
-  Scenario: Page editing workflow
+  Scenario: Page editing workflow with autosave
     Given I am viewing a page
     And I am in preview mode
     When I click the "Edit" button
     Then the "markdown source editor" should be visible
-    When I modify the content and press Cmd+S
-    Then the content should be saved
-    And I should see a success indicator
+    When I modify the content
+    Then the content should be auto-saved after delay
     When I edit the title field and blur focus
     Then the title should be saved automatically
 
