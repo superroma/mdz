@@ -1,9 +1,8 @@
 ---
 status: Todo
 priority: Medium
-due_date: 2025-11-30
+due_date: '2025-11-30T00:00:00.000Z'
 ---
-
 # Deploy Application
 
 ## Deployment Checklist
@@ -18,4 +17,3 @@ due_date: 2025-11-30
 ## Notes
 
 Deployment planned for end of November.
-

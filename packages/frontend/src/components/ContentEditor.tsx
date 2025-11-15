@@ -120,8 +120,7 @@ export function ContentEditor({
         return;
       }
 
-      // Calculate the updated content
-      let updatedContent: string;
+      // Calculate the updated content first
       const baseContent = pendingValueRef.current || value;
       const { content: markdownContent, frontMatter } =
         parseFrontMatter(baseContent);
@@ -129,7 +128,7 @@ export function ContentEditor({
         markdownContent,
         checkboxIndex
       );
-      updatedContent = serializeFrontMatter(
+      const updatedContent = serializeFrontMatter(
         frontMatter,
         updatedMarkdown
       );
@@ -137,30 +136,27 @@ export function ContentEditor({
       // Update pending ref immediately so next rapid click sees this change
       pendingValueRef.current = updatedContent;
 
-      // Update state values
+      // Update both value and display value (not nested)
       setValue(updatedContent);
       setDisplayValue(updatedContent);
 
-      // Schedule save outside of render cycle to avoid setState during render warning
-      queueMicrotask(() => {
-        // For checkbox toggles (only editable content in preview mode),
-        // save immediately if no save is in progress. If another save is already
-        // happening (rare case of rapid successive checkbox clicks), use short debounce
-        if (!saveInProgressRef.current) {
-          // No save in progress, save immediately
-          handleSave(updatedContent);
-        } else {
-          // Save in progress, use short debounce for rapid clicks
-          if (saveTimeoutRef.current) {
-            clearTimeout(saveTimeoutRef.current);
-          }
-          saveTimeoutRef.current = setTimeout(() => {
-            handleSave(updatedContent);
-          }, 50);
+      // For checkbox toggles (only editable content in preview mode),
+      // save immediately if no save is in progress. If another save is already
+      // happening (rare case of rapid successive checkbox clicks), use short debounce
+      if (!saveInProgressRef.current) {
+        // No save in progress, save immediately
+        handleSave(updatedContent);
+      } else {
+        // Save in progress, use short debounce for rapid clicks
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
         }
-      });
+        saveTimeoutRef.current = setTimeout(() => {
+          handleSave(updatedContent);
+        }, 50);
+      }
     },
-    [isEditing, handleSave, value]
+    [isEditing, value, handleSave]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

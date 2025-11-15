@@ -7,8 +7,8 @@ Welcome to MDZ! This guide will help you get started with using the application.
 
 ## Quick Start Checklist
 
-- [ ] Read this getting started guide
-- [ ] Explore the Markdown Guide
+- [x] Read this getting started guide
+- [x] Explore the Markdown Guide
 - [ ] Create your first page
 - [ ] Try editing a page
 - [ ] Test the interactive checkboxes below

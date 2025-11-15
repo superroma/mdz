@@ -241,7 +241,7 @@ export function MDXContent({
   onCheckboxToggle,
 }: MDXContentProps) {
   const navigate = useNavigate();
-  const [MDXComponent, setMDXComponent] = useState<React.ComponentType | null>(
+  const [MDXComponent, setMDXComponent] = useState<React.ComponentType<any> | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
@@ -338,7 +338,7 @@ export function MDXContent({
                 }
 
                 if (Array.isArray(node.children)) {
-                  node.children.forEach((child) => visit(child, node));
+                  node.children.forEach((child: any) => visit(child, node));
                 }
               };
 
