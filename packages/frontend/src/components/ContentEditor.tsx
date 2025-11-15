@@ -120,23 +120,29 @@ export function ContentEditor({
         return;
       }
 
-      // Apply toggle immediately to value state
-      setValue((currentValue) => {
-        const baseContent = pendingValueRef.current || currentValue;
-        const { content: markdownContent, frontMatter } =
-          parseFrontMatter(baseContent);
-        const updatedMarkdown = toggleCheckboxAtLine(
-          markdownContent,
-          checkboxIndex
-        );
-        const updatedContent = serializeFrontMatter(
-          frontMatter,
-          updatedMarkdown
-        );
+      // Calculate the updated content
+      let updatedContent: string;
+      const baseContent = pendingValueRef.current || value;
+      const { content: markdownContent, frontMatter } =
+        parseFrontMatter(baseContent);
+      const updatedMarkdown = toggleCheckboxAtLine(
+        markdownContent,
+        checkboxIndex
+      );
+      updatedContent = serializeFrontMatter(
+        frontMatter,
+        updatedMarkdown
+      );
 
-        // Update pending ref immediately so next rapid click sees this change
-        pendingValueRef.current = updatedContent;
+      // Update pending ref immediately so next rapid click sees this change
+      pendingValueRef.current = updatedContent;
 
+      // Update state values
+      setValue(updatedContent);
+      setDisplayValue(updatedContent);
+
+      // Schedule save outside of render cycle to avoid setState during render warning
+      queueMicrotask(() => {
         // For checkbox toggles (only editable content in preview mode),
         // save immediately if no save is in progress. If another save is already
         // happening (rare case of rapid successive checkbox clicks), use short debounce
@@ -152,15 +158,9 @@ export function ContentEditor({
             handleSave(updatedContent);
           }, 50);
         }
-
-        // Update display value immediately to prevent checkbox index shifts
-        // during rapid clicks
-        setDisplayValue(updatedContent);
-
-        return updatedContent;
       });
     },
-    [isEditing, debouncedSave]
+    [isEditing, handleSave, value]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
