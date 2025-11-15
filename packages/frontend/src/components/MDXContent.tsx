@@ -254,8 +254,8 @@ export function MDXContent({
   useEffect(() => {
     let isCancelled = false;
 
-    // Reset component state when content changes
-    setMDXComponent(null);
+    // Don't reset component - keep old one mounted while compiling new one
+    // This prevents full DOM remount and allows React to do incremental updates
     setError(null);
 
     async function compileMDX() {
