@@ -55,8 +55,10 @@ describe("ContentEditor", () => {
     await user.click(editButton);
     
     expect(screen.getByRole("button", { name: ARIA_LABELS.previewPageContent })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: ARIA_LABELS.savePageContent })).toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: ARIA_LABELS.pageContent })).toBeInTheDocument();
+    // Check for undo/redo buttons
+    expect(screen.getByLabelText(/Undo/)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Redo/)).toBeInTheDocument();
   });
 
   it("shows textarea with content in edit mode", async () => {
@@ -83,8 +85,9 @@ describe("ContentEditor", () => {
     expect(textarea).toHaveValue(contentWithFrontmatter);
   });
 
-  it("calls onSave when Save button clicked", async () => {
-    const user = userEvent.setup();
+  it("auto-saves content after typing", async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi.fn().mockResolvedValue(undefined);
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
@@ -94,13 +97,16 @@ describe("ContentEditor", () => {
     await user.clear(textarea);
     await user.type(textarea, "Modified content");
     
-    await user.click(screen.getByRole("button", { name: ARIA_LABELS.savePageContent }));
+    // Wait for autosave timeout (1 second)
+    await vi.runAllTimersAsync();
     
     expect(onSave).toHaveBeenCalledWith("Modified content");
+    vi.useRealTimers();
   });
 
-  it("calls onSave with full content including frontmatter when Save button clicked", async () => {
-    const user = userEvent.setup();
+  it("auto-saves full content including frontmatter after typing", async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi.fn().mockResolvedValue(undefined);
     const contentWithFrontmatter = "---\ntitle: Test\n---\nOriginal";
     renderWithRouter(<ContentEditor content={contentWithFrontmatter} onSave={onSave} />);
@@ -111,24 +117,27 @@ describe("ContentEditor", () => {
     await user.clear(textarea);
     await user.type(textarea, "---\ntitle: Updated\n---\nModified content");
     
-    await user.click(screen.getByRole("button", { name: ARIA_LABELS.savePageContent }));
+    // Wait for autosave timeout (1 second)
+    await vi.runAllTimersAsync();
     
     expect(onSave).toHaveBeenCalledWith("---\ntitle: Updated\n---\nModified content");
+    vi.useRealTimers();
   });
 
-  it("disables Save button when content unchanged", async () => {
+  it("shows undo button disabled when no undo history", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Same content" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    const saveButton = screen.getByRole("button", { name: ARIA_LABELS.savePageContent });
-    expect(saveButton).toBeDisabled();
+    const undoButton = screen.getByLabelText(/Undo/);
+    expect(undoButton).toBeDisabled();
   });
 
-  it("enables Save button when content changes", async () => {
-    const user = userEvent.setup();
+  it("enables undo button after content changes", async () => {
+    vi.useFakeTimers();
+    const user = userEvent.setup({ delay: null });
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
@@ -137,8 +146,12 @@ describe("ContentEditor", () => {
     const textarea = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
     await user.type(textarea, " modified");
     
-    const saveButton = screen.getByRole("button", { name: ARIA_LABELS.savePageContent });
-    expect(saveButton).not.toBeDisabled();
+    // Wait for history update (1 second)
+    await vi.runAllTimersAsync();
+    
+    const undoButton = screen.getByLabelText(/Undo/);
+    expect(undoButton).not.toBeDisabled();
+    vi.useRealTimers();
   });
 
   it("returns to view mode when Preview clicked", async () => {
@@ -153,7 +166,7 @@ describe("ContentEditor", () => {
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
   });
 
-  it("discards changes when switching to Preview mode", async () => {
+  it("preserves changes when switching to Preview mode (deep undo)", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
@@ -168,17 +181,18 @@ describe("ContentEditor", () => {
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
     const textareaAgain = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
-    expect(textareaAgain).toHaveValue("Original");
+    expect(textareaAgain).toHaveValue("Modified");
   });
 
-  it("shows keyboard shortcut hint", async () => {
+  it("shows autosave and undo/redo keyboard shortcut hints", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
     renderWithRouter(<ContentEditor content="Test" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
-    expect(screen.getByText(/Cmd\+S/i)).toBeInTheDocument();
+    expect(screen.getByText(/auto-save/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cmd\+Z/i)).toBeInTheDocument();
   });
 
   it("updates content when prop changes", async () => {
