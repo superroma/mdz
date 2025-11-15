@@ -37,3 +37,15 @@ Feature: Interactive Checkboxes
     Then the checkbox should not toggle
     And I should see the markdown source editor
 
+  Scenario: Toggle checkbox twice - check and uncheck
+    Given I am viewing the "Getting Started" page
+    And I am in preview mode
+    When I click the checkbox for "Read this getting started guide"
+    Then the checkbox should be checked
+    And the markdown should be updated with "[x]" for that item
+    And the changes should be saved automatically
+    When I click the checkbox for "Read this getting started guide"
+    Then the checkbox should be unchecked
+    And the markdown should be updated with "[ ]" for that item
+    And the changes should be saved automatically
+

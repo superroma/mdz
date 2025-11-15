@@ -32,9 +32,28 @@ BeforeAll(async function () {
   await ensureServersRunning();
 });
 
-Before(async function (this: AppWorld) {
+Before(async function (this: AppWorld, scenario) {
   // Ensure a fresh browser context for each scenario.
   await this.ensurePage();
+
+  // Reset Getting Started.md for checkbox-related tests to ensure clean state
+  if (scenario.pickle.name.includes('checkbox') || scenario.pickle.name.includes('Toggle')) {
+    const { readFileSync, writeFileSync } = await import("node:fs");
+    const { join } = await import("node:path");
+    const { resolve } = await import("node:path");
+
+    if (testPagesDir) {
+      const originalFile = resolve(process.cwd(), "..", "..", "pages", "Welcome", "Getting Started.md");
+      const testFile = join(testPagesDir, "Welcome", "Getting Started.md");
+
+      try {
+        const originalContent = readFileSync(originalFile, 'utf8');
+        writeFileSync(testFile, originalContent, 'utf8');
+      } catch (error) {
+        console.warn('Could not reset Getting Started.md:', error);
+      }
+    }
+  }
 });
 
 After(async function (this: AppWorld, { result }: ITestCaseHookParameter) {

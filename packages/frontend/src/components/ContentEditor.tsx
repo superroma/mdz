@@ -22,6 +22,7 @@ export function ContentEditor({
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pendingValueRef = useRef<string | null>(null);
   const displayUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const saveInProgressRef = useRef(false);
 
   // Use refs to avoid stale closures in timeout callbacks
   const contentRef = useRef(content);
@@ -38,6 +39,10 @@ export function ContentEditor({
 
   useEffect(() => {
     isSavingRef.current = isSaving;
+  }, [isSaving]);
+
+  useEffect(() => {
+    saveInProgressRef.current = isSaving;
   }, [isSaving]);
 
   useEffect(() => {
@@ -66,7 +71,7 @@ export function ContentEditor({
   const handleSave = useCallback(async (contentToSave: string) => {
     const currentContent = contentRef.current;
 
-    if (contentToSave === currentContent || isSavingRef.current) {
+    if (contentToSave === currentContent || saveInProgressRef.current) {
       return;
     }
 
@@ -77,6 +82,7 @@ export function ContentEditor({
     }
     pendingValueRef.current = null;
 
+    saveInProgressRef.current = true;
     setIsSaving(true);
     try {
       await onSaveRef.current(contentToSave);
@@ -85,6 +91,7 @@ export function ContentEditor({
       console.error("Failed to save content:", error);
     } finally {
       setIsSaving(false);
+      saveInProgressRef.current = false;
     }
   }, []);
 
@@ -129,16 +136,27 @@ export function ContentEditor({
 
         // Update pending ref immediately so next rapid click sees this change
         pendingValueRef.current = updatedContent;
-        debouncedSave(updatedContent);
-        
-        // Delay updating the display value to prevent re-render during rapid clicks
-        if (displayUpdateTimeoutRef.current) {
-          clearTimeout(displayUpdateTimeoutRef.current);
+
+        // For checkbox toggles (only editable content in preview mode),
+        // save immediately if no save is in progress. If another save is already
+        // happening (rare case of rapid successive checkbox clicks), use short debounce
+        if (!saveInProgressRef.current) {
+          // No save in progress, save immediately
+          handleSave(updatedContent);
+        } else {
+          // Save in progress, use short debounce for rapid clicks
+          if (saveTimeoutRef.current) {
+            clearTimeout(saveTimeoutRef.current);
+          }
+          saveTimeoutRef.current = setTimeout(() => {
+            handleSave(updatedContent);
+          }, 50);
         }
-        displayUpdateTimeoutRef.current = setTimeout(() => {
-          setDisplayValue(updatedContent);
-        }, 100);
-        
+
+        // Update display value immediately to prevent checkbox index shifts
+        // during rapid clicks
+        setDisplayValue(updatedContent);
+
         return updatedContent;
       });
     },
