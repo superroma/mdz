@@ -166,77 +166,89 @@ export function ContentEditor({
     }
   };
 
-  if (!isEditing) {
-    const { content: markdownContent } = parseFrontMatter(displayValue);
-    return (
-      <div className="flex flex-col gap-4" data-testid="content-viewer">
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setValue(newValue);
+    debouncedSave(newValue);
+  };
+
+  const { content: markdownContent } = parseFrontMatter(displayValue);
+
+  return (
+    <>
+      {/* Preview Mode */}
+      {!isEditing && (
+        <div className="flex flex-col gap-4" data-testid="content-viewer">
+          <div className="flex justify-between items-center">
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors"
+              aria-label={ARIA_LABELS.editPageContent}
+              data-testid="edit-button"
+            >
+              Edit
+            </button>
+          </div>
+          <div className="prose max-w-none" data-testid="markdown-content" role="article">
+            {markdownContent ? (
+              <MDXContent
+                content={markdownContent}
+                parentPath={parentPath}
+                onCheckboxToggle={handleCheckboxToggle}
+              />
+            ) : (
+              <p className="text-slate-600">
+                No content yet. Click Edit to add some.
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Mode - Hidden when in preview mode to preserve editor state */}
+      <div 
+        className="flex flex-col gap-4 h-full" 
+        data-testid="content-editor"
+        style={{ display: isEditing ? 'flex' : 'none' }}
+      >
         <div className="flex justify-between items-center">
           <button
             type="button"
-            onClick={() => setIsEditing(true)}
-            className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors"
-            aria-label={ARIA_LABELS.editPageContent}
-            data-testid="edit-button"
+            onClick={() => setIsEditing(false)}
+            className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded transition-colors"
+            aria-label={ARIA_LABELS.previewPageContent}
+            data-testid="preview-button"
           >
-            Edit
+            Preview
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave(value)}
+            disabled={isSaving || value === content}
+            className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={ARIA_LABELS.savePageContent}
+            data-testid="save-button"
+          >
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
-        <div className="prose max-w-none" data-testid="markdown-content" role="article">
-          {markdownContent ? (
-            <MDXContent
-              content={markdownContent}
-              parentPath={parentPath}
-              onCheckboxToggle={handleCheckboxToggle}
-            />
-          ) : (
-            <p className="text-slate-600">
-              No content yet. Click Edit to add some.
-            </p>
-          )}
+        <textarea
+          value={value}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+          placeholder="Start writing..."
+          className="flex-1 w-full bg-white text-slate-900 p-4 rounded border border-slate-300 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
+          aria-label={ARIA_LABELS.pageContent}
+          data-testid="content-textarea"
+        />
+        <div className="text-xs text-slate-600" role="status" aria-live="polite">
+          Press <kbd className="px-1.5 py-0.5 bg-slate-100 rounded">Cmd+S</kbd> or{" "}
+          <kbd className="px-1.5 py-0.5 bg-slate-100 rounded">Ctrl+S</kbd> to save
+          {isSaving && <span className="ml-2 text-sky-600">Saving...</span>}
+          {!isSaving && value !== content && <span className="ml-2 text-amber-600">Unsaved changes</span>}
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className="flex flex-col gap-4 h-full" data-testid="content-editor">
-      <div className="flex justify-between items-center">
-        <button
-          type="button"
-          onClick={() => {
-            setValue(content);
-            setIsEditing(false);
-          }}
-          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded transition-colors"
-          aria-label={ARIA_LABELS.previewPageContent}
-          data-testid="preview-button"
-        >
-          Preview
-        </button>
-        <button
-          type="button"
-          onClick={() => handleSave(value)}
-          disabled={isSaving || value === content}
-          className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          aria-label={ARIA_LABELS.savePageContent}
-          data-testid="save-button"
-        >
-          {isSaving ? "Saving..." : "Save"}
-        </button>
-      </div>
-      <textarea
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="Start writing..."
-        className="flex-1 w-full bg-white text-slate-900 p-4 rounded border border-slate-300 focus:border-sky-500 focus:outline-none resize-none font-mono text-sm"
-        aria-label={ARIA_LABELS.pageContent}
-        data-testid="content-textarea"
-      />
-      <div className="text-xs text-slate-600" role="status" aria-live="polite">
-        Press <kbd className="px-1.5 py-0.5 bg-slate-100 rounded">Cmd+S</kbd> or{" "}
-        <kbd className="px-1.5 py-0.5 bg-slate-100 rounded">Ctrl+S</kbd> to save
-      </div>
-    </div>
+    </>
   );
 }

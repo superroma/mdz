@@ -129,7 +129,7 @@ describe("ContentEditor", () => {
 
   it("enables Save button when content changes", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
+    const onSave = vi.fn().mockResolvedValue(undefined);
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
@@ -143,19 +143,21 @@ describe("ContentEditor", () => {
 
   it("returns to view mode when Preview clicked", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
+    const onSave = vi.fn().mockResolvedValue(undefined);
     renderWithRouter(<ContentEditor content="Test content" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.previewPageContent }));
     
     expect(screen.getByRole("button", { name: ARIA_LABELS.editPageContent })).toBeInTheDocument();
-    expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
+    // Textarea is hidden but still in DOM to preserve undo history
+    const textarea = screen.getByTestId("content-textarea");
+    expect(textarea).not.toBeVisible();
   });
 
-  it("discards changes when switching to Preview mode", async () => {
+  it("preserves changes when switching to Preview mode", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
+    const onSave = vi.fn().mockResolvedValue(undefined);
     renderWithRouter(<ContentEditor content="Original" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
@@ -168,12 +170,13 @@ describe("ContentEditor", () => {
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     
     const textareaAgain = screen.getByRole("textbox", { name: ARIA_LABELS.pageContent });
-    expect(textareaAgain).toHaveValue("Original");
+    // Editor state is now preserved, including changes and undo history
+    expect(textareaAgain).toHaveValue("Modified");
   });
 
   it("shows keyboard shortcut hint", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
+    const onSave = vi.fn().mockResolvedValue(undefined);
     renderWithRouter(<ContentEditor content="Test" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
@@ -182,7 +185,7 @@ describe("ContentEditor", () => {
   });
 
   it("updates content when prop changes", async () => {
-    const onSave = vi.fn();
+    const onSave = vi.fn().mockResolvedValue(undefined);
     const { rerender } = renderWithRouter(<ContentEditor content="First" onSave={onSave} />);
     
     // MDX compilation is async, so use findByText
