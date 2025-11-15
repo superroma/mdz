@@ -42,7 +42,7 @@ _Italic text_
 ## Links and Images
 
 [Link text](https://example.com)
-![Image alt text](../Welcome/logo.png)
+![Image alt text](./image.png)
 
 ## Code Blocks
 
