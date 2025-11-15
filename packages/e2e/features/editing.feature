@@ -4,9 +4,10 @@ Feature: Page Editing
   So that I can update my notes
 
   Scenario: Page editing workflow
-    Given I am viewing a page in view mode
-    When I click the Edit button
-    Then I should see the markdown source editor
+    Given I am viewing a page
+    And I am in preview mode
+    When I click the "Edit" button
+    Then the "markdown source editor" should be visible
     When I modify the content and press Cmd+S
     Then the content should be saved
     And I should see a success indicator

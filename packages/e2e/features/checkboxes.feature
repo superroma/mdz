@@ -35,7 +35,7 @@ Feature: Interactive Checkboxes
     And I am in edit mode
     When I try to click a checkbox
     Then the checkbox should not toggle
-    And I should see the markdown source editor
+    And the "markdown source editor" should be visible
 
   Scenario: Toggle checkbox twice - check and uncheck
     Given I am viewing the "Getting Started" page

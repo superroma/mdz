@@ -5,16 +5,6 @@ import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
 
 Given(
-  "I am on a page",
-  async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-view"]', { timeout: 5000 });
-  }
-);
-
-Given(
   "I am viewing a nested page",
   async function (this: AppWorld) {
     await ensureServersRunning();
@@ -151,23 +141,6 @@ Then(
     const sidebar = page.getByTestId("sidebar");
     const currentPage = sidebar.getByRole("button", { name: /Navigate to Write Tests/i }).first();
     await expect(currentPage).toBeVisible();
-  }
-);
-
-Then(
-  "I should navigate to that parent page",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    // Wait for navigation to complete and page to load
-    await page.waitForURL((url) => {
-      const path = new URL(url).pathname;
-      return path !== "/" && path.length > 1;
-    }, { timeout: 10000 });
-    // Wait for page content to be visible
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    const pathname = new URL(page.url()).pathname;
-    expect(pathname).not.toBe("/");
-    expect(pathname.length).toBeGreaterThan(1);
   }
 );
 

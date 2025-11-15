@@ -1,0 +1,6 @@
+- [ ] Empty page name bug
+- [ ] Page ordering 
+- [ ] Hidden/Template pages
+- [ ] Authentication
+- [ ] Access control
+- [ ] Multi-roots

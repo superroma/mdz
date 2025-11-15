@@ -1,18 +1,7 @@
-import { Given, Then, When } from "@cucumber/cucumber";
+import { Then, When } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
-
-Given(
-  "I am viewing a page",
-  async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-  }
-);
 
 When(
   /^I click the root "\+" button$/,
@@ -97,20 +86,6 @@ Then(
 );
 
 Then(
-  "I should be navigated to the new page",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    // Wait for navigation to a page containing "Untitled" (not root)
-    await page.waitForURL((url) => {
-      const path = new URL(url).pathname;
-      return path !== "/" && path.includes("Untitled");
-    }, { timeout: 5000 });
-    const pathname = new URL(page.url()).pathname;
-    expect(pathname).toContain("Untitled");
-  }
-);
-
-Then(
   "the page should be renamed",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
@@ -152,35 +127,11 @@ Then(
 );
 
 Then(
-  "I should be navigated to the new child page",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    // Wait for navigation to a page containing "Untitled" (not root)
-    await page.waitForURL((url) => {
-      const path = new URL(url).pathname;
-      return path !== "/" && path.includes("Untitled");
-    }, { timeout: 5000 });
-    const pathname = new URL(page.url()).pathname;
-    expect(pathname).toContain("Untitled");
-  }
-);
-
-Then(
   "the page should be removed",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     await page.waitForTimeout(500);
     expect(page.url()).toMatch(/\//);
-  }
-);
-
-Then(
-  "I should be navigated to another page",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.waitForTimeout(500);
-    const currentUrl = page.url();
-    expect(currentUrl).toBeTruthy();
   }
 );
 

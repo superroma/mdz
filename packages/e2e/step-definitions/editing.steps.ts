@@ -5,16 +5,6 @@ import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
 
 Given(
-  "I am viewing a page in view mode",
-  async function (this: AppWorld) {
-    await ensureServersRunning();
-    const page = await this.ensurePage();
-    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-  }
-);
-
-Given(
   "I am editing a page",
   async function (this: AppWorld) {
     await ensureServersRunning();
@@ -49,14 +39,6 @@ When(
 );
 
 When(
-  "I click the Edit button",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    await page.getByTestId("edit-button").click();
-  }
-);
-
-When(
   "I modify the content and press Cmd+S",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
@@ -83,15 +65,6 @@ Then(
     const titleField = page.getByTestId("page-title-input");
     const value = await titleField.inputValue();
     expect(value).toBe("Test Title Auto Save");
-  }
-);
-
-Then(
-  "I should see the markdown source editor",
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
-    await expect(editor).toBeVisible();
   }
 );
 

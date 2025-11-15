@@ -19,5 +19,5 @@ Feature: Page Navigation
     And the sidebar should highlight that page
     When I am viewing a nested page
     And I click a parent breadcrumb
-    Then I should navigate to that parent page
+    Then I should be navigated to parent page
 
