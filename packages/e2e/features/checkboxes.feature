@@ -6,7 +6,7 @@ Feature: Interactive Checkboxes
   Scenario: Toggle checkboxes in preview mode
     Given I am viewing the "Getting Started" page
     And I am in preview mode
-    And I scroll down the page
+    And I scroll to the checkbox for "Read this getting started guide"
     When I click the checkbox for "Read this getting started guide"
     Then the checkbox should be checked
     And the markdown should be updated with "[x]" for that item
