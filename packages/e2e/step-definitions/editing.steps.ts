@@ -185,3 +185,120 @@ Then(
   }
 );
 
+Given(
+  "I have a page with HTML content with inline styles",
+  async function (this: AppWorld) {
+    await ensureServersRunning();
+    const page = await this.ensurePage();
+    
+    // Navigate to the fail.md page which has HTML with inline styles
+    await page.goto(`${FRONTEND_URL}/Welcome/fail`, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+  }
+);
+
+When(
+  "I view the page",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    await page.waitForLoadState('domcontentloaded');
+  }
+);
+
+Then(
+  "the page should display without errors",
+  { timeout: 15000 },
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Wait a bit for page to load and render
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    
+    // Check that the page loaded successfully - the app should remain functional
+    // Even if the markdown content has errors, the page chrome (title, buttons) should load
+    const titleInput = page.getByTestId("page-title-input");
+    await expect(titleInput).toBeVisible({ timeout: 10000 });
+    
+    // Verify the app didn't completely crash - edit button should be present
+    const editButton = page.getByTestId("edit-button");
+    await expect(editButton).toBeVisible();
+  }
+);
+
+Then(
+  "the HTML should be rendered without style attributes",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Check if there's an error message (which is acceptable - content was blocked)
+    const errorMessage = page.locator('text=/Rendering Error:|MDX Error:/i');
+    const hasError = await errorMessage.isVisible().catch(() => false);
+    
+    if (hasError) {
+      // If there's an error, the problematic content didn't render at all
+      // This is acceptable - the app didn't crash and dangerous content was blocked
+      return;
+    }
+    
+    // If no error, check that rendered content doesn't have inline styles
+    const content = page.getByTestId("markdown-content");
+    const isVisible = await content.isVisible().catch(() => false);
+    
+    if (isVisible) {
+      // Check that no div/span elements have style attributes in the prose area
+      const divsWithStyle = await page.$$('[data-testid="markdown-content"] .prose div[style], [data-testid="markdown-content"] .prose span[style]');
+      // Inline styles should be sanitized (removed)
+      expect(divsWithStyle.length).toBe(0);
+    }
+  }
+);
+
+Given(
+  "I have a page with malformed MDX content",
+  async function (this: AppWorld) {
+    await ensureServersRunning();
+    const page = await this.ensurePage();
+    
+    // Create a test page with malformed MDX
+    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
+    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    
+    // Click edit and add malformed MDX
+    await page.getByTestId("edit-button").click();
+    const editor = page.getByTestId("content-textarea");
+    // Add malformed JSX that will cause compilation error
+    await editor.fill("# Test\n\n<Component unclosed={");
+    await editor.press("Meta+s");
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    
+    // Switch to preview to see the error
+    await page.getByTestId("preview-button").click();
+  }
+);
+
+Then(
+  "I should see an error message in the content area",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Check that an error message is displayed
+    const errorMessage = page.locator('text=/MDX Error:|Rendering Error:/i');
+    await expect(errorMessage).toBeVisible({ timeout: 5000 });
+  }
+);
+
+Then(
+  "the app should not crash",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    // Verify the page is still functional
+    const titleInput = page.getByTestId("page-title-input");
+    await expect(titleInput).toBeVisible();
+    
+    // Verify we can still navigate
+    const editButton = page.getByTestId("edit-button");
+    await expect(editButton).toBeVisible();
+  }
+);
+

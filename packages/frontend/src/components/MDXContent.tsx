@@ -9,6 +9,7 @@ import { CalendarView } from "./views/CalendarView";
 import { ListView } from "./views/ListView";
 import { Tabs, Tab } from "./views/Tabs";
 import { getFileUrl } from "../api/client";
+import { ErrorBoundary } from "./ErrorBoundary";
 
 interface MDXContentProps {
   content: string;
@@ -351,14 +352,49 @@ export function MDXContent({
           };
         };
 
+        // Create a rehype plugin to remove inline style attributes
+        // We do this instead of full sanitization to preserve MDX components
+        const rehypeRemoveInlineStyles = () => {
+          return (tree: any) => {
+            const visit = (node: any) => {
+              if (!node || typeof node !== "object") return;
+              
+              // Remove style attribute from all elements
+              // In rehype, attributes are stored in node.properties
+              if (node.type === "element" && node.properties) {
+                // Remove both 'style' (HTML attribute) and any className issues
+                delete node.properties.style;
+                // Also remove data-style if it exists
+                delete node.properties['data-style'];
+              }
+              
+              if (Array.isArray(node.children)) {
+                node.children.forEach(visit);
+              }
+            };
+            
+            if (tree) {
+              visit(tree);
+            }
+            
+            return tree;
+          };
+        };
+
         // Compile MDX to JavaScript
-        // Note: position information is preserved from remark -> rehype with this config
+        // Note: We don't use rehypeSanitize because:
+        // 1. It would strip MDX components (BoardView, Tabs, etc.)
+        // 2. Security is handled by controlled component whitelist and no dynamic imports
+        // 3. We only remove inline styles for safety
         const compiled = await compile(content, {
           outputFormat: "function-body",
           development: false,
           // Use remark-gfm for GitHub-flavored markdown
           remarkPlugins: [(await import("remark-gfm")).default],
-          rehypePlugins: [rehypeTransformPaths(parentPath, content)],
+          rehypePlugins: [
+            rehypeTransformPaths(parentPath, content),
+            rehypeRemoveInlineStyles,
+          ],
           // Preserve position information from source
           SourceMapGenerator: undefined,
         });
@@ -405,5 +441,9 @@ export function MDXContent({
     return <div className="text-slate-600">Loading...</div>;
   }
 
-  return <MDXComponent components={mdxComponents} />;
+  return (
+    <ErrorBoundary>
+      <MDXComponent components={mdxComponents} />
+    </ErrorBoundary>
+  );
 }

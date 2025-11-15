@@ -35,3 +35,15 @@ Feature: Page Editing
     And the editor should contain my previous content
     And I should be able to undo my changes
 
+  Scenario: HTML with inline styles is sanitized
+    Given I have a page with HTML content with inline styles
+    When I view the page
+    Then the page should display without errors
+    And the HTML should be rendered without style attributes
+
+  Scenario: Malformed markdown shows error gracefully
+    Given I have a page with malformed MDX content
+    When I view the page
+    Then I should see an error message in the content area
+    And the app should not crash
+
