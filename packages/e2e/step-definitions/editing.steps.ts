@@ -191,9 +191,36 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     
-    // Navigate to the fail.md page which has HTML with inline styles
-    await page.goto(`${FRONTEND_URL}/Welcome/fail`, { waitUntil: "domcontentloaded" });
+    // Create a test page with HTML inline styles
+    await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
     await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    
+    // Click edit and add content with inline styles
+    await page.getByTestId("edit-button").click();
+    const editor = page.getByTestId("content-textarea");
+    
+    // Add markdown with HTML that has inline styles
+    const contentWithStyles = `# Test HTML Sanitization
+
+This page tests that inline styles are properly handled.
+
+## HTML with inline styles
+
+<div style="color:red">This text has inline style that should be removed</div>
+
+<span style="background-color:yellow">This span also has inline style</span>
+
+## Regular markdown
+
+This is regular markdown without any HTML.`;
+    
+    await editor.fill(contentWithStyles);
+    await editor.press("Meta+s");
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    
+    // Switch to preview to see the rendered content
+    await page.getByTestId("preview-button").click();
+    await page.waitForTimeout(500);
   }
 );
 
