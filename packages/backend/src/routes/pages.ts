@@ -19,10 +19,9 @@ export async function registerPageRoutes(app: FastifyInstance) {
   });
 
   app.post("/api/pages", async (request) => {
-    const body = request.body as { path?: string; content?: string; parent?: string; frontMatter?: Record<string, unknown> };
+    const body = request.body as { path?: string; content?: string; parent?: string };
     const pagePath = body.path || "Untitled";
     const content = body.content || "";
-    const frontMatter = body.frontMatter || {};
     
     let finalPath = pagePath;
     if (body.parent) {
@@ -31,7 +30,7 @@ export async function registerPageRoutes(app: FastifyInstance) {
     }
     
     validatePathOrThrow(finalPath);
-    const page = createPage(finalPath, content, frontMatter);
+    const page = createPage(finalPath, content);
     return page;
   });
 
@@ -39,13 +38,13 @@ export async function registerPageRoutes(app: FastifyInstance) {
     const path = (request.params as { "*": string })["*"];
     validatePathOrThrow(path);
     
-    const body = request.body as { content: string; frontMatter?: Record<string, unknown> };
+    const body = request.body as { content: string };
     
     if (typeof body.content !== "string") {
       throw new ValidationError("Content is required");
     }
     
-    return updatePage(path, body.content, body.frontMatter);
+    return updatePage(path, body.content);
   });
 
   app.patch("/api/pages/*", async (request) => {

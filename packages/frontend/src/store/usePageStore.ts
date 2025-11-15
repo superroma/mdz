@@ -81,10 +81,14 @@ export const usePageStore = create<PageStore>((set, get) => ({
         }
       }
       
+      // Serialize frontMatter into content
+      const { serializeFrontMatter } = await import("../utils/front-matter");
+      const content = serializeFrontMatter(initialFrontMatter, "");
+      
       const page = await api.createPage({ 
         path: "Untitled", 
         parent,
-        frontMatter: initialFrontMatter 
+        content 
       });
       await get().loadPages();
       set({ isLoading: false });
@@ -98,7 +102,15 @@ export const usePageStore = create<PageStore>((set, get) => ({
   updatePage: async (path: string, content: string, frontMatter?: Record<string, unknown>) => {
     try {
       set({ isLoading: true, error: null });
-      const page = await api.updatePage(path, { content, frontMatter });
+      
+      // Serialize frontMatter into content if provided
+      let fullContent = content;
+      if (frontMatter !== undefined) {
+        const { serializeFrontMatter } = await import("../utils/front-matter");
+        fullContent = serializeFrontMatter(frontMatter, content);
+      }
+      
+      const page = await api.updatePage(path, { content: fullContent });
       set({ currentPage: page, isLoading: false });
       await get().loadPages();
     } catch (error) {

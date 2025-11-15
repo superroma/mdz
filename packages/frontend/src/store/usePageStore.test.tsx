@@ -36,7 +36,7 @@ describe("usePageStore", () => {
       expect(api.createPage).toHaveBeenCalledWith({
         path: "Untitled",
         parent: undefined,
-        frontMatter: {},
+        content: "",
       });
       expect(page).toEqual(mockPage);
     });
@@ -82,12 +82,7 @@ describe("usePageStore", () => {
       expect(api.createPage).toHaveBeenCalledWith({
         path: "Untitled",
         parent: "Parent",
-        frontMatter: {
-          status: "",
-          priority: 0,
-          completed: false,
-          category: "",
-        },
+        content: "---\nstatus: ''\npriority: 0\ncompleted: false\ncategory: ''\n---\n",
       });
       expect(page).toEqual(childPage);
     });
@@ -123,7 +118,7 @@ describe("usePageStore", () => {
       expect(api.createPage).toHaveBeenCalledWith({
         path: "Untitled",
         parent: "Parent",
-        frontMatter: {},
+        content: "",
       });
       expect(page).toEqual(childPage);
     });
@@ -161,9 +156,7 @@ describe("usePageStore", () => {
       expect(api.createPage).toHaveBeenCalledWith({
         path: "Untitled",
         parent: "Parent/README",
-        frontMatter: {
-          status: "",
-        },
+        content: "---\nstatus: ''\n---\n",
       });
       expect(page).toEqual(childPage);
     });

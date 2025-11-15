@@ -45,8 +45,8 @@ test("updatePage updates page content", () => {
 });
 
 test("updatePage updates front-matter", () => {
-  createPage("Test Page", "# Content", { status: "Draft" });
-  const updated = updatePage("Test Page", "# Content", { status: "Published" });
+  createPage("Test Page", "---\nstatus: Draft\n---\n# Content");
+  const updated = updatePage("Test Page", "---\nstatus: Published\n---\n# Content");
   expect(updated.frontMatter.status).toBe("Published");
 });
 

@@ -141,7 +141,7 @@ export function readPage(pagePath: string): Page | null {
   return readPageInternal(pagePath);
 }
 
-export function createPage(pagePath: string, content: string = "", frontMatter: FrontMatter = {}): Page {
+export function createPage(pagePath: string, content: string = ""): Page {
   const pagesRoot = getPagesRoot();
   const relativePath = pagePath.replace(/\.md$/, "");
   const parentPath = dirname(relativePath);
@@ -154,8 +154,7 @@ export function createPage(pagePath: string, content: string = "", frontMatter: 
   
   ensureDirectoryExists(filePath);
   
-  const fullContent = serializeFrontMatter(frontMatter, content);
-  writeFileSync(filePath, fullContent, "utf-8");
+  writeFileSync(filePath, content, "utf-8");
   
   const page = readPage(relativePath);
   if (!page) {
@@ -165,7 +164,7 @@ export function createPage(pagePath: string, content: string = "", frontMatter: 
   return page;
 }
 
-export function updatePage(pagePath: string, content: string, frontMatter?: FrontMatter): Page {
+export function updatePage(pagePath: string, content: string): Page {
   const existing = readPage(pagePath);
   if (!existing) {
     throw new NotFoundError("Page not found");
@@ -185,9 +184,7 @@ export function updatePage(pagePath: string, content: string, frontMatter?: Fron
     filePath = singleFilePath;
   }
   
-  const finalFrontMatter = frontMatter !== undefined ? frontMatter : existing.frontMatter;
-  const fullContent = serializeFrontMatter(finalFrontMatter, content);
-  writeFileSync(filePath, fullContent, "utf-8");
+  writeFileSync(filePath, content, "utf-8");
   
   const page = readPage(relativePath);
   if (!page) {

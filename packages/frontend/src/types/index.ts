@@ -11,12 +11,10 @@ export interface CreatePageRequest {
   path?: string;
   content?: string;
   parent?: string;
-  frontMatter?: Record<string, unknown>;
 }
 
 export interface UpdatePageRequest {
   content: string;
-  frontMatter?: Record<string, unknown>;
 }
 
 export interface RenamePageRequest {
