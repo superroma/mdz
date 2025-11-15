@@ -24,9 +24,14 @@ export function TitleField({ title, onSave, autoFocus = false }: TitleFieldProps
   const handleSave = async () => {
     if (value === title || isSaving) return;
 
+    // Prevent empty titles - use "Untitled" if the title is empty or only whitespace
+    const trimmedValue = value.trim();
+    const finalValue = trimmedValue === "" ? "Untitled" : value;
+
     setIsSaving(true);
     try {
-      await onSave(value);
+      await onSave(finalValue);
+      setValue(finalValue);
     } catch (error) {
       console.error("Failed to save title:", error);
       setValue(title);

@@ -1,4 +1,5 @@
-- [ ] Empty page name bug
+- [x] Empty page name bug
+- [x] Mobile UI settings (scaling, background)
 - [ ] Page ordering 
 - [ ] Hidden/Template pages
 - [ ] Authentication
