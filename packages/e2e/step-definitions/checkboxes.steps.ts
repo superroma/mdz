@@ -129,38 +129,23 @@ When(
 );
 
 Then(
-  /^the checkbox should be checked$/,
+  /^the checkbox should be toggled$/,
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for debounce (300ms) + save + MDX recompilation
+    // Wait for save + MDX recompilation
     await page.waitForTimeout(600);
     
     // Wait for content to be re-rendered
     await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 3000 });
     
-    // The checkbox should now be checked
+    // The checkbox should now be toggled from its previous state
     // We'll verify via backend content check in the next step
   }
 );
 
 Then(
-  /^the checkbox should be unchecked$/,
+  /^the markdown should be updated to the toggled state for that item$/,
   async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    // Wait for debounce (300ms) + save + MDX recompilation
-    await page.waitForTimeout(600);
-    
-    // Wait for content to be re-rendered
-    await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 3000 });
-    
-    // The checkbox should now be unchecked
-    // We'll verify via backend content check in the next step
-  }
-);
-
-Then(
-  /^the markdown should be updated with "\[([ x])\]" for that item$/,
-  async function (this: AppWorld, expectedState: string) {
     const page = await this.ensurePage();
     
     // Get the page path from the URL
@@ -169,6 +154,10 @@ Then(
     const decodedPath = decodeURIComponent(urlPath);
     const pathSegments = decodedPath.split('/').map(segment => encodeURIComponent(segment));
     const apiPath = pathSegments.join('/');
+    
+    // Determine expected state based on what it was before clicking
+    const wasChecked = this.checkboxStateBefore as boolean;
+    const expectedState = wasChecked ? ' ' : 'x'; // If was checked, should now be unchecked (space), and vice versa
     
     // Wait for the network request to complete by polling the backend
     // until we see the expected change or timeout
@@ -189,7 +178,7 @@ Then(
       const itemText = this.clickedItemText as string;
       const escapedText = itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const checkboxPattern = new RegExp(
-        `-\\s+\\[${expectedState === 'x' ? 'x' : ' '}\\]\\s+${escapedText}`,
+        `-\\s+\\[${expectedState}\\]\\s+${escapedText}`,
         'i'
       );
       
@@ -203,7 +192,7 @@ Then(
     const itemText = this.clickedItemText as string;
     const escapedText = itemText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const checkboxPattern = new RegExp(
-      `-\\s+\\[${expectedState === 'x' ? 'x' : ' '}\\]\\s+${escapedText}`,
+      `-\\s+\\[${expectedState}\\]\\s+${escapedText}`,
       'i'
     );
     
@@ -226,68 +215,6 @@ Then(
       // The fact that we can fetch updated content means it was saved
       return;
     }
-  }
-);
-
-Then(
-  /^both checkboxes should be checked$/,
-  async function (this: AppWorld) {
-    const page = await this.ensurePage();
-    // Wait for debounce (300ms) + save operation + re-render
-    await page.waitForTimeout(1000);
-    
-    // Get the page path from the URL
-    const url = await page.url();
-    const urlPath = url.replace(FRONTEND_URL, '').replace(/^\//, '');
-    const decodedPath = decodeURIComponent(urlPath);
-    const pathSegments = decodedPath.split('/').map(segment => encodeURIComponent(segment));
-    const apiPath = pathSegments.join('/');
-    
-    // Poll the backend to ensure save completed
-    let attempts = 0;
-    let content = '';
-    while (attempts < 5) {
-      const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
-      expect(response.status).toBe(200);
-      
-      const pageData = await response.json() as { content: string };
-      content = pageData.content;
-      
-      // Check if both checkboxes are checked
-      const firstChecked = /- \[x\]\s+Explore the Markdown Guide/.test(content);
-      const secondChecked = /- \[x\]\s+Create your first page/.test(content);
-      
-      if (firstChecked && secondChecked) {
-        return; // Success!
-      }
-      
-      attempts++;
-      if (attempts < 5) {
-        await page.waitForTimeout(200);
-      }
-    }
-    
-    // If we get here, assert to show the failure
-    expect(content).toMatch(/- \[x\]\s+Explore the Markdown Guide/);
-    expect(content).toMatch(/- \[x\]\s+Create your first page/);
-  }
-);
-
-Then(
-  "the markdown should be updated for both items",
-  async function (this: AppWorld) {
-    // This is verified by the previous step
-    // The backend content check confirms both items were updated
-  }
-);
-
-Then(
-  "only one save operation should occur",
-  async function (this: AppWorld) {
-    // This is harder to verify directly, but the fact that both checkboxes
-    // are updated correctly after debounce indicates the debouncing worked
-    // We verify this indirectly by checking that both changes are present
-    // after a single debounce period
   }
 );
 
@@ -358,7 +285,7 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Wait for any debounced updates and re-renders to complete
+    // Wait for save and re-render to complete
     await page.waitForTimeout(800);
     
     // Get the current scroll position
@@ -402,7 +329,7 @@ When(
   "I wait for the changes to be saved",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for debounce (300ms) + save operation + re-render
+    // Wait for save operation + re-render
     await page.waitForTimeout(1000);
   }
 );

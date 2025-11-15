@@ -8,8 +8,8 @@ Feature: Interactive Checkboxes
     And I am in preview mode
     And I scroll to the checkbox for "Read this getting started guide"
     When I click the checkbox for "Read this getting started guide"
-    Then the checkbox should be checked
-    And the markdown should be updated with "[x]" for that item
+    Then the checkbox should be toggled
+    And the markdown should be updated to the toggled state for that item
     And the changes should be saved automatically
     And the page should not have scrolled
 
@@ -17,18 +17,9 @@ Feature: Interactive Checkboxes
     Given I am viewing the "Getting Started" page
     And I am in preview mode
     When I click the checkbox for "This is a nested unchecked item"
-    Then the checkbox should be checked
-    And the markdown should be updated with "[x]" for that item
+    Then the checkbox should be toggled
+    And the markdown should be updated to the toggled state for that item
     And the changes should be saved automatically
-
-  Scenario: Multiple checkbox toggles are debounced
-    Given I am viewing the "Getting Started" page
-    And I am in preview mode
-    When I click the checkbox for "Explore the Markdown Guide"
-    And I click the checkbox for "Create your first page"
-    Then both checkboxes should be checked
-    And the markdown should be updated for both items
-    And only one save operation should occur
 
   Scenario: Checkboxes are not interactive in edit mode
     Given I am viewing the "Getting Started" page
@@ -41,11 +32,11 @@ Feature: Interactive Checkboxes
     Given I am viewing the "Getting Started" page
     And I am in preview mode
     When I click the checkbox for "Read this getting started guide"
-    Then the checkbox should be checked
-    And the markdown should be updated with "[x]" for that item
+    Then the checkbox should be toggled
+    And the markdown should be updated to the toggled state for that item
     And the changes should be saved automatically
     When I click the checkbox for "Read this getting started guide"
-    Then the checkbox should be unchecked
-    And the markdown should be updated with "[ ]" for that item
+    Then the checkbox should be toggled
+    And the markdown should be updated to the toggled state for that item
     And the changes should be saved automatically
 

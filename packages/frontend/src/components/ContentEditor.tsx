@@ -71,7 +71,13 @@ export function ContentEditor({
   const handleSave = useCallback(async (contentToSave: string) => {
     const currentContent = contentRef.current;
 
-    if (contentToSave === currentContent || saveInProgressRef.current) {
+    if (contentToSave === currentContent) {
+      return;
+    }
+
+    // If save is already in progress, store as pending
+    if (saveInProgressRef.current) {
+      pendingValueRef.current = contentToSave;
       return;
     }
 
@@ -87,6 +93,19 @@ export function ContentEditor({
     try {
       await onSaveRef.current(contentToSave);
       setValue(contentToSave);
+      // Update contentRef immediately after successful save
+      contentRef.current = contentToSave;
+      
+      // After save completes, check if there's a pending save
+      if (pendingValueRef.current && pendingValueRef.current !== contentToSave) {
+        const nextContent = pendingValueRef.current;
+        pendingValueRef.current = null;
+        saveInProgressRef.current = false;
+        setIsSaving(false);
+        // Recursively save the pending content
+        await handleSave(nextContent);
+        return;
+      }
     } catch (error) {
       console.error("Failed to save content:", error);
     } finally {
@@ -121,7 +140,8 @@ export function ContentEditor({
       }
 
       // Calculate the updated content first
-      const baseContent = pendingValueRef.current || value;
+      // Use contentRef for the most up-to-date saved content, or pending if available
+      const baseContent = pendingValueRef.current || contentRef.current;
       const { content: markdownContent, frontMatter } =
         parseFrontMatter(baseContent);
       const updatedMarkdown = toggleCheckboxAtLine(
@@ -136,27 +156,14 @@ export function ContentEditor({
       // Update pending ref immediately so next rapid click sees this change
       pendingValueRef.current = updatedContent;
 
-      // Update both value and display value (not nested)
+      // Update both value and display value
       setValue(updatedContent);
       setDisplayValue(updatedContent);
 
-      // For checkbox toggles (only editable content in preview mode),
-      // save immediately if no save is in progress. If another save is already
-      // happening (rare case of rapid successive checkbox clicks), use short debounce
-      if (!saveInProgressRef.current) {
-        // No save in progress, save immediately
-        handleSave(updatedContent);
-      } else {
-        // Save in progress, use short debounce for rapid clicks
-        if (saveTimeoutRef.current) {
-          clearTimeout(saveTimeoutRef.current);
-        }
-        saveTimeoutRef.current = setTimeout(() => {
-          handleSave(updatedContent);
-        }, 50);
-      }
+      // Save immediately for checkbox toggles
+      handleSave(updatedContent);
     },
-    [isEditing, value, handleSave]
+    [isEditing, handleSave]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

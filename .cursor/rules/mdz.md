@@ -12,3 +12,8 @@ Dont use pnpm, dont cd to install packages
 
 ## Single functional test
 `npm run test:e2e -- --name "My scenario name"`
+
+## No comments
+Don't write comments in code.
+If you see comments that explain code  - remove them.
+Only leave commented out code

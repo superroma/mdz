@@ -107,7 +107,7 @@ When(
 When(
   "I wait for autosave to complete",
   async function (this: AppWorld) {
-    // Wait for autosave debounce time + some buffer
+    // Wait for autosave time + some buffer
     await new Promise(resolve => setTimeout(resolve, 500));
   }
 );
