@@ -68,7 +68,11 @@ Content here.
     await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     
     await page.goto(FRONTEND_URL, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    
+    // Ensure the parent page appears in sidebar before proceeding
+    await page.waitForSelector('button[aria-label*="Test Parent"]', { timeout: 10000 });
+    await page.waitForTimeout(500);
   }
 );
 
