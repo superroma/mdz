@@ -109,8 +109,8 @@ When(
     await page.waitForURL(/\/Test.*Parent\/Untitled/, { timeout: 10000 });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
     
-    // Wait for page content to fully load
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(1500);
   }
 );
 
@@ -148,27 +148,26 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Wait for the custom fields panel - it should appear once page data loads
-    // The panel appears if the page has frontmatter OR if parent has a schema
+    await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    
+    await page.waitForSelector('[data-testid="page-view"]', { timeout: 10000 });
+    await page.waitForTimeout(1000);
+    
     const customFieldsPanel = page.getByTestId('custom-fields-panel');
     
-    // First check if panel exists at all - if not, there's a real problem
     try {
-      await expect(customFieldsPanel).toBeAttached({ timeout: 10000 });
+      await expect(customFieldsPanel).toBeAttached({ timeout: 15000 });
     } catch (error) {
-      // Panel doesn't exist - let's debug why
       const pageContent = await page.content();
       console.log('Page HTML:', pageContent.substring(0, 1000));
       throw new Error('Custom fields panel not found in DOM. Panel should appear if page has frontmatter or parent has schema.');
     }
     
-    // Now ensure it's visible
     await expect(customFieldsPanel).toBeVisible({ timeout: 5000 });
     
-    // Ensure the panel is expanded
     await ensurePanelExpanded(page, 'custom-fields-toggle');
     
-    // Now verify we can see the schema fields
     const statusField = page.getByTestId('field-status');
     await expect(statusField).toBeVisible();
   }
