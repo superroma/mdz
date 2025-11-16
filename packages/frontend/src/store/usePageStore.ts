@@ -7,6 +7,7 @@ interface PageStore {
   currentPage: Page | null;
   isLoading: boolean;
   isSidebarOpen: boolean;
+  showHidden: boolean;
   error: string | null;
 
   loadPages: () => Promise<void>;
@@ -16,6 +17,7 @@ interface PageStore {
   renamePage: (oldPath: string, newPath: string) => Promise<void>;
   deletePage: (path: string) => Promise<void>;
   toggleSidebar: () => void;
+  toggleShowHidden: () => void;
   setError: (error: string | null) => void;
 }
 
@@ -24,6 +26,7 @@ export const usePageStore = create<PageStore>((set, get) => ({
   currentPage: null,
   isLoading: false,
   isSidebarOpen: false,
+  showHidden: false,
   error: null,
 
   loadPages: async () => {
@@ -145,6 +148,10 @@ export const usePageStore = create<PageStore>((set, get) => ({
 
   toggleSidebar: () => {
     set((state) => ({ isSidebarOpen: !state.isSidebarOpen }));
+  },
+
+  toggleShowHidden: () => {
+    set((state) => ({ showHidden: !state.showHidden }));
   },
 
   setError: (error: string | null) => {

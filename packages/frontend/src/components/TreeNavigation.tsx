@@ -18,11 +18,15 @@ function TreeItem({
 }: TreeItemProps) {
   const navigate = useNavigate();
   const isSelected = currentPath === page.path;
+  const isMarkdown = page.isMarkdown !== false; // default to true for backward compatibility
 
   const handleClick = () => {
-    navigate(`/${page.path}`);
-    // Close mobile sidebar after navigation
-    onNavigate?.();
+    // Only navigate if it's a markdown page
+    if (isMarkdown) {
+      navigate(`/${page.path}`);
+      // Close mobile sidebar after navigation
+      onNavigate?.();
+    }
   };
 
   const handleAddChild = (e: React.MouseEvent) => {
@@ -34,7 +38,9 @@ function TreeItem({
     "group flex items-center gap-2 py-1.5 px-3 transition-colors";
   const selectedClasses = isSelected
     ? "bg-slate-200 border-l-2 border-sky-500"
-    : "active:bg-slate-100 md:hover:bg-slate-100";
+    : isMarkdown 
+      ? "active:bg-slate-100 md:hover:bg-slate-100" 
+      : "";
 
   return (
     <div>
@@ -48,7 +54,9 @@ function TreeItem({
         <div
           role="button"
           tabIndex={0}
-          className="flex-1 text-left text-sm truncate cursor-pointer"
+          className={`flex-1 text-left text-sm truncate ${
+            isMarkdown ? "cursor-pointer" : "cursor-default text-slate-500 italic"
+          }`}
           onClick={handleClick}
           onKeyDown={(e) => e.key === "Enter" && handleClick()}
           aria-label={`Navigate to ${page.title}`}
@@ -57,20 +65,22 @@ function TreeItem({
         >
           {page.title}
         </div>
-        <button
-          type="button"
-          onClick={handleAddChild}
-          className={`${
-            isSelected
-              ? "opacity-100"
-              : "opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
-          } text-slate-600 active:text-slate-900 md:hover:text-slate-900 text-xs px-1`}
-          aria-label={`Add child page to ${page.title}`}
-          title="Add child page"
-          data-testid={`add-child-to-${page.path}`}
-        >
-          +
-        </button>
+        {isMarkdown && (
+          <button
+            type="button"
+            onClick={handleAddChild}
+            className={`${
+              isSelected
+                ? "opacity-100"
+                : "opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
+            } text-slate-600 active:text-slate-900 md:hover:text-slate-900 text-xs px-1`}
+            aria-label={`Add child page to ${page.title}`}
+            title="Add child page"
+            data-testid={`add-child-to-${page.path}`}
+          >
+            +
+          </button>
+        )}
       </div>
     </div>
   );

@@ -27,9 +27,11 @@ function AppContent() {
   const {
     pages,
     isSidebarOpen,
+    showHidden,
     loadPages,
     createPage,
     toggleSidebar,
+    toggleShowHidden,
   } = usePageStore();
   const navigate = useNavigate();
 
@@ -65,6 +67,8 @@ function AppContent() {
         onCreateChild={handleCreateChild}
         isOpen={isSidebarOpen}
         onClose={toggleSidebar}
+        showHidden={showHidden}
+        onToggleShowHidden={toggleShowHidden}
       />
       <Routes>
         <Route path="/" element={<RedirectToFirstPage />} />

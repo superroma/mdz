@@ -226,3 +226,68 @@ test("defolderized page with spaces stays as single file after file operations",
   expect(existsSync(join(pagesRoot, "Welcome/Markdown Guide/README.md"))).toBe(false);
 });
 
+test("hidden pages have isHidden flag set to true", () => {
+  createPage(".hidden-page", "# Hidden Content");
+  createPage("visible-page", "# Visible Content");
+  
+  const hiddenPage = readPage(".hidden-page");
+  const visiblePage = readPage("visible-page");
+  
+  expect(hiddenPage).not.toBeNull();
+  expect(hiddenPage?.isHidden).toBe(true);
+  expect(visiblePage).not.toBeNull();
+  expect(visiblePage?.isHidden).toBe(false);
+});
+
+test("hidden folders have isHidden flag set to true", () => {
+  // Create parent pages first, then create children to trigger folderization
+  createPage(".hidden-folder", "# Hidden Folder");
+  createPage(".hidden-folder/page", "# Content");
+  createPage("visible-folder", "# Visible Folder");
+  createPage("visible-folder/page", "# Content");
+  
+  const pages = listPages();
+  const hiddenFolder = pages.find(p => p.path === ".hidden-folder");
+  const visibleFolder = pages.find(p => p.path === "visible-folder");
+  
+  expect(hiddenFolder).toBeDefined();
+  expect(hiddenFolder?.isHidden).toBe(true);
+  expect(visibleFolder).toBeDefined();
+  expect(visibleFolder?.isHidden).toBe(false);
+});
+
+test("listPages returns all pages including hidden ones", () => {
+  createPage("visible-page", "# Visible");
+  createPage(".hidden-page", "# Hidden");
+  
+  const pages = listPages();
+  
+  expect(pages.some(p => p.path === "visible-page")).toBe(true);
+  expect(pages.some(p => p.path === ".hidden-page")).toBe(true);
+});
+
+test("non-markdown files have isMarkdown flag set to false", () => {
+  const { writeFileSync } = require("node:fs");
+  const pagesRoot = process.env.PAGES_ROOT!;
+  
+  // Create a non-markdown file
+  writeFileSync(join(pagesRoot, "test-image.png"), "fake image data");
+  
+  const pages = listPages();
+  const imageFile = pages.find(p => p.path === "test-image.png");
+  
+  expect(imageFile).toBeDefined();
+  expect(imageFile?.isMarkdown).toBe(false);
+  expect(imageFile?.content).toBe("");
+  expect(imageFile?.isHidden).toBe(false);
+});
+
+test("markdown files have isMarkdown flag set to true", () => {
+  createPage("test-page", "# Test Content");
+  
+  const page = readPage("test-page");
+  
+  expect(page).not.toBeNull();
+  expect(page?.isMarkdown).toBe(true);
+});
+
