@@ -65,10 +65,12 @@ Content here.
     
     const saveButton = page.getByRole("button", { name: "Save" });
     await saveButton.click();
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    
+    await page.waitForSelector('button:has-text("Save"):not([disabled])', { timeout: 5000 });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
     await page.goto(FRONTEND_URL, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
     // Ensure the parent page appears in sidebar before proceeding
     await page.waitForSelector('button[aria-label*="Test Parent"]', { timeout: 10000 });
