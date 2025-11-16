@@ -3,6 +3,19 @@ import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
 import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import type { Page } from "@playwright/test";
+
+// Helper to ensure a collapsible panel is expanded
+async function ensurePanelExpanded(page: Page, panelTestId: string) {
+  const toggleButton = page.getByTestId(panelTestId);
+  await expect(toggleButton).toBeVisible({ timeout: 5000 });
+  
+  const isExpanded = await toggleButton.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await toggleButton.click();
+    await page.waitForTimeout(300);
+  }
+}
 
 Given(
   "a page with custom fields",
@@ -103,9 +116,8 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const panelButton = page.getByText("Fields");
-    await panelButton.click();
-    await page.waitForTimeout(300);
+    // Ensure the custom fields panel is expanded
+    await ensurePanelExpanded(page, 'custom-fields-toggle');
     
     const statusSelect = page.locator("select").first();
     await statusSelect.selectOption("Done");
@@ -118,9 +130,8 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const panelButton = page.getByText("Fields");
-    await panelButton.click();
-    await page.waitForTimeout(300);
+    // Ensure the custom fields panel is expanded
+    await ensurePanelExpanded(page, 'custom-fields-toggle');
     
     const selectField = page.locator("select").first();
     await selectField.click();
@@ -138,13 +149,8 @@ Then(
     const customFieldsPanel = page.getByTestId('custom-fields-panel');
     await expect(customFieldsPanel).toBeVisible({ timeout: 10000 });
     
-    // Ensure the panel is expanded by clicking the toggle button if needed
-    const toggleButton = page.getByTestId('custom-fields-toggle');
-    const isExpanded = await toggleButton.getAttribute('aria-expanded');
-    if (isExpanded !== 'true') {
-      await toggleButton.click();
-      await page.waitForTimeout(300);
-    }
+    // Ensure the panel is expanded
+    await ensurePanelExpanded(page, 'custom-fields-toggle');
     
     // Now verify we can see the schema fields
     const statusField = page.getByTestId('field-status');
