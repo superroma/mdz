@@ -131,11 +131,17 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    await page.waitForTimeout(2000);
+    // Wait for page to fully load and stabilize
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(500);
     
+    // Wait for the custom fields panel to be present
+    const customFieldsPanel = page.getByTestId('custom-fields-panel');
+    await expect(customFieldsPanel).toBeVisible({ timeout: 15000 });
+    
+    // Now check for the Fields button
     const customFieldsButton = page.locator('button:has-text("Fields")').first();
-    
-    await expect(customFieldsButton).toBeVisible({ timeout: 15000 });
+    await expect(customFieldsButton).toBeVisible({ timeout: 5000 });
   }
 );
 
