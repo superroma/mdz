@@ -5,6 +5,8 @@ export interface Page {
   frontMatter: Record<string, unknown>;
   children: string[];
   parent?: string;
+  isHidden?: boolean;
+  isMarkdown?: boolean;
 }
 
 export interface CreatePageRequest {

@@ -18,6 +18,8 @@ export interface Page {
   frontMatter: FrontMatter;
   children: string[];
   parent?: string;
+  isHidden?: boolean;
+  isMarkdown?: boolean;
 }
 
 function ensureDirectoryExists(filePath: string): void {
@@ -49,8 +51,15 @@ function getAllPagePathsRecursive(dir: string, basePath: string = ""): string[] 
       
       const childPaths = getAllPagePathsRecursive(fullPath, relativePath);
       paths.push(...childPaths);
-    } else if (entry.isFile() && entry.name.endsWith(".md") && entry.name !== "README.md") {
-      paths.push(relativePath.replace(/\.md$/, ""));
+    } else if (entry.isFile()) {
+      // Include all files, not just .md files
+      if (entry.name.endsWith(".md") && entry.name !== "README.md") {
+        // Markdown files - remove .md extension
+        paths.push(relativePath.replace(/\.md$/, ""));
+      } else if (entry.name !== "README.md") {
+        // Non-markdown files - keep full name with extension
+        paths.push(relativePath);
+      }
     }
   }
   
@@ -98,39 +107,74 @@ export function listPages(): Page[] {
 function readPageInternal(pagePath: string, allPaths?: string[]): Page | null {
   try {
     const pagesRoot = getPagesRoot();
-    const relativePath = pagePath.replace(/\.md$/, "");
     
-    const singleFilePath = join(pagesRoot, `${relativePath}.md`);
-    const folderPath = join(pagesRoot, relativePath);
-    const readmePath = join(folderPath, "README.md");
+    // Check if this is a non-markdown file (has an extension other than .md)
+    // Need to distinguish between:
+    // - .hidden-page (hidden markdown page, no extension)
+    // - image.png (non-markdown file with extension)
+    // - page (regular markdown page, no extension)
+    const lastSegment = pagePath.split('/').pop() || '';
+    const lastDotIndex = lastSegment.lastIndexOf('.');
+    const hasExtension = lastDotIndex > 0 && lastDotIndex < lastSegment.length - 1;
+    const isMarkdown = !hasExtension || pagePath.endsWith('.md');
     
     let filePath: string;
     let actualPath: string;
+    let content = "";
+    let frontMatter: FrontMatter = {};
     
-    if (existsSync(readmePath)) {
-      filePath = readmePath;
-      actualPath = relativePath;
-    } else if (existsSync(singleFilePath)) {
-      filePath = singleFilePath;
-      actualPath = relativePath;
+    if (isMarkdown) {
+      const relativePath = pagePath.replace(/\.md$/, "");
+      
+      const singleFilePath = join(pagesRoot, `${relativePath}.md`);
+      const folderPath = join(pagesRoot, relativePath);
+      const readmePath = join(folderPath, "README.md");
+      
+      if (existsSync(readmePath)) {
+        filePath = readmePath;
+        actualPath = relativePath;
+      } else if (existsSync(singleFilePath)) {
+        filePath = singleFilePath;
+        actualPath = relativePath;
+      } else {
+        return null;
+      }
+      
+      const fileContent = readFileSync(filePath, "utf-8");
+      const parsed = parseFrontMatter(fileContent);
+      frontMatter = parsed.frontMatter;
+      content = parsed.content;
     } else {
-      return null;
+      // Non-markdown file
+      actualPath = pagePath;
+      filePath = join(pagesRoot, pagePath);
+      
+      if (!existsSync(filePath)) {
+        return null;
+      }
+      
+      // For non-markdown files, don't read content (could be binary)
+      content = "";
+      frontMatter = {};
     }
     
-    const content = readFileSync(filePath, "utf-8");
-    const { frontMatter, content: markdownContent } = parseFrontMatter(content);
-    
     const paths = allPaths || getAllPagePathsRecursive(pagesRoot);
-    const children = paths.filter((p) => isChildPage(actualPath, p));
+    const children = isMarkdown ? paths.filter((p) => isChildPage(actualPath, p)) : [];
     const parent = findParentPath(actualPath, paths);
+    
+    // Determine if the file/folder is hidden (starts with .)
+    const pathParts = actualPath.split('/');
+    const isHidden = pathParts.some(part => part.startsWith('.'));
     
     return {
       path: actualPath,
       title: getPageTitleFromPath(actualPath),
-      content: markdownContent,
+      content: content,
       frontMatter,
       children: children,
-      parent
+      parent,
+      isHidden,
+      isMarkdown
     };
   } catch (error) {
     return null;
