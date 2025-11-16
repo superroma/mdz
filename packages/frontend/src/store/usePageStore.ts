@@ -152,7 +152,3 @@ export const usePageStore = create<PageStore>((set, get) => ({
   },
 }));
 
-if (typeof window !== 'undefined') {
-  (window as any).__ZUSTAND_STORE__ = usePageStore;
-}
-
