@@ -28,6 +28,7 @@ export function ContentEditor({
   const contentRef = useRef(content);
   const onSaveRef = useRef(onSave);
   const isSavingRef = useRef(isSaving);
+  const prevContentRef = useRef(content);
 
   useEffect(() => {
     contentRef.current = content;
@@ -46,9 +47,17 @@ export function ContentEditor({
   }, [isSaving]);
 
   useEffect(() => {
-    setValue(content);
-    setDisplayValue(content);
-  }, [content]);
+    // Only sync from prop when content actually changes AND we're not actively editing
+    // This prevents race conditions where autosave responses overwrite local edits
+    // while preserving editor state when switching between edit/preview modes
+    if (content !== prevContentRef.current) {
+      prevContentRef.current = content;
+      if (!isEditing) {
+        setValue(content);
+        setDisplayValue(content);
+      }
+    }
+  }, [content, isEditing]);
 
   // Cleanup: save any pending changes before unmount
   useEffect(() => {
@@ -93,8 +102,10 @@ export function ContentEditor({
     try {
       await onSaveRef.current(contentToSave);
       setValue(contentToSave);
+      setDisplayValue(contentToSave); // Update display value so preview shows latest content
       // Update contentRef immediately after successful save
       contentRef.current = contentToSave;
+      prevContentRef.current = contentToSave; // Update prev ref to avoid re-syncing on prop update
       
       // After save completes, check if there's a pending save
       if (pendingValueRef.current && pendingValueRef.current !== contentToSave) {
