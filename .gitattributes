@@ -1,0 +1,11 @@
+# Git attributes for better merge handling
+
+# CSS files - Git will show conflicts if both branches modified the file
+# This is the default behavior, but we document it here for awareness
+# Always manually review CSS merges - don't auto-accept resolutions
+
+# To use a visual merge tool:
+# git config merge.tool vimdiff
+# git config merge.tool meld
+# Then use: git mergetool when conflicts occur
+
