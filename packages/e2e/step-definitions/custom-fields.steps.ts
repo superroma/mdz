@@ -110,7 +110,6 @@ When(
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
     
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    await page.waitForTimeout(1500);
   }
 );
 
@@ -148,20 +147,33 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    await page.waitForLoadState('domcontentloaded', { timeout: 5000 }).catch(() => {});
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
-    await page.waitForSelector('[data-testid="page-view"]', { timeout: 10000 });
-    await page.waitForTimeout(1000);
+    const storeDebug = await page.evaluate(() => {
+      const state = (window as any).__ZUSTAND_STORE__?.getState?.();
+      return {
+        currentPage: state?.currentPage ? {
+          path: state.currentPage.path,
+          parent: state.currentPage.parent,
+          frontMatter: state.currentPage.frontMatter
+        } : null,
+        pagesCount: state?.pages?.length || 0,
+        parentPage: state?.pages?.find((p: any) => p.path.includes('Test Parent')) ? {
+          path: state.pages.find((p: any) => p.path.includes('Test Parent')).path,
+          frontMatter: state.pages.find((p: any) => p.path.includes('Test Parent')).frontMatter
+        } : null
+      };
+    });
+    
+    console.log('Store state:', JSON.stringify(storeDebug, null, 2));
     
     const customFieldsPanel = page.getByTestId('custom-fields-panel');
     
     try {
-      await expect(customFieldsPanel).toBeAttached({ timeout: 15000 });
+      await expect(customFieldsPanel).toBeAttached({ timeout: 10000 });
     } catch (error) {
-      const pageContent = await page.content();
-      console.log('Page HTML:', pageContent.substring(0, 1000));
-      throw new Error('Custom fields panel not found in DOM. Panel should appear if page has frontmatter or parent has schema.');
+      console.log('Panel not found. Store debug:', JSON.stringify(storeDebug, null, 2));
+      throw new Error(`Custom fields panel not found. Current page: ${storeDebug.currentPage?.path}, has frontMatter keys: ${Object.keys(storeDebug.currentPage?.frontMatter || {}).join(',')}, parent: ${storeDebug.currentPage?.parent}`);
     }
     
     await expect(customFieldsPanel).toBeVisible({ timeout: 5000 });
