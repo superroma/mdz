@@ -3,6 +3,19 @@ import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
 import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import type { Page } from "@playwright/test";
+
+// Helper to ensure a collapsible panel is expanded
+async function ensurePanelExpanded(page: Page, panelTestId: string) {
+  const toggleButton = page.getByTestId(panelTestId);
+  await expect(toggleButton).toBeVisible({ timeout: 5000 });
+  
+  const isExpanded = await toggleButton.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await toggleButton.click();
+    await page.waitForTimeout(300);
+  }
+}
 
 Given(
   "a page with custom fields",
@@ -52,10 +65,16 @@ Content here.
     
     const saveButton = page.getByRole("button", { name: "Save" });
     await saveButton.click();
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    
+    await page.waitForSelector('button:has-text("Save"):not([disabled])', { timeout: 5000 });
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
     await page.goto(FRONTEND_URL, { waitUntil: "load" });
-    await page.waitForLoadState('networkidle', { timeout: 1500 }).catch(() => {});
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    
+    // Ensure the parent page appears in sidebar before proceeding
+    await page.waitForSelector('button[aria-label*="Test Parent"]', { timeout: 10000 });
+    await page.waitForTimeout(500);
   }
 );
 
@@ -91,7 +110,8 @@ When(
     
     await page.waitForURL(/\/Test.*Parent\/Untitled/, { timeout: 10000 });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
-    await page.waitForTimeout(1000);
+    
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
   }
 );
 
@@ -100,9 +120,8 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const panelButton = page.getByText("Fields");
-    await panelButton.click();
-    await page.waitForTimeout(300);
+    // Ensure the custom fields panel is expanded
+    await ensurePanelExpanded(page, 'custom-fields-toggle');
     
     const statusSelect = page.locator("select").first();
     await statusSelect.selectOption("Done");
@@ -115,9 +134,8 @@ When(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    const panelButton = page.getByText("Fields");
-    await panelButton.click();
-    await page.waitForTimeout(300);
+    // Ensure the custom fields panel is expanded
+    await ensurePanelExpanded(page, 'custom-fields-toggle');
     
     const selectField = page.locator("select").first();
     await selectField.click();
@@ -131,11 +149,41 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    await page.waitForTimeout(2000);
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
-    const customFieldsButton = page.locator('button:has-text("Fields")').first();
+    const storeDebug = await page.evaluate(() => {
+      const state = (window as any).__ZUSTAND_STORE__?.getState?.();
+      return {
+        currentPage: state?.currentPage ? {
+          path: state.currentPage.path,
+          parent: state.currentPage.parent,
+          frontMatter: state.currentPage.frontMatter
+        } : null,
+        pagesCount: state?.pages?.length || 0,
+        parentPage: state?.pages?.find((p: any) => p.path.includes('Test Parent')) ? {
+          path: state.pages.find((p: any) => p.path.includes('Test Parent')).path,
+          frontMatter: state.pages.find((p: any) => p.path.includes('Test Parent')).frontMatter
+        } : null
+      };
+    });
     
-    await expect(customFieldsButton).toBeVisible({ timeout: 15000 });
+    console.log('Store state:', JSON.stringify(storeDebug, null, 2));
+    
+    const customFieldsPanel = page.getByTestId('custom-fields-panel');
+    
+    try {
+      await expect(customFieldsPanel).toBeAttached({ timeout: 10000 });
+    } catch (error) {
+      console.log('Panel not found. Store debug:', JSON.stringify(storeDebug, null, 2));
+      throw new Error(`Custom fields panel not found. Current page: ${storeDebug.currentPage?.path}, has frontMatter keys: ${Object.keys(storeDebug.currentPage?.frontMatter || {}).join(',')}, parent: ${storeDebug.currentPage?.parent}`);
+    }
+    
+    await expect(customFieldsPanel).toBeVisible({ timeout: 5000 });
+    
+    await ensurePanelExpanded(page, 'custom-fields-toggle');
+    
+    const statusField = page.getByTestId('field-status');
+    await expect(statusField).toBeVisible();
   }
 );
 

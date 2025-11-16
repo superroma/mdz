@@ -3,20 +3,30 @@ import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
 import { ensureServersRunning } from "../support/server-manager";
 import { AppWorld } from "../support/world";
+import type { Page } from "@playwright/test";
 import * as fs from "fs";
 import * as path from "path";
 import { tmpdir } from "os";
+
+// Helper to ensure a collapsible panel is expanded
+async function ensurePanelExpanded(page: Page, panelTestId: string) {
+  const toggleButton = page.getByTestId(panelTestId);
+  await expect(toggleButton).toBeVisible({ timeout: 5000 });
+  
+  const isExpanded = await toggleButton.getAttribute('aria-expanded');
+  if (isExpanded !== 'true') {
+    await toggleButton.click();
+    await page.waitForTimeout(300);
+  }
+}
 
 When(
   "I upload a file via the upload button",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Find the Attachments panel toggle button
-    const attachmentsButton = page.getByTestId("attachments-toggle");
-    await attachmentsButton.click();
-    // Wait for panel to open
-    await page.waitForSelector('[data-testid="attachments-panel"]', { state: 'visible', timeout: 2000 });
+    // Ensure the attachments panel is expanded
+    await ensurePanelExpanded(page, 'attachments-toggle');
     
     const tempFile = path.join(tmpdir(), "test-upload.txt");
     fs.writeFileSync(tempFile, "Test file content");
@@ -58,10 +68,8 @@ Given(
     await firstPage.click();
     await page.waitForLoadState('domcontentloaded');
     
-    // Find the Attachments panel button (not the list item)
-    const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
-    await attachmentsButton.click();
-    await page.waitForSelector('[data-testid="attachments-panel"]', { state: 'visible', timeout: 2000 });
+    // Ensure the attachments panel is expanded
+    await ensurePanelExpanded(page, 'attachments-toggle');
     
     const tempFile = path.join(tmpdir(), "test-file.txt");
     fs.writeFileSync(tempFile, "Test content");
@@ -134,10 +142,8 @@ Given(
     await firstPage.click();
     await page.waitForLoadState('domcontentloaded');
     
-    // Find the Attachments panel button (not the list item)
-    const attachmentsButton = page.getByRole("button", { name: /Attachments/i }).first();
-    await attachmentsButton.click();
-    await page.waitForSelector('[data-testid="attachments-panel"]', { state: 'visible', timeout: 2000 });
+    // Ensure the attachments panel is expanded
+    await ensurePanelExpanded(page, 'attachments-toggle');
     
     const tempImage = path.join(tmpdir(), "pic.png");
     fs.writeFileSync(tempImage, Buffer.from("fake-image-data"));
