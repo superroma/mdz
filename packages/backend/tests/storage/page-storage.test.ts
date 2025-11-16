@@ -279,6 +279,7 @@ test("non-markdown files have isMarkdown flag set to false", () => {
   expect(imageFile).toBeDefined();
   expect(imageFile?.isMarkdown).toBe(false);
   expect(imageFile?.content).toBe("");
+  expect(imageFile?.isHidden).toBe(false);
 });
 
 test("markdown files have isMarkdown flag set to true", () => {

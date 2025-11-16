@@ -37,6 +37,15 @@ const mockPages: Page[] = [
     isHidden: true,
     isMarkdown: true,
   },
+  {
+    path: "image.png",
+    title: "image.png",
+    content: "",
+    frontMatter: {},
+    children: [],
+    isHidden: false,
+    isMarkdown: false,
+  },
 ];
 
 describe("Sidebar", () => {
@@ -175,6 +184,18 @@ describe("Sidebar", () => {
     expect(screen.queryByRole("button", { name: /Navigate to \.hidden-page/i })).not.toBeInTheDocument();
   });
 
+  it("filters out non-markdown files when showHidden is false", () => {
+    const onCreateRoot = vi.fn();
+    const onCreateChild = vi.fn();
+    const onToggleShowHidden = vi.fn();
+    renderWithRouter(
+      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+    );
+    
+    expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Navigate to image\.png/i })).not.toBeInTheDocument();
+  });
+
   it("shows hidden pages when showHidden is true", () => {
     const onCreateRoot = vi.fn();
     const onCreateChild = vi.fn();
@@ -185,6 +206,18 @@ describe("Sidebar", () => {
     
     expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Navigate to \.hidden-page/i })).toBeInTheDocument();
+  });
+
+  it("shows non-markdown files when showHidden is true", () => {
+    const onCreateRoot = vi.fn();
+    const onCreateChild = vi.fn();
+    const onToggleShowHidden = vi.fn();
+    renderWithRouter(
+      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={true} onToggleShowHidden={onToggleShowHidden} />
+    );
+    
+    expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Navigate to image\.png/i })).toBeInTheDocument();
   });
 });
 

@@ -21,9 +21,10 @@ export function Sidebar({
   onToggleShowHidden,
 }: SidebarProps) {
   // Filter pages based on showHidden state
+  // Hide both hidden files (starting with .) and non-markdown files when showHidden is false
   const filteredPages = showHidden 
     ? pages 
-    : pages.filter(page => !page.isHidden);
+    : pages.filter(page => !page.isHidden && page.isMarkdown !== false);
 
   return (
     <>
