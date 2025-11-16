@@ -91,7 +91,10 @@ When(
     
     await page.waitForURL(/\/Test.*Parent\/Untitled/, { timeout: 10000 });
     await page.waitForSelector('[aria-label="Page title"]', { timeout: 10000 });
-    await page.waitForTimeout(1000);
+    
+    // Wait for page content to fully load (network activity to settle)
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
+    await page.waitForTimeout(500);
   }
 );
 
@@ -131,12 +134,21 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Wait for the page to fully load - the panel should appear after currentPage is loaded
-    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    
     // The custom fields panel should be present if the page has a parent with a schema
     const customFieldsPanel = page.getByTestId('custom-fields-panel');
-    await expect(customFieldsPanel).toBeVisible({ timeout: 15000 });
+    await expect(customFieldsPanel).toBeVisible({ timeout: 10000 });
+    
+    // Ensure the panel is expanded by clicking the toggle button if needed
+    const toggleButton = page.getByTestId('custom-fields-toggle');
+    const isExpanded = await toggleButton.getAttribute('aria-expanded');
+    if (isExpanded !== 'true') {
+      await toggleButton.click();
+      await page.waitForTimeout(300);
+    }
+    
+    // Now verify we can see the schema fields
+    const statusField = page.getByTestId('field-status');
+    await expect(statusField).toBeVisible();
   }
 );
 
