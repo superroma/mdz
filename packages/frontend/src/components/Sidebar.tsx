@@ -28,26 +28,15 @@ export function Sidebar({
 
   return (
     <>
-      {/* Mobile backdrop overlay */}
-      {isOpen && (
-        <div
-          className="md:hidden fixed inset-0 bg-black/20 z-30"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-      )}
-      
-      {/* Sidebar */}
+      {/* Sidebar - positioned underneath, always visible on mobile under the page view */}
       <aside
         className={`
-          ${isOpen ? "translate-x-0" : "-translate-x-full"} 
-          md:translate-x-0 
           fixed md:relative 
-          z-40 md:z-0
+          left-0 top-0
           w-[280px] h-full 
           bg-slate-50 border-r border-slate-200 
           flex flex-col
-          transition-transform duration-300 ease-in-out
+          z-0
         `}
         aria-label="Page navigation sidebar"
         data-testid="sidebar"
