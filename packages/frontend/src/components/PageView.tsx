@@ -8,7 +8,12 @@ import { CustomFieldsPanel } from "./CustomFieldsPanel";
 import { AttachmentsPanel } from "./AttachmentsPanel";
 import { serializeFrontMatter, parseFrontMatter } from "../utils/front-matter";
 
-export function PageView() {
+interface PageViewProps {
+  onToggleSidebar?: () => void;
+  isSidebarOpen?: boolean;
+}
+
+export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {}) {
   const { "*": pagePath } = useParams();
   const navigate = useNavigate();
   const {
@@ -119,6 +124,20 @@ export function PageView() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden" data-testid="page-view">
+      {/* Hamburger menu - part of page view */}
+      {onToggleSidebar && (
+        <button
+          type="button"
+          onClick={onToggleSidebar}
+          className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-100 rounded text-slate-700 hover:bg-slate-200"
+          aria-label="Toggle sidebar"
+          aria-expanded={isSidebarOpen}
+          data-testid="toggle-sidebar-button"
+        >
+          ☰
+        </button>
+      )}
+      
       <header className="flex-shrink-0 px-8 py-4 border-b border-slate-200" data-testid="page-header">
         <div className="flex items-center gap-4 mb-2">
           <button

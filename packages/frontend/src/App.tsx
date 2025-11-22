@@ -50,17 +50,8 @@ function AppContent() {
   };
 
   return (
-    <div className="flex h-screen bg-white text-slate-900">
-      <button
-        type="button"
-        onClick={toggleSidebar}
-        className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-100 rounded text-slate-700 hover:bg-slate-200"
-        aria-label="Toggle sidebar"
-        aria-expanded={isSidebarOpen}
-        data-testid="toggle-sidebar-button"
-      >
-        ☰
-      </button>
+    <div className="relative flex h-screen bg-white text-slate-900 overflow-hidden">
+      {/* Sidebar - underneath everything */}
       <Sidebar
         pages={pages}
         onCreateRoot={handleCreateRoot}
@@ -70,10 +61,24 @@ function AppContent() {
         showHidden={showHidden}
         onToggleShowHidden={toggleShowHidden}
       />
-      <Routes>
-        <Route path="/" element={<RedirectToFirstPage />} />
-        <Route path="/*" element={<PageView />} />
-      </Routes>
+      
+      {/* Page view container - slides to the right on mobile */}
+      <div 
+        className={`
+          flex-1 flex flex-col h-full
+          md:ml-0
+          transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? "translate-x-[280px]" : "translate-x-0"}
+          md:translate-x-0
+          bg-white
+          relative
+        `}
+      >
+        <Routes>
+          <Route path="/" element={<RedirectToFirstPage />} />
+          <Route path="/*" element={<PageView onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />} />
+        </Routes>
+      </div>
     </div>
   );
 }
