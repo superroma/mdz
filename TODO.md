@@ -1,7 +1,7 @@
 - [x] Empty page name bug
 - [x] Mobile UI settings (scaling, background)
-- [ ] Page ordering 
-- [ ] Hidden/Template pages
-- [ ] Authentication
+- [x] Hidden pages and folders
+- [ ] Page ordering (use hidden .pages.md with children list in frontmatter)
+- [.] Authentication (in the add-auth brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
 - [ ] Access control
 - [ ] Multi-roots
