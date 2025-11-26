@@ -1,7 +1,7 @@
 - [x] Empty page name bug
 - [x] Mobile UI settings (scaling, background)
+- [x] Authentication (JWT-based, Google OAuth, implemented Nov 2025)
+- [x] Access control (Group-based permissions, page-level access, implemented Nov 2025)
 - [ ] Page ordering 
 - [ ] Hidden/Template pages
-- [ ] Authentication
-- [ ] Access control
 - [ ] Multi-roots

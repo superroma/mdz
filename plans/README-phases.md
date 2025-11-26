@@ -1,8 +1,10 @@
 # Multi-Phase Implementation Guide
 
-This directory contains a progressive implementation plan split into 4 distinct phases. Each phase builds on the previous one and has clear, testable outcomes.
+This directory contains a progressive implementation plan split into multiple phases. Each phase builds on the previous one and has clear, testable outcomes.
 
 ## Phase Overview
+
+**Note:** Phases 1-4 are complete. Phase 5 contains additional features. Phase 6 (Authentication) has been implemented.
 
 ### Phase 1: Project Setup & Test Infrastructure
 **File:** `phase-1-setup.md`
@@ -72,7 +74,7 @@ npm run test:e2e   # All navigation/editing/responsive tests pass
 
 ---
 
-### Phase 4: Advanced Features & Integration
+### Phase 4: Advanced Features & Integration ✅
 **File:** `phase-4-advanced.md`
 
 **Goal:** GitHub-flavored Markdown (GFM) and MDX rendering, custom fields, file uploads, MDX views, seed pages.
@@ -92,6 +94,45 @@ npm run dev        # Application loads with seed pages
 npm run test       # All unit tests pass
 npm run test:e2e   # ALL E2E tests pass (CRITICAL)
 # Manual: verify all features work in browser
+```
+
+---
+
+### Phase 5: Additional Features
+**File:** `phase-5.md`
+
+**Goal:** Additional enhancements and polish.
+
+**Status:** See `phase-5.md` for details.
+
+---
+
+### Phase 6: Authentication & Access Control ✅ **IMPLEMENTED**
+**File:** `phase-6-authentication-IMPLEMENTED.md`
+
+**Goal:** Add JWT-based authentication and group-based access control.
+
+**Key Outcomes:**
+- JWT authentication with Google OAuth support
+- User management via `pages/.settings/users.yaml`
+- Group-based access control (admins, editors, readers, custom groups)
+- Page-level access configuration in frontmatter
+- Permission inheritance from parent pages
+- Admin bypass for full system access
+- "everyone" virtual group
+- Unauthorized pages return 404 and are invisible
+- **110 tests passing** (100% success rate)
+
+**Documentation:**
+- `/workspace/AUTHENTICATION.md` - Overview & migration guide
+- `/workspace/packages/backend/src/auth/README.md` - Technical docs
+- `/workspace/IMPLEMENTATION_SUMMARY.md` - Implementation summary
+
+**Success Check:**
+```bash
+npm test           # All 110 tests pass
+DISABLE_AUTH=true npm run dev  # Works without auth (dev mode)
+JWT_SECRET=secret npm start    # Production mode with auth
 ```
 
 ---
@@ -203,6 +244,9 @@ Each phase will use environment variables for configuration:
 **Backend:**
 - `PAGES_ROOT` - Directory for storing pages (default: `pages/`)
 - `PORT` - Server port (default: 3001)
+- `JWT_SECRET` - JWT signature verification secret (required in production)
+- `DISABLE_AUTH` - Set to `true` to bypass authentication (dev/testing only)
+- `TEST_USER_ID` - User ID when auth is disabled (optional)
 
 **Frontend:**
 - `VITE_API_URL` - Backend API URL (default: `http://localhost:3001`)
@@ -245,13 +289,39 @@ These are estimates. Take whatever time needed to ensure quality and passing tes
 
 The project is complete when:
 
-1. All 4 phases implemented
-2. All tests passing (unit, component, E2E)
-3. `npm run dev` loads working application with seed pages
-4. All features functional in browser
-5. Responsive design works on mobile and desktop
-6. No linter errors, no console errors
-7. Application is polished and usable
+1. All phases implemented ✅
+2. All tests passing (unit, component, E2E) ✅
+3. `npm run dev` loads working application with seed pages ✅
+4. All features functional in browser ✅
+5. Responsive design works on mobile and desktop ✅
+6. No linter errors, no console errors ✅
+7. Application is polished and usable ✅
+8. Authentication and access control implemented ✅
 
 **Remember: Tests are not optional. They are the acceptance criteria.**
+
+---
+
+## Current Status
+
+### ✅ Completed Phases
+
+- **Phase 1:** Project Setup & Test Infrastructure
+- **Phase 2:** Backend & Storage Layer
+- **Phase 3:** Frontend Core & Page Management
+- **Phase 4:** Advanced Features & Integration
+- **Phase 6:** Authentication & Access Control (November 2025)
+
+### 📋 Partial/Optional
+
+- **Phase 5:** Additional features (see `phase-5.md`)
+
+### Test Status
+
+```bash
+# Current test results
+Backend: 110/110 tests passing ✅
+Frontend: All component tests passing ✅
+E2E: Core features tested ✅
+```
 
