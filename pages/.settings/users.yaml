@@ -1,0 +1,43 @@
+# User Management Configuration
+# This file defines users and their group memberships for access control.
+# User IDs should match the 'sub' claim from Google JWT tokens.
+
+users:
+  # Example admin user (Google user ID format)
+  "103234567890123456789":
+    name: "Admin User"
+    email: "admin@example.com"
+    groups:
+      - admins
+  
+  # Example editor user
+  "103234567890123456790":
+    name: "Editor User"
+    email: "editor@example.com"
+    groups:
+      - editors
+  
+  # Example regular user
+  "103234567890123456791":
+    name: "Regular User"
+    email: "user@example.com"
+    groups:
+      - readers
+
+# Group Descriptions (for documentation purposes)
+group_descriptions:
+  admins: "Full access to all pages - bypasses all permission checks"
+  editors: "Can edit and manage content on pages where granted access"
+  readers: "Read-only access to pages where granted access"
+  reviewers: "Can review and provide feedback"
+
+# Default Access Rights
+# Applied when a page has no 'access' frontmatter and no parent with access config
+default_access:
+  readers: [everyone]  # All authenticated users can read by default
+  editors: [admins]    # Only admins can edit by default
+
+# Notes:
+# - The 'everyone' group is a special virtual group that includes all authenticated users
+# - Users in the 'admins' group have full access to all pages regardless of page permissions
+# - To get a user's Google ID, they need to log in once and check their JWT 'sub' claim

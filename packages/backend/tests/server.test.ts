@@ -10,6 +10,7 @@ let testDir: string;
 beforeEach(async () => {
   testDir = mkdtempSync(join(tmpdir(), "server-test-"));
   process.env.PAGES_ROOT = testDir;
+  process.env.DISABLE_AUTH = "true";  // Disable auth for integration tests
   app = await buildServer();
 });
 
@@ -17,6 +18,7 @@ afterEach(async () => {
   await app.close();
   rmSync(testDir, { recursive: true, force: true });
   delete process.env.PAGES_ROOT;
+  delete process.env.DISABLE_AUTH;
 });
 
 test("health endpoint returns ok status", async () => {

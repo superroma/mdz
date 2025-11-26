@@ -10,6 +10,7 @@ import { getPagesRoot, DEFAULT_PAGES_ROOT } from "./storage/path-validator.js";
 import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { AppError } from "./errors.js";
+import { authenticationHook } from "./auth/jwt-middleware.js";
 
 export const DEFAULT_PORT = 3001;
 
@@ -41,6 +42,9 @@ export async function buildServer() {
     origin: true,
     credentials: true
   });
+
+  // Authentication hook - runs on all requests
+  app.addHook("onRequest", authenticationHook);
 
   // Early rejection hook for path traversal
   app.addHook("onRequest", (request, reply, done) => {

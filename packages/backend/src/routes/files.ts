@@ -7,6 +7,8 @@ import { createWriteStream, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import { getPagesRoot } from "../storage/path-validator.js";
 import { NotFoundError, ValidationError } from "../errors.js";
+import { requireAuth } from "../auth/jwt-middleware.js";
+import { canRead, canWrite } from "../auth/permissions.js";
 
 // MIME type mapping for common file types
 const getMimeType = (filename: string): string => {
@@ -62,7 +64,9 @@ const getMimeType = (filename: string): string => {
 };
 
 export async function registerFileRoutes(app: FastifyInstance) {
+  // List files or download a specific file
   app.get("/api/files/*", async (request, reply) => {
+    requireAuth(request, reply);
     const path = (request.params as { "*": string })["*"];
     const pathParts = path.split("/");
     const lastSegment = pathParts.pop();
@@ -75,6 +79,12 @@ export async function registerFileRoutes(app: FastifyInstance) {
     if (!lastSegment || !hasFileExtension) {
       // Treat whole path as page path for listing files
       validatePathOrThrow(path);
+      
+      // Check if user has read permission on the page
+      if (!canRead(request.user, path)) {
+        throw new NotFoundError("Page not found");
+      }
+      
       const files = listFiles(path);
       return { files };
     }
@@ -83,6 +93,11 @@ export async function registerFileRoutes(app: FastifyInstance) {
     validatePathOrThrow(pagePath);
     validateFilenameOrThrow(lastSegment);
     validateFileExtensionOrThrow(lastSegment);
+    
+    // Check if user has read permission on the page
+    if (!canRead(request.user, pagePath)) {
+      throw new NotFoundError("Page not found");
+    }
     
     const fileStream = getFileStream(pagePath, lastSegment);
     const pagesRoot = getPagesRoot();
@@ -96,9 +111,16 @@ export async function registerFileRoutes(app: FastifyInstance) {
       .send(fileStream);
   });
 
+  // Upload a file to a page
   app.post("/api/files/*", async (request, reply) => {
+    requireAuth(request, reply);
     const path = (request.params as { "*": string })["*"];
     validatePathOrThrow(path);
+    
+    // Check if user has write permission on the page
+    if (!canWrite(request.user, path)) {
+      throw new NotFoundError("Page not found");
+    }
     
     const page = readPage(path);
     if (!page) {
@@ -144,7 +166,9 @@ export async function registerFileRoutes(app: FastifyInstance) {
     });
   });
 
-  app.delete("/api/files/*", async (request) => {
+  // Delete a file from a page
+  app.delete("/api/files/*", async (request, reply) => {
+    requireAuth(request, reply);
     const path = (request.params as { "*": string })["*"];
     const pathParts = path.split("/");
     const filename = pathParts.pop();
@@ -156,6 +180,11 @@ export async function registerFileRoutes(app: FastifyInstance) {
     
     validatePathOrThrow(pagePath);
     validateFilenameOrThrow(filename);
+    
+    // Check if user has write permission on the page
+    if (!canWrite(request.user, pagePath)) {
+      throw new NotFoundError("Page not found");
+    }
     
     deleteFile(pagePath, filename);
   });

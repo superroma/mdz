@@ -10,6 +10,8 @@ import {
   isChildPage
 } from "./folderization.js";
 import { NotFoundError, ValidationError } from "../errors.js";
+import type { AuthenticatedUser } from "../auth/jwt-middleware.js";
+import { filterPagesByPermission } from "../auth/permissions.js";
 
 export interface Page {
   path: string;
@@ -339,4 +341,29 @@ export function deletePage(pagePath: string): void {
       }
     }
   }
+}
+
+/**
+ * List pages filtered by user permissions
+ * Returns only pages the user has read access to
+ */
+export function listPagesForUser(user: AuthenticatedUser | undefined): Page[] {
+  const allPages = listPages();
+  
+  // Filter by permissions
+  const accessiblePages = filterPagesByPermission(user, allPages);
+  
+  // Update children arrays to only include accessible children
+  const accessiblePaths = new Set(accessiblePages.map(p => p.path));
+  
+  for (const page of accessiblePages) {
+    page.children = page.children.filter(childPath => accessiblePaths.has(childPath));
+    
+    // If parent is not accessible, remove parent reference
+    if (page.parent && !accessiblePaths.has(page.parent)) {
+      page.parent = undefined;
+    }
+  }
+  
+  return accessiblePages;
 }
