@@ -5,6 +5,7 @@ Possible providers to test will be Google, Yandex, GitHub
 
 Add current user avatar or icon to the top right - when clicked it should show user name/email - whatever it is in token and a Logout option.
 
+
 ## Technology Choices
 
 **Backend:**
@@ -29,3 +30,7 @@ Add current user avatar or icon to the top right - when clicked it should show u
 - Backend validates with same `JWT_SECRET` (shared between test and backend in test mode)
 - Reusable step: `Given I am logged in as "user@example.com"`
 - No special test routes needed - tests simulate "app reload with existing token" scenario
+
+Add unit and e2e tests that verify user email is displayed in top right widget
+
+Run unit and e2e tests before and after implementation. Note that before all tests green - so fix whatever is broken after your implementation.
