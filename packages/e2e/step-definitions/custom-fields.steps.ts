@@ -63,7 +63,7 @@ __schema:
 Content here.
 `);
     
-    const saveButton = page.getByRole("button", { name: "Save" });
+    const saveButton = page.getByTestId("save-button");
     await saveButton.click();
     
     await page.waitForSelector('button:has-text("Save"):not([disabled])', { timeout: 5000 });

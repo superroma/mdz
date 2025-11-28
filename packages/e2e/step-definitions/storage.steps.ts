@@ -48,12 +48,17 @@ When(
       status: response.status,
       body: await response.json()
     };
+    
+    // Give filesystem time to sync
+    await new Promise(resolve => setTimeout(resolve, 500));
   }
 );
 
 Then(
   "the file {string} should exist",
-  function (this: AppWorld, filename: string) {
+  async function (this: AppWorld, filename: string) {
+    // Give filesystem a moment to sync
+    await new Promise(resolve => setTimeout(resolve, 500));
     const filePath = join(testPagesDir, filename);
     expect(existsSync(filePath)).toBe(true);
   }
@@ -101,12 +106,17 @@ When(
       status: response.status,
       body: await response.json()
     };
+    
+    // Give filesystem time to sync
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
 );
 
 Then(
   "{string} should not exist",
-  function (this: AppWorld, filename: string) {
+  async function (this: AppWorld, filename: string) {
+    // Give filesystem a moment to sync
+    await new Promise(resolve => setTimeout(resolve, 100));
     const filePath = join(testPagesDir, filename);
     expect(existsSync(filePath)).toBe(false);
   }
@@ -114,7 +124,9 @@ Then(
 
 Then(
   "{string} should exist",
-  function (this: AppWorld, filepath: string) {
+  async function (this: AppWorld, filepath: string) {
+    // Give filesystem a moment to sync
+    await new Promise(resolve => setTimeout(resolve, 100));
     const fullPath = join(testPagesDir, filepath);
     expect(existsSync(fullPath)).toBe(true);
   }

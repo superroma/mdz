@@ -6,7 +6,8 @@
     "build": "echo 'No build needed for e2e tests'",
     "test:e2e": "cucumber-js --config cucumber.cjs",
     "test:playwright": "playwright test",
-    "lint": "eslint \"step-definitions/**/*.ts\" \"support/**/*.ts\""
+    "lint": "eslint \"step-definitions/**/*.ts\" \"support/**/*.ts\"",
+    "clean:ports": "pkill -f 'tsx.*server.ts' || true; pkill -f 'vite.*3202' || true; echo 'Cleaned up test servers'"
   },
   "dependencies": {
     "@cucumber/cucumber": "^10.9.0",
