@@ -1,6 +1,7 @@
 - [x] Empty page name bug
 - [x] Mobile UI settings (scaling, background)
 - [x] Hidden pages and folders
+- [ ] ARIA and a11y in tests and everywhere
 - [ ] Page ordering (use hidden .pages.md with children list in frontmatter)
 - [.] Authentication (in the add-auth brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
 - [ ] Access control

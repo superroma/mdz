@@ -42,9 +42,18 @@ Then(
   "the file should appear in the attachments list",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector("text=test-upload.txt", { timeout: 5000 });
-    const fileName = page.getByText("test-upload.txt");
-    await expect(fileName).toBeVisible();
+    
+    // Expand the attachments panel if it's not already expanded
+    const attachmentsToggle = page.getByTestId("attachments-toggle");
+    const isExpanded = await attachmentsToggle.getAttribute("aria-expanded");
+    if (isExpanded !== "true") {
+      await attachmentsToggle.click();
+      await page.waitForTimeout(300);
+    }
+    
+    // Wait for the file to appear in the attachments list
+    const attachment = page.getByTestId("attachment-test-upload.txt");
+    await expect(attachment).toBeVisible({ timeout: 5000 });
   }
 );
 
@@ -156,6 +165,7 @@ Given(
 
 When(
   /^I reference the image with (.+)$/,
+  { timeout: 10000 },
   async function (this: AppWorld, markdown: string) {
     const page = await this.ensurePage();
     const editButton = page.getByTestId("edit-button");
@@ -168,8 +178,9 @@ When(
     // Use Save button with data-testid
     const saveButton = page.getByTestId("save-button");
     await saveButton.click();
-    // Wait for save to complete
-    await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
+    // Wait for save to complete with longer timeout
+    await page.waitForTimeout(500);
+    await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     // After saving, click Preview to see the rendered view
     const previewButton = page.getByTestId("preview-button");
     await previewButton.click();

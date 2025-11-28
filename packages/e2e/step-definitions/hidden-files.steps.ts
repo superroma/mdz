@@ -38,8 +38,9 @@ When("I click the show hidden files toggle", async function (this: AppWorld) {
   const toggleButton = page.locator('[data-testid="toggle-hidden-button"]');
   await toggleButton.click();
   
-  // Wait a bit for the UI to update
-  await page.waitForTimeout(100);
+  // Wait for the API request to fetch pages with hidden files included
+  await page.waitForResponse(resp => resp.url().includes('/api/pages'), { timeout: 3000 }).catch(() => {});
+  await page.waitForTimeout(300);
 });
 
 Then("I should see {string} in the sidebar", async function (this: AppWorld, pageName: string) {
