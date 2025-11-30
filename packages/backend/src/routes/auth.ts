@@ -171,6 +171,12 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       checkStateFunction: () => true,
     };
 
+    if (provider.name === "google") {
+      oauthConfig.callbackUriParams = {
+        prompt: "select_account",
+      };
+    }
+
     if (provider.name === "github") {
       oauthConfig.scope = ["user:email"];
     } else {

@@ -36,6 +36,29 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
   const location = window.location.pathname;
 
+  const buildLoginPath = () => {
+    if (typeof window === "undefined") {
+      return "/login";
+    }
+    try {
+      const raw = sessionStorage.getItem("auth_error");
+      if (raw) {
+        const parsed = JSON.parse(raw) as { type?: string; email?: string };
+        if (parsed.type) {
+          const params = new URLSearchParams();
+          params.set("error", parsed.type);
+          if (parsed.email) {
+            params.set("email", parsed.email);
+          }
+          return `/login?${params.toString()}`;
+        }
+      }
+    } catch {
+      // ignore parse errors
+    }
+    return "/login";
+  };
+
   useEffect(() => {
     checkAuth().catch(() => {});
   }, [checkAuth]);
@@ -50,7 +73,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     sessionStorage.setItem("auth_redirect", location);
-    return <Navigate to="/login" replace />;
+    const loginPath = buildLoginPath();
+    return <Navigate to={loginPath} replace />;
   }
 
   return <>{children}</>;

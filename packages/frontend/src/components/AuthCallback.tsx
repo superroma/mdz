@@ -25,7 +25,10 @@ export function AuthCallback() {
       
       login(token);
       
-      checkAuth().then(() => {
+      checkAuth().then((isAuthed) => {
+        if (!isAuthed) {
+          throw new Error("Authentication failed");
+        }
         if (hasRedirected.current) {
           return;
         }
@@ -42,7 +45,17 @@ export function AuthCallback() {
       }).catch((error) => {
         console.error("[Auth] Auth check failed:", error);
         hasRedirected.current = true;
-        navigate("/login");
+        const errCode = (error as { code?: string; email?: string })?.code;
+        const errEmail = (error as { code?: string; email?: string })?.email;
+        if (errCode === "NO_ACCESS") {
+          const params = new URLSearchParams({ error: "no-access" });
+          if (errEmail) {
+            params.set("email", errEmail);
+          }
+          navigate(`/login?${params.toString()}`, { replace: true });
+        } else {
+          navigate("/login?error=invalid-login", { replace: true });
+        }
       });
     } else {
       console.error("[Auth] No token in callback URL, redirecting to login");

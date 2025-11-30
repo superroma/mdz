@@ -14,6 +14,7 @@ Feature: Access Control
   Scenario: User not in users.yaml cannot access anything
     When I log in using the test provider as "outsider"
     Then I should be redirected to the login page
+    And I should see a login access denied message for "non-user@test.local"
 
   Scenario: Reader can only view pages with everyone group
     When I log in using the test provider as "reader"

@@ -5,7 +5,7 @@ interface AuthStore {
   user: api.User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => Promise<boolean>;
   login: (token: string) => void;
   logout: () => Promise<void>;
   hasGroup: (group: string) => boolean;
@@ -34,11 +34,29 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
         console.warn("[Auth Store] User has no authorized groups, logging out");
         api.removeAuthToken();
         set({ user: null, isLoading: false, isAuthenticated: false });
-        throw new Error("User has no authorized groups");
+        if (typeof window !== "undefined") {
+          sessionStorage.setItem(
+            "auth_error",
+            JSON.stringify({
+              type: "no_access",
+              email: user.email,
+            })
+          );
+        }
+        const error = new Error("User has no authorized groups") as Error & {
+          code?: string;
+          email?: string;
+        };
+        error.code = "NO_ACCESS";
+        error.email = user.email;
+        throw error;
       }
       console.log("[Auth Store] User authenticated:", user.email);
       console.log("[Auth Store] User groups:", user.groups);
       set({ user, isLoading: false, isAuthenticated: true });
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("auth_error");
+      }
       return true;
     } catch (error) {
       console.error("[Auth Store] Token validation failed:", error);

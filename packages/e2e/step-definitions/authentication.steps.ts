@@ -140,3 +140,15 @@ Then(
     expect(pathname).not.toBe('/auth/callback');
   }
 );
+
+Then(
+  "I should see a login access denied message for {string}",
+  async function (this: AppWorld, email: string) {
+    const page = await this.ensurePage();
+    const message = page.getByTestId("login-error-message");
+    await expect(message).toContainText(
+      `${email} doesn't have access to this app.`,
+      { timeout: 5000 }
+    );
+  }
+);

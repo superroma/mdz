@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FaGoogle, FaGithub, FaYandex } from "react-icons/fa";
 import { MdBugReport } from "react-icons/md";
 import { Button } from "./ui/button";
@@ -16,7 +16,10 @@ const providerIcons: Record<string, React.ComponentType<{ className?: string }>>
 export function LoginPage() {
   const [providers, setProviders] = useState<api.AuthProvider[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [dismissedError, setDismissedError] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { checkAuth } = useAuthStore();
 
   useEffect(() => {
@@ -28,6 +31,41 @@ export function LoginPage() {
       })
       .catch(() => {});
   }, [checkAuth, navigate]);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("auth_error");
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw) as { type?: string; email?: string };
+        if (parsed.type === "no_access" && parsed.email) {
+          setErrorMessage(`${parsed.email} doesn't have access to this app.`);
+        }
+      } catch {
+        setErrorMessage("You don't have access to this app.");
+      }
+      sessionStorage.removeItem("auth_error");
+      return;
+    }
+
+    const params = new URLSearchParams(location.search);
+    const errorParam = params.get("error");
+    const emailParam = params.get("email");
+    if (errorParam === "no-access") {
+      setErrorMessage(
+        emailParam
+          ? `${emailParam} doesn't have access to this app.`
+          : "You don't have access to this app."
+      );
+    } else if (errorParam === "invalid-login") {
+      setErrorMessage("Unable to complete login. Please try again.");
+    }
+  }, [location.search]);
+
+  useEffect(() => {
+    if (errorMessage) {
+      setDismissedError(false);
+    }
+  }, [errorMessage]);
 
   useEffect(() => {
     api.getAuthProviders()
@@ -74,6 +112,22 @@ export function LoginPage() {
         <h1 className="text-2xl font-semibold text-slate-900 mb-6 text-center">
           Sign in to MDZ
         </h1>
+        {!dismissedError && errorMessage && (
+          <div
+            className="mb-4 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 flex items-start justify-between gap-2"
+            data-testid="login-error-message"
+          >
+            <span>{errorMessage}</span>
+            <button
+              type="button"
+              className="text-rose-700 hover:text-rose-900"
+              aria-label="Dismiss error"
+              onClick={() => setDismissedError(true)}
+            >
+              ×
+            </button>
+          </div>
+        )}
         <div className="space-y-3">
           {providers.map((provider) => {
             const Icon = providerIcons[provider.name];

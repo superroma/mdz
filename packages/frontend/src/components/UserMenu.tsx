@@ -15,7 +15,7 @@ export function UserMenu() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    checkAuth();
+    checkAuth().catch(() => {});
   }, [checkAuth]);
 
   const handleLogout = async () => {
