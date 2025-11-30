@@ -148,10 +148,33 @@ Then(
   "I should return to the previous page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // URL should be a page path (not root)
     const pathname = new URL(page.url()).pathname;
     expect(pathname).not.toBe("/");
     expect(pathname.length).toBeGreaterThan(1);
+  }
+);
+
+Then(
+  "I should be redirected to the first visible page",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    await page.waitForURL((url) => {
+      const path = new URL(url).pathname;
+      return path !== "/" && path.length > 1;
+    }, { timeout: 5000 });
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toBe("/");
+    expect(pathname.length).toBeGreaterThan(1);
+  }
+);
+
+Then(
+  "I should not be redirected to a hidden page",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).not.toMatch(/^\/\./);
+    expect(pathname).not.toMatch(/\/\./);
   }
 );
 

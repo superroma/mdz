@@ -9,7 +9,7 @@ import { LoginPage } from "./components/LoginPage";
 import { AuthCallback } from "./components/AuthCallback";
 
 function RedirectToFirstPage() {
-  const { pages, loadPages } = usePageStore();
+  const { pages, loadPages, showHidden } = usePageStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,10 +18,16 @@ function RedirectToFirstPage() {
 
   useEffect(() => {
     if (pages.length > 0) {
-      const firstPage = pages.find((p) => !p.parent) || pages[0];
-      navigate(`/${firstPage.path}`, { replace: true });
+      const visiblePages = showHidden 
+        ? pages 
+        : pages.filter(page => !page.isHidden && page.isMarkdown !== false);
+      
+      const firstPage = visiblePages.find((p) => !p.parent) || visiblePages[0];
+      if (firstPage) {
+        navigate(`/${firstPage.path}`, { replace: true });
+      }
     }
-  }, [pages, navigate]);
+  }, [pages, showHidden, navigate]);
 
   return <EmptyState />;
 }

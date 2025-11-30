@@ -21,3 +21,8 @@ Feature: Page Navigation
     And I click a parent breadcrumb
     Then I should be navigated to parent page
 
+  Scenario: App starts on first visible page not first page
+    When I visit the root URL "/"
+    Then I should be redirected to the first visible page
+    And I should not be redirected to a hidden page
+
