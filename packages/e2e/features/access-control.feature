@@ -27,19 +27,13 @@ Feature: Access Control
     And I should be able to edit pages with writer access
     And I should not be able to edit pages restricted to admins
 
-  Scenario: Page with explicit access control
-    Given a page "Private/Secret" with access control:
-      """
-      __access:
-        read: [admins]
-        write: [admins]
-      """
+  Scenario: Settings page is restricted to admins
     When I log in using the test provider as "reader"
-    Then I should not see the page "Private/Secret" in navigation
-    And accessing "Private/Secret" should return 404
+    Then I should not see the page ".settings" in navigation
+    And accessing ".settings" should return 404
+    And I should not be able to edit pages restricted to admins
     When I log in using the test provider as "admin"
-    Then I should see the page "Private/Secret" in navigation
-    And I should be able to edit "Private/Secret"
+    Then I should be able to edit ".settings"
 
   Scenario: Access inheritance from parent page
     Given a parent page "Team" with access control:

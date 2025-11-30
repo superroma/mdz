@@ -3,8 +3,17 @@ import { expect } from "@playwright/test";
 import { AppWorld } from "../support/world";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
-import { FRONTEND_URL, BACKEND_URL } from "../support/constants";
-import { ensureServersRunning } from "../support/server-manager";
+import { BACKEND_URL } from "../support/constants";
+
+function getNavigationTitle(pagePath: string): string {
+  const normalized = pagePath.replace(/\.md$/, "");
+  const parts = normalized.split("/");
+  const last = parts[parts.length - 1];
+  if (last === "README" && parts.length > 1) {
+    return parts[parts.length - 2];
+  }
+  return last;
+}
 
 Given("the users.yaml configuration exists", async function (this: AppWorld) {
   const pagesRoot = process.env.PAGES_ROOT || join(process.cwd(), "../../pages");
@@ -114,7 +123,7 @@ Then("I should be able to edit pages with writer access", async function (this: 
 Then("I should not be able to edit pages restricted to admins", async function (this: AppWorld) {
   const page = await this.ensurePage();
   const response = await page.request.put(
-    `${BACKEND_URL}/api/pages/.settings/README`,
+    `${BACKEND_URL}/api/pages/.settings`,
     {
       headers: {
         Authorization: `Bearer ${this.authToken || ''}`,
@@ -155,7 +164,7 @@ This is a test page with access control.
 Then("I should not see the page {string} in navigation", async function (this: AppWorld, pagePath: string) {
   const page = await this.ensurePage();
   await page.waitForTimeout(500);
-  const pageTitle = pagePath.split("/").pop() || pagePath;
+  const pageTitle = getNavigationTitle(pagePath);
   const pageElement = page.getByRole("group", { name: new RegExp(`Page item: ${pageTitle}`, "i") });
   await expect(pageElement).toHaveCount(0);
 });
@@ -173,7 +182,7 @@ Then("accessing {string} should return 404", async function (this: AppWorld, pag
 Then("I should see the page {string} in navigation", async function (this: AppWorld, pagePath: string) {
   const page = await this.ensurePage();
   await page.waitForTimeout(500);
-  const pageTitle = pagePath.split("/").pop() || pagePath;
+  const pageTitle = getNavigationTitle(pagePath);
   const pageElement = page.getByRole("group", { name: new RegExp(`Page item: ${pageTitle}`, "i") });
   await expect(pageElement).toBeVisible();
 });
@@ -243,8 +252,8 @@ Then("I should not see {string} or {string} in navigation", async function (this
   const page = await this.ensurePage();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
-  const page1Title = page1.split("/").pop() || page1;
-  const page2Title = page2.split("/").pop() || page2;
+  const page1Title = getNavigationTitle(page1);
+  const page2Title = getNavigationTitle(page2);
   
   const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
   const escapedPage1Title = page1Title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -262,8 +271,8 @@ Then("I should see both {string} and {string} in navigation", async function (th
   const page = await this.ensurePage();
   await page.waitForLoadState('networkidle');
   await page.waitForTimeout(1000);
-  const page1Title = page1.split("/").pop() || page1;
-  const page2Title = page2.split("/").pop() || page2;
+  const page1Title = getNavigationTitle(page1);
+  const page2Title = getNavigationTitle(page2);
   
   const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
   const escapedPage1Title = page1Title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
