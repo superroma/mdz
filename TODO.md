@@ -1,10 +1,10 @@
 - [x] Empty page name bug
 - [x] Mobile UI settings (scaling, background)
 - [x] Hidden pages and folders
-- [ ] ARIA and a11y in tests and everywhere
+- [x] ARIA and a11y in tests and everywhere
 - [ ] Page ordering (use hidden .pages.md with children list in frontmatter)
-- [.] Authentication (in the  brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
-- [ ] Access control
+- [x] Authentication (in the  brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
+- [x] Access control
 - [ ] Multi-roots
 - [ ] Proper back and front logging
 - [ ] Remove duplication in cucumber steps
