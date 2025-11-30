@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, expect, test } from "vitest";
-import { buildServer, DEFAULT_PAGES_ROOT } from "../src/server";
+import { buildServer } from "../src/mdz-server";
+import { DEFAULT_PORT } from "../src/mdz-server";
+import { DEFAULT_PAGES_ROOT } from "../src/storage/path-validator";
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";

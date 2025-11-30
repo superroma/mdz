@@ -4,6 +4,15 @@ import { TEST_USERS, generateTestUserJWT } from "./test-users.js";
 export async function registerTestAuthPlugin(app: FastifyInstance) {
   const jwtSecret = process.env.JWT_SECRET || "dev-secret-change-in-production";
 
+  // Add test provider to the app decorations so auth routes can discover it
+  if (!app.hasDecorator('extraAuthProviders')) {
+    app.decorate('extraAuthProviders', []);
+  }
+  (app as any).extraAuthProviders.push({
+    name: "test",
+    displayName: "Test (Dev Only)",
+  });
+
   app.get("/api/dev-auth/select", async (request, reply) => {
     const frontendUrl = request.headers.origin || request.headers.referer?.split("/").slice(0, 3).join("/") || "http://localhost:5173";
     

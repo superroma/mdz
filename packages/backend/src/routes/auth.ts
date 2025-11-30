@@ -130,11 +130,9 @@ export async function registerAuthRoutes(app: FastifyInstance) {
       displayName: p.name.charAt(0).toUpperCase() + p.name.slice(1),
     }));
 
-    if (process.env.NODE_ENV !== "production") {
-      providerList.push({
-        name: "test",
-        displayName: "Test (Dev Only)",
-      });
+    // Include any extra providers registered by plugins (e.g., test-auth-plugin)
+    if ((app as any).extraAuthProviders) {
+      providerList.push(...(app as any).extraAuthProviders);
     }
 
     return {

@@ -30,7 +30,7 @@ const processes: ManagedProcess[] = [
   {
     name: "backend",
     command: binPath("tsx"),
-    args: ["src/server.ts"],
+    args: ["src/dev-server.ts"],
     cwd: resolve(repoRoot, "packages", "backend"),
     readyUrl: HEALTH_ENDPOINT
   },
