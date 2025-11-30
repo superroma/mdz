@@ -7,7 +7,14 @@ import type { Page } from "@playwright/test";
 
 // Helper to ensure a collapsible panel is expanded
 async function ensurePanelExpanded(page: Page, panelTestId: string) {
-  const toggleButton = page.getByTestId(panelTestId);
+  let toggleButton;
+  if (panelTestId === 'custom-fields-toggle') {
+    toggleButton = page.getByRole("button", { name: /^(Expand|Collapse) custom fields$/i });
+  } else if (panelTestId === 'attachments-toggle') {
+    toggleButton = page.getByRole("button", { name: /^(Expand|Collapse) attachments$/i });
+  } else {
+    toggleButton = page.getByTestId(panelTestId);
+  }
   await expect(toggleButton).toBeVisible({ timeout: 5000 });
   
   const isExpanded = await toggleButton.getAttribute('aria-expanded');
@@ -43,7 +50,7 @@ Given(
     await titleField.press("Enter");
     await page.waitForTimeout(500);
     
-    const editButton = page.getByRole("button", { name: "Edit" });
+    const editButton = page.getByRole("button", { name: "Edit page content" });
     await editButton.click();
     await page.waitForTimeout(300);
     
@@ -63,7 +70,7 @@ __schema:
 Content here.
 `);
     
-    const saveButton = page.getByTestId("save-button");
+    const saveButton = page.getByRole("button", { name: "Save page content" });
     await saveButton.click();
     
     await page.waitForSelector('button:has-text("Save"):not([disabled])', { timeout: 5000 });
@@ -151,12 +158,12 @@ Then(
     
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
-    const customFieldsPanel = page.getByTestId('custom-fields-panel');
-    await expect(customFieldsPanel).toBeVisible({ timeout: 10000 });
+    const customFieldsToggle = page.getByRole("button", { name: /^(Expand|Collapse) custom fields$/i });
+    await expect(customFieldsToggle).toBeVisible({ timeout: 10000 });
     
     await ensurePanelExpanded(page, 'custom-fields-toggle');
     
-    const statusField = page.getByTestId('field-status');
+    const statusField = page.getByLabel("status");
     await expect(statusField).toBeVisible();
   }
 );
@@ -176,7 +183,7 @@ Then(
   "the front-matter should be updated",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editButton = page.getByRole("button", { name: "Edit" });
+    const editButton = page.getByRole("button", { name: "Edit page content" });
     await editButton.click();
     await page.waitForTimeout(300);
     

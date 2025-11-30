@@ -14,11 +14,11 @@ When(
       await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     }
     
-    const createButton = page.getByTestId("create-root-page-button");
+    const createButton = page.getByRole("button", { name: "Create new page" });
     const isVisible = await createButton.isVisible().catch(() => false);
     
     if (!isVisible) {
-      const hamburger = page.getByTestId("toggle-sidebar-button");
+      const hamburger = page.getByRole("button", { name: "Toggle sidebar" });
       const hamburgerVisible = await hamburger.isVisible().catch(() => false);
       if (hamburgerVisible) {
         await hamburger.click();
@@ -34,7 +34,7 @@ When(
   "I edit the title field and press Enter",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByTestId("page-title-input");
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await titleField.fill("Test Page Renamed");
     await titleField.press("Enter");
     await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
@@ -61,7 +61,7 @@ When(
       await dialog.accept();
     });
     
-    await page.getByTestId("delete-page-button").click();
+    await page.getByRole("button", { name: "Delete page" }).click();
     await page.waitForLoadState('domcontentloaded');
   }
 );
@@ -70,8 +70,8 @@ Then(
   /^a new page named "([^"]*)" should be created$/,
   async function (this: AppWorld, pageName: string) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    const titleField = page.getByTestId("page-title-input");
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await expect(titleField).toHaveValue(pageName);
   }
 );
@@ -80,7 +80,7 @@ Then(
   "the title field should be focused with text selected",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByTestId("page-title-input");
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await expect(titleField).toBeFocused();
   }
 );
@@ -89,7 +89,7 @@ Then(
   "the page should be renamed",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByTestId("page-title-input");
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     const value = await titleField.inputValue();
     expect(value).not.toBe("Untitled");
   }
@@ -120,8 +120,8 @@ Then(
   "a new child page should be created",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    const titleField = page.getByTestId("page-title-input");
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await expect(titleField).toHaveValue("Untitled");
   }
 );

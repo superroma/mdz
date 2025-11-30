@@ -28,17 +28,15 @@ Given("a non-markdown file {string} exists", async function (this: AppWorld, fil
 When("I view the sidebar", async function (this: AppWorld) {
   const page = await this.ensurePage();
   
-  // The sidebar should already be visible, just wait for it to load
-  await page.waitForSelector('[data-testid="sidebar"]', { state: "visible" });
+  await page.getByRole("complementary", { name: "Page navigation sidebar" }).waitFor({ state: "visible" });
 });
 
 When("I click the show hidden files toggle", async function (this: AppWorld) {
   const page = await this.ensurePage();
   
-  const toggleButton = page.locator('[data-testid="toggle-hidden-button"]');
+  const toggleButton = page.getByRole("button", { name: "Toggle hidden files" });
   await toggleButton.click();
   
-  // Wait for the API request to fetch pages with hidden files included
   await page.waitForResponse(resp => resp.url().includes('/api/pages'), { timeout: 3000 }).catch(() => {});
   await page.waitForTimeout(300);
 });
@@ -46,35 +44,29 @@ When("I click the show hidden files toggle", async function (this: AppWorld) {
 Then("I should see {string} in the sidebar", async function (this: AppWorld, pageName: string) {
   const page = await this.ensurePage();
   
-  // Wait for the sidebar to be loaded
-  await page.waitForSelector('[data-testid="page-tree"]', { state: "visible" });
+  await page.getByRole("navigation", { name: "Page tree" }).waitFor({ state: "visible" });
   
-  // Look for the page in the sidebar using data-testid within the sidebar
-  const sidebar = page.locator('[data-testid="sidebar"]');
-  const pageLink = sidebar.locator(`[data-testid="navigate-to-${pageName}"]`);
+  const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
+  const pageLink = sidebar.getByRole("button", { name: `Navigate to ${pageName}` });
   await expect(pageLink).toBeVisible({ timeout: 10000 });
 });
 
 Then("I should not see {string} in the sidebar", async function (this: AppWorld, pageName: string) {
   const page = await this.ensurePage();
   
-  // Wait for the sidebar to be loaded
-  await page.waitForSelector('[data-testid="page-tree"]', { state: "visible" });
+  await page.getByRole("navigation", { name: "Page tree" }).waitFor({ state: "visible" });
   
-  // Look for the page in the sidebar - it should not be visible
-  const sidebar = page.locator('[data-testid="sidebar"]');
-  const pageLink = sidebar.locator(`[data-testid="navigate-to-${pageName}"]`);
+  const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
+  const pageLink = sidebar.getByRole("button", { name: `Navigate to ${pageName}` });
   await expect(pageLink).not.toBeVisible();
 });
 
 Then("the file {string} should not be clickable", async function (this: AppWorld, fileName: string) {
   const page = await this.ensurePage();
   
-  // Find the file in the sidebar
-  const fileElement = page.locator(`[data-testid="navigate-to-${fileName}"]`);
+  const fileElement = page.getByRole("button", { name: `Navigate to ${fileName}` });
   await expect(fileElement).toBeVisible();
   
-  // Check that it has the non-clickable class (cursor-default)
   const classes = await fileElement.getAttribute("class");
   expect(classes).toContain("cursor-default");
 });

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChildPages } from "./useChildPages";
 import { filterPages, sortPages } from "./filterUtils";
 import type { Page } from "../../types";
+import { ARIA_LABELS } from "../../constants/aria-labels";
 
 interface BoardViewProps {
   groupBy: string;
@@ -45,7 +46,7 @@ export function BoardView({ groupBy, filter, sort, parentPath }: BoardViewProps)
           type="button"
           onClick={handleRefresh}
           className="text-slate-600 hover:text-slate-900 transition-colors"
-          aria-label="Refresh"
+          aria-label={ARIA_LABELS.refresh}
           title="Refresh"
         >
           ↻
@@ -67,10 +68,9 @@ export function BoardView({ groupBy, filter, sort, parentPath }: BoardViewProps)
                   key={page.path}
                   onClick={() => navigate(`/${page.path}`)}
                   className="p-3 bg-white hover:bg-slate-100 rounded cursor-pointer transition-colors border border-slate-200"
-                  data-testid={`board-card-${page.path}`}
                   role="button"
                   tabIndex={0}
-                  aria-label={`Open page ${page.title}`}
+                  aria-label={ARIA_LABELS.openPage(page.title)}
                 >
                   <div className="text-sm font-medium text-slate-800 mb-1">
                     {page.title}

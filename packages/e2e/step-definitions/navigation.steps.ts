@@ -67,7 +67,7 @@ When(
   "I click a parent breadcrumb",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const breadcrumbs = page.getByTestId("breadcrumb").getByRole("button");
+    const breadcrumbs = page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("button");
     const count = await breadcrumbs.count();
     
     if (count > 1) {
@@ -80,7 +80,7 @@ When(
   "I click the back button",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.getByTestId("back-button").click();
+    await page.getByRole("button", { name: "Go back" }).click();
   }
 );
 
@@ -103,8 +103,8 @@ Then(
   "I should see that page's content",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    const titleField = page.getByTestId("page-title-input");
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await expect(titleField).toBeVisible();
   }
 );
@@ -124,10 +124,8 @@ Then(
   /^I should see the "([^"]*)" page content$/,
   async function (this: AppWorld, pageTitle: string) {
     const page = await this.ensurePage();
-    // Wait for page to load
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 10000 });
-    const titleField = page.getByTestId("page-title-input");
-    // Wait for title to have the expected value
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 10000 });
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await expect(titleField).toHaveValue(pageTitle, { timeout: 5000 });
   }
 );
@@ -136,9 +134,8 @@ Then(
   "the sidebar should highlight that page",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    await page.waitForSelector('[data-testid="sidebar"]', { timeout: 5000 });
-    // Look specifically in the sidebar to avoid conflict with breadcrumbs
-    const sidebar = page.getByTestId("sidebar");
+    await page.getByRole("complementary", { name: "Page navigation sidebar" }).waitFor({ timeout: 5000 });
+    const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
     const currentPage = sidebar.getByRole("button", { name: /Navigate to Write Tests/i }).first();
     await expect(currentPage).toBeVisible();
   }

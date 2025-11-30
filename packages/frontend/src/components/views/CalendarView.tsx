@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChildPages } from "./useChildPages";
 import { filterPages } from "./filterUtils";
 import type { Page } from "../../types";
+import { ARIA_LABELS } from "../../constants/aria-labels";
 
 interface CalendarViewProps {
   dateField: string;
@@ -75,7 +76,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
             type="button"
             onClick={prevMonth}
             className="text-slate-600 hover:text-slate-900 transition-colors"
-            aria-label="Previous month"
+            aria-label={ARIA_LABELS.previousMonth}
           >
             ←
           </button>
@@ -86,7 +87,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
             type="button"
             onClick={nextMonth}
             className="text-slate-600 hover:text-slate-900 transition-colors"
-            aria-label="Next month"
+            aria-label={ARIA_LABELS.nextMonth}
           >
             →
           </button>
@@ -95,7 +96,7 @@ export function CalendarView({ dateField, filter, parentPath }: CalendarViewProp
           type="button"
           onClick={handleRefresh}
           className="text-slate-600 hover:text-slate-900 transition-colors"
-          aria-label="Refresh"
+          aria-label={ARIA_LABELS.refresh}
           title="Refresh"
         >
           ↻

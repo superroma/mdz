@@ -61,18 +61,17 @@ When(
   "I click the {string} button",
   async function (this: AppWorld, buttonName: string) {
     const page = await this.ensurePage();
-    // Map common button names to test IDs
     const buttonMap: Record<string, string> = {
-      'Edit': 'edit-button',
-      'Save': 'save-button',
-      'Preview': 'preview-button',
-      'Delete': 'delete-page-button',
-      'Back': 'back-button'
+      'Edit': 'Edit page content',
+      'Save': 'Save page content',
+      'Preview': 'Preview page content',
+      'Delete': 'Delete page',
+      'Back': 'Go back'
     };
     
-    const testId = buttonMap[buttonName];
-    if (testId) {
-      await page.getByTestId(testId).click();
+    const ariaLabel = buttonMap[buttonName];
+    if (ariaLabel) {
+      await page.getByRole('button', { name: ariaLabel }).click();
     } else {
       await page.getByRole('button', { name: buttonName }).click();
     }
@@ -105,16 +104,25 @@ Then(
   async function (this: AppWorld, element: string) {
     const page = await this.ensurePage();
     
-    const selectors: Record<string, string> = {
-      'markdown source editor': '[data-testid="content-textarea"]',
-      'page title': '[data-testid="page-title-input"]',
-      'sidebar': '[data-testid="sidebar"]',
-      'prose content': '.prose'
-    };
-    
-    const selector = selectors[element] || element;
-    await page.waitForSelector(selector, { timeout: 5000 });
-    await expect(page.locator(selector)).toBeVisible();
+    if (element === 'markdown source editor') {
+      const editor = page.getByRole("textbox", { name: "Page content" });
+      await editor.waitFor({ timeout: 5000 });
+      await expect(editor).toBeVisible();
+    } else if (element === 'page title') {
+      const titleField = page.getByRole("textbox", { name: "Page title" });
+      await titleField.waitFor({ timeout: 5000 });
+      await expect(titleField).toBeVisible();
+    } else if (element === 'sidebar') {
+      const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
+      await sidebar.waitFor({ timeout: 5000 });
+      await expect(sidebar).toBeVisible();
+    } else if (element === 'prose content') {
+      await page.waitForSelector('.prose', { timeout: 5000 });
+      await expect(page.locator('.prose')).toBeVisible();
+    } else {
+      await page.waitForSelector(element, { timeout: 5000 });
+      await expect(page.locator(element)).toBeVisible();
+    }
   }
 );
 

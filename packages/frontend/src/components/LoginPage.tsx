@@ -115,7 +115,7 @@ export function LoginPage() {
         {!dismissedError && errorMessage && (
           <div
             className="mb-4 rounded border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800 flex items-start justify-between gap-2"
-            data-testid="login-error-message"
+            role="alert"
           >
             <span>{errorMessage}</span>
             <button

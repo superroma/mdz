@@ -46,25 +46,25 @@ Restricted settings page.
 Then("I should see all pages in the navigation", async function (this: AppWorld) {
   const page = await this.ensurePage();
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('[data-testid="page-tree"]');
-  const pages = await page.locator('[data-testid^="tree-item-"]').count();
+  await page.getByRole("navigation", { name: "Page tree" }).waitFor();
+  const pages = await page.getByRole("group").count();
   expect(pages).toBeGreaterThan(0);
 });
 
 Then("I should be able to edit any page", async function (this: AppWorld) {
   const page = await this.ensurePage();
-  await page.click('[data-testid="navigate-to-Welcome"]');
-  await page.waitForSelector('[data-testid="edit-button"]');
-  await page.click('[data-testid="edit-button"]');
-  await page.waitForSelector('[data-testid="content-editor"]');
-  const editor = page.locator('[data-testid="content-editor"]');
+  await page.getByRole("button", { name: "Navigate to Welcome" }).click();
+  await page.getByRole("button", { name: "Edit page content" }).waitFor();
+  await page.getByRole("button", { name: "Edit page content" }).click();
+  await page.getByRole("textbox", { name: "Page content" }).waitFor();
+  const editor = page.getByRole("textbox", { name: "Page content" });
   await expect(editor).toBeVisible();
 });
 
 Then("I should see no pages in the navigation", async function (this: AppWorld) {
   const page = await this.ensurePage();
   await page.waitForTimeout(1000);
-  const pages = await page.locator('[data-testid^="tree-item-"]').count();
+  const pages = await page.getByRole("group").count();
   expect(pages).toBe(0);
 });
 
@@ -81,8 +81,8 @@ Then("accessing any page should return 404", async function (this: AppWorld) {
 Then("I should see pages accessible to {string} group", async function (this: AppWorld, group: string) {
   const page = await this.ensurePage();
   await page.waitForLoadState('networkidle');
-  await page.waitForSelector('[data-testid="page-tree"]');
-  const pages = await page.locator('[data-testid^="tree-item-"]').count();
+  await page.getByRole("navigation", { name: "Page tree" }).waitFor();
+  const pages = await page.getByRole("group").count();
   expect(pages).toBeGreaterThan(0);
 });
 
@@ -103,11 +103,11 @@ Then("I should not be able to edit any page", async function (this: AppWorld) {
 
 Then("I should be able to edit pages with writer access", async function (this: AppWorld) {
   const page = await this.ensurePage();
-  await page.click('[data-testid="navigate-to-Welcome"]');
-  await page.waitForSelector('[data-testid="edit-button"]');
-  await page.click('[data-testid="edit-button"]');
-  await page.waitForSelector('[data-testid="content-editor"]');
-  const editor = page.locator('[data-testid="content-editor"]');
+  await page.getByRole("button", { name: "Navigate to Welcome" }).click();
+  await page.getByRole("button", { name: "Edit page content" }).waitFor();
+  await page.getByRole("button", { name: "Edit page content" }).click();
+  await page.getByRole("textbox", { name: "Page content" }).waitFor();
+  const editor = page.getByRole("textbox", { name: "Page content" });
   await expect(editor).toBeVisible();
 });
 
@@ -155,8 +155,8 @@ This is a test page with access control.
 Then("I should not see the page {string} in navigation", async function (this: AppWorld, pagePath: string) {
   const page = await this.ensurePage();
   await page.waitForTimeout(500);
-  const pageId = pagePath.replace(/\//g, "-");
-  const pageElement = page.locator(`[data-testid="tree-item-${pageId}"]`);
+  const pageTitle = pagePath.split("/").pop() || pagePath;
+  const pageElement = page.getByRole("group", { name: new RegExp(`Page item: ${pageTitle}`, "i") });
   await expect(pageElement).toHaveCount(0);
 });
 
@@ -173,8 +173,8 @@ Then("accessing {string} should return 404", async function (this: AppWorld, pag
 Then("I should see the page {string} in navigation", async function (this: AppWorld, pagePath: string) {
   const page = await this.ensurePage();
   await page.waitForTimeout(500);
-  const pageId = pagePath.replace(/\//g, "-");
-  const pageElement = page.locator(`[data-testid="tree-item-${pageId}"]`);
+  const pageTitle = pagePath.split("/").pop() || pagePath;
+  const pageElement = page.getByRole("group", { name: new RegExp(`Page item: ${pageTitle}`, "i") });
   await expect(pageElement).toBeVisible();
 });
 
@@ -241,28 +241,38 @@ This is a child page without explicit access control.
 
 Then("I should not see {string} or {string} in navigation", async function (this: AppWorld, page1: string, page2: string) {
   const page = await this.ensurePage();
-  await page.waitForTimeout(500);
-  const page1Id = page1.replace(/\//g, "-");
-  const page2Id = page2.replace(/\//g, "-");
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
+  const page1Title = page1.split("/").pop() || page1;
+  const page2Title = page2.split("/").pop() || page2;
   
-  const page1Element = page.locator(`[data-testid="tree-item-${page1Id}"]`);
-  const page2Element = page.locator(`[data-testid="tree-item-${page2Id}"]`);
+  const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
+  const escapedPage1Title = page1Title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedPage2Title = page2Title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const page1Button = sidebar.getByRole("button", { name: new RegExp(`^Navigate to ${escapedPage1Title}$`, "i") });
+  const page2Button = sidebar.getByRole("button", { name: new RegExp(`^Navigate to ${escapedPage2Title}$`, "i") });
   
-  await expect(page1Element).toHaveCount(0);
-  await expect(page2Element).toHaveCount(0);
+  const count1 = await page1Button.count();
+  const count2 = await page2Button.count();
+  expect(count1).toBe(0);
+  expect(count2).toBe(0);
 });
 
 Then("I should see both {string} and {string} in navigation", async function (this: AppWorld, page1: string, page2: string) {
   const page = await this.ensurePage();
-  await page.waitForTimeout(500);
-  const page1Id = page1.replace(/\//g, "-");
-  const page2Id = page2.replace(/\//g, "-");
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1000);
+  const page1Title = page1.split("/").pop() || page1;
+  const page2Title = page2.split("/").pop() || page2;
   
-  const page1Element = page.locator(`[data-testid="tree-item-${page1Id}"]`);
-  const page2Element = page.locator(`[data-testid="tree-item-${page2Id}"]`);
+  const sidebar = page.getByRole("complementary", { name: "Page navigation sidebar" });
+  const escapedPage1Title = page1Title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const escapedPage2Title = page2Title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const page1Button = sidebar.getByRole("button", { name: new RegExp(`^Navigate to ${escapedPage1Title}$`, "i") });
+  const page2Button = sidebar.getByRole("button", { name: new RegExp(`^Navigate to ${escapedPage2Title}$`, "i") });
   
-  await expect(page1Element).toBeVisible();
-  await expect(page2Element).toBeVisible();
+  await expect(page1Button).toBeVisible();
+  await expect(page2Button).toBeVisible();
 });
 
 Then("I should be able to edit both pages", async function (this: AppWorld) {

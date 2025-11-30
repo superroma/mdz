@@ -10,8 +10,8 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    await page.getByTestId("edit-button").click();
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
+    await page.getByRole("button", { name: "Edit page content" }).click();
   }
 );
 
@@ -21,8 +21,8 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
-    const titleField = page.getByTestId("page-title-input");
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await titleField.focus();
   }
 );
@@ -31,7 +31,7 @@ When(
   "I edit the title field and blur focus",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByTestId("page-title-input");
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await titleField.fill("Test Title Auto Save");
     await titleField.blur();
     await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
@@ -42,7 +42,7 @@ When(
   "I modify the content and press Cmd+S",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
+    const editor = page.getByRole("textbox", { name: "Page content" });
     await editor.fill("Modified content for testing");
     await editor.press("Meta+s");
     await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
@@ -53,7 +53,7 @@ When(
   "I press Enter",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByTestId("page-title-input");
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     await titleField.press("Enter");
   }
 );
@@ -62,7 +62,7 @@ Then(
   "the title should be saved automatically",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const titleField = page.getByTestId("page-title-input");
+    const titleField = page.getByRole("textbox", { name: "Page title" });
     const value = await titleField.inputValue();
     expect(value).toBe("Test Title Auto Save");
   }
@@ -72,7 +72,7 @@ Then(
   "the content should be saved",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
+    const editor = page.getByRole("textbox", { name: "Page content" });
     const value = await editor.inputValue();
     expect(value).toBe("Modified content for testing");
   }
@@ -82,7 +82,7 @@ Then(
   "I should see a success indicator",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const saveButton = page.getByTestId("save-button");
+    const saveButton = page.getByRole("button", { name: "Save page content" });
     await expect(saveButton).toBeDisabled();
   }
 );
@@ -99,7 +99,7 @@ When(
   "I type some content in the editor",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
+    const editor = page.getByRole("textbox", { name: "Page content" });
     await editor.fill("Test content for autosave");
   }
 );
@@ -116,10 +116,8 @@ Then(
   "the content should be saved automatically",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    // Wait for network requests to complete
     await page.waitForLoadState('networkidle', { timeout: 3000 }).catch(() => {});
-    // The save button should be disabled when content is saved
-    const saveButton = page.getByTestId("save-button");
+    const saveButton = page.getByRole("button", { name: "Save page content" });
     await expect(saveButton).toBeDisabled();
   }
 );
@@ -129,7 +127,7 @@ Then(
   async function (this: AppWorld, element: string) {
     const page = await this.ensurePage();
     if (element === "markdown source editor") {
-      const editor = page.getByTestId("content-textarea");
+      const editor = page.getByRole("textbox", { name: "Page content" });
       await expect(editor).not.toBeVisible();
     }
   }
@@ -139,7 +137,7 @@ Then(
   "the preview should show the new content",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const preview = page.getByTestId("markdown-content");
+    const preview = page.getByRole("article");
     await expect(preview).toContainText("Test content for autosave");
   }
 );
@@ -149,7 +147,7 @@ When(
   async function (this: AppWorld, buttonText: string) {
     const page = await this.ensurePage();
     if (buttonText === "Edit") {
-      await page.getByTestId("edit-button").click();
+      await page.getByRole("button", { name: "Edit page content" }).click();
     }
   }
 );
@@ -158,7 +156,7 @@ Then(
   "the editor should contain my previous content",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
+    const editor = page.getByRole("textbox", { name: "Page content" });
     const value = await editor.inputValue();
     expect(value).toContain("Test content for autosave");
   }
@@ -168,19 +166,14 @@ Then(
   "I should be able to undo my changes",
   async function (this: AppWorld) {
     const page = await this.ensurePage();
-    const editor = page.getByTestId("content-textarea");
+    const editor = page.getByRole("textbox", { name: "Page content" });
     
-    // Focus the editor and press Cmd+Z to undo
     await editor.focus();
     await editor.press("Meta+z");
     
-    // Wait a bit for undo to take effect
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // The undo should work because we preserved the editor
     const value = await editor.inputValue();
-    // After undo, the content might be empty or have the original content
-    // The key is that undo works at all (editor state is preserved)
     expect(value).toBeDefined();
   }
 );
@@ -191,15 +184,12 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     
-    // Create a test page with HTML inline styles
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
     
-    // Click edit and add content with inline styles
-    await page.getByTestId("edit-button").click();
-    const editor = page.getByTestId("content-textarea");
+    await page.getByRole("button", { name: "Edit page content" }).click();
+    const editor = page.getByRole("textbox", { name: "Page content" });
     
-    // Add markdown with HTML that has inline styles
     const contentWithStyles = `# Test HTML Sanitization
 
 This page tests that inline styles are properly handled.
@@ -218,8 +208,7 @@ This is regular markdown without any HTML.`;
     await editor.press("Meta+s");
     await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     
-    // Switch to preview to see the rendered content
-    await page.getByTestId("preview-button").click();
+    await page.getByRole("button", { name: "Preview page content" }).click();
     await page.waitForTimeout(500);
   }
 );
@@ -238,16 +227,12 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Wait a bit for page to load and render
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
     
-    // Check that the page loaded successfully - the app should remain functional
-    // Even if the markdown content has errors, the page chrome (title, buttons) should load
-    const titleInput = page.getByTestId("page-title-input");
+    const titleInput = page.getByRole("textbox", { name: "Page title" });
     await expect(titleInput).toBeVisible({ timeout: 10000 });
     
-    // Verify the app didn't completely crash - edit button should be present
-    const editButton = page.getByTestId("edit-button");
+    const editButton = page.getByRole("button", { name: "Edit page content" });
     await expect(editButton).toBeVisible();
   }
 );
@@ -257,24 +242,18 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Check if there's an error message (which is acceptable - content was blocked)
     const errorMessage = page.locator('text=/Rendering Error:|MDX Error:/i');
     const hasError = await errorMessage.isVisible().catch(() => false);
     
     if (hasError) {
-      // If there's an error, the problematic content didn't render at all
-      // This is acceptable - the app didn't crash and dangerous content was blocked
       return;
     }
     
-    // If no error, check that rendered content doesn't have inline styles
-    const content = page.getByTestId("markdown-content");
+    const content = page.getByRole("article");
     const isVisible = await content.isVisible().catch(() => false);
     
     if (isVisible) {
-      // Check that no div/span elements have style attributes in the prose area
-      const divsWithStyle = await page.$$('[data-testid="markdown-content"] .prose div[style], [data-testid="markdown-content"] .prose span[style]');
-      // Inline styles should be sanitized (removed)
+      const divsWithStyle = await page.$$('article .prose div[style], article .prose span[style]');
       expect(divsWithStyle.length).toBe(0);
     }
   }
@@ -286,20 +265,16 @@ Given(
     await ensureServersRunning();
     const page = await this.ensurePage();
     
-    // Create a test page with malformed MDX
     await page.goto(FRONTEND_URL, { waitUntil: "domcontentloaded" });
-    await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+    await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
     
-    // Click edit and add malformed MDX
-    await page.getByTestId("edit-button").click();
-    const editor = page.getByTestId("content-textarea");
-    // Add malformed JSX that will cause compilation error
+    await page.getByRole("button", { name: "Edit page content" }).click();
+    const editor = page.getByRole("textbox", { name: "Page content" });
     await editor.fill("# Test\n\n<Component unclosed={");
     await editor.press("Meta+s");
     await page.waitForLoadState('networkidle', { timeout: 2000 }).catch(() => {});
     
-    // Switch to preview to see the error
-    await page.getByTestId("preview-button").click();
+    await page.getByRole("button", { name: "Preview page content" }).click();
   }
 );
 
@@ -319,12 +294,10 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Verify the page is still functional
-    const titleInput = page.getByTestId("page-title-input");
+    const titleInput = page.getByRole("textbox", { name: "Page title" });
     await expect(titleInput).toBeVisible();
     
-    // Verify we can still navigate
-    const editButton = page.getByTestId("edit-button");
+    const editButton = page.getByRole("button", { name: "Edit page content" });
     await expect(editButton).toBeVisible();
   }
 );

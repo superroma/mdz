@@ -1,5 +1,6 @@
 import { TreeNavigation } from "./TreeNavigation";
 import type { Page } from "../types";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface SidebarProps {
   pages: Page[];
@@ -20,15 +21,12 @@ export function Sidebar({
   showHidden,
   onToggleShowHidden,
 }: SidebarProps) {
-  // Filter pages based on showHidden state
-  // Hide both hidden files (starting with .) and non-markdown files when showHidden is false
   const filteredPages = showHidden 
     ? pages 
     : pages.filter(page => !page.isHidden && page.isMarkdown !== false);
 
   return (
     <>
-      {/* Sidebar - positioned underneath, always visible on mobile under the page view */}
       <aside
         className={`
           fixed md:relative 
@@ -38,8 +36,7 @@ export function Sidebar({
           flex flex-col
           z-0
         `}
-        aria-label="Page navigation sidebar"
-        data-testid="sidebar"
+        aria-label={ARIA_LABELS.pageNavigationSidebar}
       >
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200">
           <h2 className="text-lg font-semibold text-slate-800">Pages</h2>
@@ -52,9 +49,8 @@ export function Sidebar({
                   ? "bg-slate-300 text-slate-800" 
                   : "bg-slate-200 text-slate-600 hover:bg-slate-300"
               }`}
-              aria-label="Toggle hidden files"
+              aria-label={ARIA_LABELS.toggleHiddenFiles}
               title={showHidden ? "Hide hidden files" : "Show hidden files"}
-              data-testid="toggle-hidden-button"
             >
               {showHidden ? "👁️" : "👁️‍🗨️"}
             </button>
@@ -62,9 +58,8 @@ export function Sidebar({
               type="button"
               onClick={onCreateRoot}
               className="text-slate-600 hover:text-slate-900 text-xl px-2 py-1 leading-none"
-              aria-label="Create new page"
+              aria-label={ARIA_LABELS.createNewPage}
               title="Create new page"
-              data-testid="create-root-page-button"
             >
               +
             </button>

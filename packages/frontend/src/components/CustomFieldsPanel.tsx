@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import type { Page } from "../types";
 import yaml from "js-yaml";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface FieldSchema {
   name: string;
@@ -94,21 +95,20 @@ export function CustomFieldsPanel({ page, pages, onFieldChange }: CustomFieldsPa
   };
   
   return (
-    <div className="mb-4 border border-slate-300 rounded-lg" data-testid="custom-fields-panel">
+    <div className="mb-4 border border-slate-300 rounded-lg">
       <button
         type="button"
         onClick={handleToggle}
         className="w-full px-4 py-2 flex items-center justify-between text-left hover:bg-slate-50 transition-colors rounded-t-lg"
-        aria-label={isExpanded ? "Collapse custom fields" : "Expand custom fields"}
+        aria-label={isExpanded ? ARIA_LABELS.collapseCustomFields : ARIA_LABELS.expandCustomFields}
         aria-expanded={isExpanded}
-        data-testid="custom-fields-toggle"
       >
         <span className="text-sm font-medium text-slate-700">Fields</span>
         <span className="text-slate-600" aria-hidden="true">{isExpanded ? "−" : "+"}</span>
       </button>
       
       {isExpanded && (
-        <div className="p-4 space-y-3 border-t border-slate-300" data-testid="custom-fields-content">
+        <div className="p-4 space-y-3 border-t border-slate-300">
           {schema.length > 0 ? (
             schema.map((field) => (
               <FieldEditor
@@ -172,7 +172,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
   };
   
   return (
-    <div className="flex flex-col gap-1" data-testid={`field-${field.name}`}>
+    <div className="flex flex-col gap-1">
       <label className="text-xs text-slate-600 uppercase tracking-wide">
         {field.name}
       </label>
@@ -184,8 +184,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
-          aria-label={field.name}
-          data-testid={`field-input-${field.name}`}
+          aria-label={ARIA_LABELS.customField(field.name)}
         />
       )}
       
@@ -196,8 +195,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(Number(e.target.value))}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
-          aria-label={field.name}
-          data-testid={`field-input-${field.name}`}
+          aria-label={ARIA_LABELS.customField(field.name)}
         />
       )}
       
@@ -208,8 +206,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
-          aria-label={field.name}
-          data-testid={`field-input-${field.name}`}
+          aria-label={ARIA_LABELS.customField(field.name)}
         />
       )}
       
@@ -219,8 +216,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
           disabled={isSaving}
-          aria-label={field.name}
-          data-testid={`field-input-${field.name}`}
+          aria-label={ARIA_LABELS.customField(field.name)}
         >
           <option value="">Select...</option>
           {field.options?.map((option) => (
@@ -239,8 +235,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
             onChange={(e) => handleChange(e.target.checked)}
             className="w-4 h-4 text-sky-600 bg-white border-slate-300 rounded focus:ring-2 focus:ring-sky-500"
             disabled={isSaving}
-            aria-label={field.name}
-            data-testid={`field-input-${field.name}`}
+            aria-label={ARIA_LABELS.customField(field.name)}
           />
           <span className="text-sm text-slate-700">
             {Boolean(localValue) ? "Yes" : "No"}
@@ -314,7 +309,7 @@ function ComplexFieldDisplay({ fieldName, value }: ComplexFieldDisplayProps) {
         onBlur={() => setShowTooltip(false)}
         tabIndex={0}
         role="button"
-        aria-label={`${fieldName}: ${formattedValue}`}
+        aria-label={ARIA_LABELS.customFieldValue(fieldName, formattedValue)}
       >
         {formattedValue}
       </div>

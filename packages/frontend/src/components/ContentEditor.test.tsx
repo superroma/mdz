@@ -5,7 +5,6 @@ import { ContentEditor } from "./ContentEditor";
 import userEvent from "@testing-library/user-event";
 import { ARIA_LABELS } from "../constants/aria-labels";
 
-// Wrapper component with Router
 const renderWithRouter = (ui: React.ReactElement) => {
   return render(<MemoryRouter>{ui}</MemoryRouter>);
 };
@@ -144,14 +143,14 @@ describe("ContentEditor", () => {
   it("returns to view mode when Preview clicked", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn().mockResolvedValue(undefined);
-    renderWithRouter(<ContentEditor content="Test content" onSave={onSave} />);
+    const { container } = renderWithRouter(<ContentEditor content="Test content" onSave={onSave} />);
     
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.editPageContent }));
     await user.click(screen.getByRole("button", { name: ARIA_LABELS.previewPageContent }));
     
     expect(screen.getByRole("button", { name: ARIA_LABELS.editPageContent })).toBeInTheDocument();
-    // Textarea is hidden but still in DOM to preserve undo history
-    const textarea = screen.getByTestId("content-textarea");
+    const textarea = container.querySelector(`textarea[aria-label="${ARIA_LABELS.pageContent}"]`) as HTMLTextAreaElement;
+    expect(textarea).toBeInTheDocument();
     expect(textarea).not.toBeVisible();
   });
 

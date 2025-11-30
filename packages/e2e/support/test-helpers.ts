@@ -11,7 +11,7 @@ export async function setupPage(world: AppWorld, path = ""): Promise<Page> {
   const page = await world.ensurePage();
   const url = path ? `${FRONTEND_URL}${path}` : FRONTEND_URL;
   await page.goto(url, { waitUntil: "domcontentloaded" });
-  await page.waitForSelector('[data-testid="page-tree"]', { timeout: 10000 });
+  await page.getByRole("navigation", { name: "Page tree" }).waitFor({ timeout: 10000 });
   await page.waitForFunction(() => {
     return document.querySelectorAll('[aria-label^="Navigate to"]').length > 0;
   }, { timeout: 10000 });
@@ -22,7 +22,7 @@ export async function setupPage(world: AppWorld, path = ""): Promise<Page> {
  * Waits for the page to load by checking for the title input field
  */
 export async function waitForPageLoad(page: Page): Promise<void> {
-  await page.waitForSelector('[data-testid="page-title-input"]', { timeout: 5000 });
+  await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
 }
 
 /**
@@ -86,7 +86,7 @@ export async function verifyNavigation(page: Page, expectedPattern?: RegExp): Pr
  * Fills the title field and submits via Enter key or blur
  */
 export async function fillTitleAndSubmit(page: Page, title: string, submitKey: 'Enter' | 'blur'): Promise<void> {
-  const titleField = page.getByTestId("page-title-input");
+  const titleField = page.getByRole("textbox", { name: "Page title" });
   await titleField.fill(title);
   if (submitKey === 'Enter') {
     await titleField.press("Enter");

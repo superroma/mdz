@@ -10,7 +10,14 @@ import { tmpdir } from "os";
 
 // Helper to ensure a collapsible panel is expanded
 async function ensurePanelExpanded(page: Page, panelTestId: string) {
-  const toggleButton = page.getByTestId(panelTestId);
+  let toggleButton;
+  if (panelTestId === 'custom-fields-toggle') {
+    toggleButton = page.getByRole("button", { name: /^(Expand|Collapse) custom fields$/i });
+  } else if (panelTestId === 'attachments-toggle') {
+    toggleButton = page.getByRole("button", { name: /^(Expand|Collapse) attachments$/i });
+  } else {
+    toggleButton = page.getByTestId(panelTestId);
+  }
   await expect(toggleButton).toBeVisible({ timeout: 5000 });
   
   const isExpanded = await toggleButton.getAttribute('aria-expanded');
@@ -31,7 +38,7 @@ When(
     const tempFile = path.join(tmpdir(), "test-upload.txt");
     fs.writeFileSync(tempFile, "Test file content");
     
-    const fileInput = page.getByTestId("file-upload-input");
+    const fileInput = page.getByLabel("Upload files");
     await fileInput.setInputFiles(tempFile);
     // Wait for upload to complete
     await page.waitForResponse(resp => resp.url().includes('/api/files/'), { timeout: 3000 }).catch(() => {});
@@ -43,16 +50,14 @@ Then(
   async function (this: AppWorld) {
     const page = await this.ensurePage();
     
-    // Expand the attachments panel if it's not already expanded
-    const attachmentsToggle = page.getByTestId("attachments-toggle");
+    const attachmentsToggle = page.getByRole("button", { name: /^(Expand|Collapse) attachments$/i });
     const isExpanded = await attachmentsToggle.getAttribute("aria-expanded");
     if (isExpanded !== "true") {
       await attachmentsToggle.click();
       await page.waitForTimeout(300);
     }
     
-    // Wait for the file to appear in the attachments list
-    const attachment = page.getByTestId("attachment-test-upload.txt");
+    const attachment = page.getByRole("listitem").filter({ hasText: "test-upload.txt" });
     await expect(attachment).toBeVisible({ timeout: 5000 });
   }
 );
@@ -168,21 +173,18 @@ When(
   { timeout: 10000 },
   async function (this: AppWorld, markdown: string) {
     const page = await this.ensurePage();
-    const editButton = page.getByTestId("edit-button");
+    const editButton = page.getByRole("button", { name: "Edit page content" });
     await editButton.click();
     await page.waitForSelector('textarea', { state: 'visible' });
     
-    const textarea = page.getByTestId("content-textarea");
+    const textarea = page.getByRole("textbox", { name: "Page content" });
     await textarea.fill(`# Test Page\n\n${markdown}\n\nContent here.`);
     
-    // Use Save button with data-testid
-    const saveButton = page.getByTestId("save-button");
+    const saveButton = page.getByRole("button", { name: "Save page content" });
     await saveButton.click();
-    // Wait for save to complete with longer timeout
     await page.waitForTimeout(500);
     await page.waitForLoadState('networkidle', { timeout: 5000 }).catch(() => {});
-    // After saving, click Preview to see the rendered view
-    const previewButton = page.getByTestId("preview-button");
+    const previewButton = page.getByRole("button", { name: "Preview page content" });
     await previewButton.click();
   }
 );

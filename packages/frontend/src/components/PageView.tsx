@@ -8,6 +8,7 @@ import { CustomFieldsPanel } from "./CustomFieldsPanel";
 import { AttachmentsPanel } from "./AttachmentsPanel";
 import { UserMenu } from "./UserMenu";
 import { serializeFrontMatter, parseFrontMatter } from "../utils/front-matter";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface PageViewProps {
   onToggleSidebar?: () => void;
@@ -124,30 +125,27 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden" data-testid="page-view">
-      {/* Hamburger menu - part of page view */}
+    <div className="flex-1 flex flex-col h-full overflow-hidden">
       {onToggleSidebar && (
         <button
           type="button"
           onClick={onToggleSidebar}
           className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-100 rounded text-slate-700 hover:bg-slate-200"
-          aria-label="Toggle sidebar"
+          aria-label={ARIA_LABELS.toggleSidebar}
           aria-expanded={isSidebarOpen}
-          data-testid="toggle-sidebar-button"
         >
           ☰
         </button>
       )}
       
-      <header className="flex-shrink-0 px-8 py-4 border-b border-slate-200" data-testid="page-header">
+      <header className="flex-shrink-0 px-8 py-4 border-b border-slate-200">
         <div className="flex items-center gap-4 mb-2">
           <button
             type="button"
             onClick={handleBack}
             className="text-slate-600 hover:text-slate-900 transition-colors"
-            aria-label="Go back"
+            aria-label={ARIA_LABELS.goBack}
             title="Go back"
-            data-testid="back-button"
           >
             ←
           </button>
@@ -168,15 +166,14 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
             type="button"
             onClick={handleDelete}
             className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors"
-            aria-label="Delete page"
+            aria-label={ARIA_LABELS.deletePage}
             title="Delete current page"
-            data-testid="delete-page-button"
           >
             Delete
           </button>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto px-8 py-6" data-testid="page-content">
+      <main className="flex-1 overflow-y-auto px-8 py-6">
         {currentPage && pagePath && (
           <>
             <CustomFieldsPanel

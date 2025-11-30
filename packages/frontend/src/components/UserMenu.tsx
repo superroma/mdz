@@ -9,6 +9,7 @@ import {
 } from "./ui/dropdown-menu";
 import { useAuthStore } from "../store/useAuthStore";
 import * as api from "../api/client";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 export function UserMenu() {
   const { user, checkAuth, logout } = useAuthStore();
@@ -40,7 +41,7 @@ export function UserMenu() {
         <button
           type="button"
           className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500"
-          aria-label="User menu"
+          aria-label={ARIA_LABELS.userMenu}
         >
           <Avatar>
             <AvatarFallback>{initials}</AvatarFallback>

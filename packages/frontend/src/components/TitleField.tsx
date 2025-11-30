@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface TitleFieldProps {
   title: string;
@@ -24,7 +25,6 @@ export function TitleField({ title, onSave, autoFocus = false }: TitleFieldProps
   const handleSave = async () => {
     if (value === title || isSaving) return;
 
-    // Prevent empty titles - use "Untitled" if the title is empty or only whitespace
     const trimmedValue = value.trim();
     const finalValue = trimmedValue === "" ? "Untitled" : value;
 
@@ -57,8 +57,7 @@ export function TitleField({ title, onSave, autoFocus = false }: TitleFieldProps
       onKeyDown={handleKeyDown}
       placeholder="Untitled"
       className="w-full bg-transparent text-3xl font-bold text-slate-900 border-none outline-none focus:ring-0 px-0"
-      aria-label="Page title"
-      data-testid="page-title-input"
+      aria-label={ARIA_LABELS.pageTitle}
       disabled={isSaving}
     />
   );

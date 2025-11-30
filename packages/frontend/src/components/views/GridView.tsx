@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useChildPages } from "./useChildPages";
 import { filterPages, sortPages } from "./filterUtils";
 import type { Page } from "../../types";
+import { ARIA_LABELS } from "../../constants/aria-labels";
 
 interface GridViewProps {
   columns: string[];
@@ -35,7 +36,7 @@ export function GridView({ columns, filter, sort, parentPath }: GridViewProps) {
           type="button"
           onClick={handleRefresh}
           className="text-slate-600 hover:text-slate-900 transition-colors"
-          aria-label="Refresh"
+          aria-label={ARIA_LABELS.refresh}
           title="Refresh"
         >
           ↻

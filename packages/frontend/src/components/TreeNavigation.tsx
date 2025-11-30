@@ -1,9 +1,6 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import type { Page } from "../types";
-
-function sanitizePathForTestId(path: string): string {
-  return path.replace(/\//g, "-");
-}
+import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface TreeItemProps {
   page: Page;
@@ -22,13 +19,11 @@ function TreeItem({
 }: TreeItemProps) {
   const navigate = useNavigate();
   const isSelected = currentPath === page.path;
-  const isMarkdown = page.isMarkdown !== false; // default to true for backward compatibility
+  const isMarkdown = page.isMarkdown !== false;
 
   const handleClick = () => {
-    // Only navigate if it's a markdown page
     if (isMarkdown) {
       navigate(`/${page.path}`);
-      // Close mobile sidebar after navigation
       onNavigate?.();
     }
   };
@@ -46,16 +41,13 @@ function TreeItem({
       ? "active:bg-slate-100 md:hover:bg-slate-100" 
       : "";
 
-  const testIdPath = sanitizePathForTestId(page.path);
-
   return (
     <div>
       <div
         className={`${baseClasses} ${selectedClasses}`}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
-        data-testid={`tree-item-${testIdPath}`}
         role="group"
-        aria-label={`Page item: ${page.title}`}
+        aria-label={ARIA_LABELS.pageItem(page.title)}
       >
         <div
           role="button"
@@ -65,9 +57,8 @@ function TreeItem({
           }`}
           onClick={handleClick}
           onKeyDown={(e) => e.key === "Enter" && handleClick()}
-          aria-label={`Navigate to ${page.title}`}
+          aria-label={ARIA_LABELS.navigateTo(page.title)}
           aria-current={isSelected ? "page" : undefined}
-          data-testid={`navigate-to-${testIdPath}`}
         >
           {page.title}
         </div>
@@ -80,9 +71,8 @@ function TreeItem({
                 ? "opacity-100"
                 : "opacity-0 md:group-hover:opacity-100 md:focus:opacity-100"
             } text-slate-600 active:text-slate-900 md:hover:text-slate-900 text-xs px-1`}
-            aria-label={`Add child page to ${page.title}`}
+            aria-label={ARIA_LABELS.addChildPage(page.title)}
             title="Add child page"
-            data-testid={`add-child-to-${testIdPath}`}
           >
             +
           </button>
@@ -133,8 +123,7 @@ export function TreeNavigation({
   return (
     <nav
       className="flex flex-col overflow-y-auto"
-      aria-label="Page tree"
-      data-testid="page-tree"
+      aria-label={ARIA_LABELS.pageTree}
     >
       {pages.length === 0 ? (
         <div className="px-3 py-4 text-sm text-slate-600" role="status">No pages yet</div>
