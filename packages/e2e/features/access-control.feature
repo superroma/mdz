@@ -12,7 +12,7 @@ Feature: Access Control
     And I should be able to edit any page
 
   Scenario: User not in users.yaml cannot access anything
-    When I log in with email "unknown@test.local"
+    When I log in using the test provider as "outsider"
     Then I should see no pages in the navigation
     And accessing any page should return 404
 

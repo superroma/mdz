@@ -27,6 +27,12 @@ export const TEST_USERS: Record<string, TestUser> = {
     name: "Test Reader",
     roles: ["reader"],
   },
+  outsider: {
+    id: "test-outsider",
+    email: "non-user@test.local",
+    name: "Unknown User",
+    roles: [],
+  },
 };
 
 export function generateTestUserJWT(role: string, jwtSecret: string): string {

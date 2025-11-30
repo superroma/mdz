@@ -6,4 +6,6 @@
 - [.] Authentication (in the  brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
 - [ ] Access control
 - [ ] Multi-roots
-- [ ] Proper back and fron logging
+- [ ] Proper back and front logging
+- [ ] Remove duplication in cucumber steps
+- [ ] Code smells

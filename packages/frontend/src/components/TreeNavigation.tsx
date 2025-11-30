@@ -1,6 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import type { Page } from "../types";
 
+function sanitizePathForTestId(path: string): string {
+  return path.replace(/[^a-zA-Z0-9_-]/g, "-");
+}
+
 interface TreeItemProps {
   page: Page;
   level: number;
@@ -42,12 +46,14 @@ function TreeItem({
       ? "active:bg-slate-100 md:hover:bg-slate-100" 
       : "";
 
+  const testIdPath = sanitizePathForTestId(page.path);
+
   return (
     <div>
       <div
         className={`${baseClasses} ${selectedClasses}`}
         style={{ paddingLeft: `${level * 16 + 12}px` }}
-        data-testid={`tree-item-${page.path}`}
+        data-testid={`tree-item-${testIdPath}`}
         role="group"
         aria-label={`Page item: ${page.title}`}
       >
@@ -61,7 +67,7 @@ function TreeItem({
           onKeyDown={(e) => e.key === "Enter" && handleClick()}
           aria-label={`Navigate to ${page.title}`}
           aria-current={isSelected ? "page" : undefined}
-          data-testid={`navigate-to-${page.path}`}
+          data-testid={`navigate-to-${testIdPath}`}
         >
           {page.title}
         </div>
@@ -76,7 +82,7 @@ function TreeItem({
             } text-slate-600 active:text-slate-900 md:hover:text-slate-900 text-xs px-1`}
             aria-label={`Add child page to ${page.title}`}
             title="Add child page"
-            data-testid={`add-child-to-${page.path}`}
+            data-testid={`add-child-to-${testIdPath}`}
           >
             +
           </button>

@@ -53,22 +53,20 @@ When(
       return !urlStr.includes('/login') && !urlStr.includes('/auth/callback');
     }, { timeout: 15000 });
     
-    const authHeader = page.request.storageState().then(state => {
-      const cookies = state.cookies;
-      const token = cookies.find(c => c.name === 'token')?.value;
-      if (token) {
-        this.authToken = token;
+    try {
+      const state = await page.context().storageState();
+      const tokenCookie = state.cookies.find(c => c.name === "token");
+      if (tokenCookie?.value) {
+        this.authToken = tokenCookie.value;
       }
-    }).catch(() => {});
+    } catch {}
     
-    await page.evaluate(() => {
-      const token = localStorage.getItem('auth-token');
-      return token;
-    }).then(token => {
+    try {
+      const token = await page.evaluate(() => localStorage.getItem("auth_token"));
       if (token) {
         this.authToken = token;
       }
-    }).catch(() => {});
+    } catch {}
   }
 );
 

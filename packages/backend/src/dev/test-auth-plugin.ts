@@ -20,7 +20,7 @@ export async function registerTestAuthPlugin(app: FastifyInstance) {
     const buttons = roles.map(role => {
       const user = TEST_USERS[role];
       const loginUrl = `/api/dev-auth/login/${role}?frontend=${encodeURIComponent(frontendUrl)}`;
-      return `<a href="${loginUrl}" style="display:block;padding:10px;margin:10px 0;border:1px solid #ccc;text-decoration:none;color:#000;">${user.name} (${user.email})</a>`;
+      return `<a href="${loginUrl}" style="display:block;padding:10px;margin:10px 0;border:1px solid #ccc;text-decoration:none;color:#000;">${user.name} (${user.email}) [${role}]</a>`;
     }).join("");
 
     const html = `

@@ -28,14 +28,19 @@ users:
 `;
   
   writeFileSync(join(settingsDir, "users.yaml"), usersYaml);
-});
+  
+  const settingsReadme = `---
+__access:
+  read: [admins]
+  write: [admins]
+---
 
-When("I log in with email {string}", async function (this: AppWorld, email: string) {
-  await ensureServersRunning();
-  await this.resetBrowser();
-  const page = await this.ensurePage();
-  await page.goto(FRONTEND_URL);
-  await page.waitForURL("**/login");
+# Settings
+
+Restricted settings page.
+`;
+  
+  writeFileSync(join(settingsDir, "README.md"), settingsReadme);
 });
 
 Then("I should see all pages in the navigation", async function (this: AppWorld) {
@@ -83,13 +88,17 @@ Then("I should see pages accessible to {string} group", async function (this: Ap
 
 Then("I should not be able to edit any page", async function (this: AppWorld) {
   const page = await this.ensurePage();
-  const hasPages = await page.locator('[data-testid^="tree-item-"]').count();
-  if (hasPages > 0) {
-    await page.locator('[data-testid^="navigate-to-"]').first().click();
-    await page.waitForTimeout(500);
-    const editButton = page.locator('[data-testid="edit-button"]');
-    await expect(editButton).not.toBeVisible();
-  }
+  const response = await page.request.put(
+    `${BACKEND_URL}/api/pages/Welcome`,
+    {
+      headers: {
+        Authorization: `Bearer ${this.authToken || ''}`,
+        "Content-Type": "application/json",
+      },
+      data: { content: "test" },
+    }
+  );
+  expect(response.status()).toBe(404);
 });
 
 Then("I should be able to edit pages with writer access", async function (this: AppWorld) {
@@ -345,9 +354,10 @@ Then("I should be able to upload files to {string}", async function (this: AppWo
   expect(response.status()).toBe(200);
 });
 
-Then("my user info should include groups: {string}", async function (this: AppWorld, groupsStr: string) {
+Then(/^my user info should include groups: (.+)$/, async function (this: AppWorld, groupsLiteral: string) {
   const page = await this.ensurePage();
-  const expectedGroups = JSON.parse(groupsStr);
+  const normalized = groupsLiteral.trim().replace(/'/g, '"');
+  const expectedGroups = JSON.parse(normalized);
   
   const response = await page.request.get(`${BACKEND_URL}/api/auth/me`, {
     headers: {
