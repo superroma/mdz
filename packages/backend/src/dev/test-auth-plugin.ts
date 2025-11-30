@@ -48,7 +48,6 @@ export async function registerTestAuthPlugin(app: FastifyInstance) {
     const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
     redirectUrl.searchParams.set("token", jwtToken);
     
-    console.log(`[TestAuth] Logging in as ${role}, redirecting to: ${redirectUrl.toString()}`);
     reply.redirect(redirectUrl.toString());
   });
 }

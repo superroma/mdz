@@ -3,7 +3,7 @@
 - [x] Hidden pages and folders
 - [ ] ARIA and a11y in tests and everywhere
 - [ ] Page ordering (use hidden .pages.md with children list in frontmatter)
-- [.] Authentication (in the oidc brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
+- [.] Authentication (in the  brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
 - [ ] Access control
 - [ ] Multi-roots
 - [ ] Proper back and fron logging

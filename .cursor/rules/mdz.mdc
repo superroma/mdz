@@ -21,3 +21,7 @@ Dont use pnpm, dont cd to install packages
 Don't write comments in code.
 If you see comments that explain code  - remove them.
 Only leave commented out code
+
+## Stop fiddling with timeouts
+If something fail in test because of timeout - it means there is no such a thing.
+Don't just increase timeout from 5 sec to 10, this is stupid, it is a local app where everything takes milliseconds.

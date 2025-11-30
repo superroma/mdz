@@ -95,25 +95,27 @@ export async function buildServer() {
   await registerPageRoutes(app);
   await registerFileRoutes(app);
 
-  // Serve static frontend files in production
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  const frontendDistPath = join(__dirname, "../../frontend/dist");
-  
-  if (existsSync(frontendDistPath)) {
-    await app.register(fastifyStatic, {
-      root: frontendDistPath,
-      prefix: "/",
-    });
+  // Serve static frontend files in production only
+  if (process.env.NODE_ENV === "production") {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const frontendDistPath = join(__dirname, "../../frontend/dist");
+    
+    if (existsSync(frontendDistPath)) {
+      await app.register(fastifyStatic, {
+        root: frontendDistPath,
+        prefix: "/",
+      });
 
-    // Fallback to index.html for client-side routing
-    app.setNotFoundHandler((request, reply) => {
-      if (!request.url.startsWith("/api/")) {
-        reply.sendFile("index.html");
-      } else {
-        reply.status(404).send({ error: "Not Found" });
-      }
-    });
+      // Fallback to index.html for client-side routing
+      app.setNotFoundHandler((request, reply) => {
+        if (!request.url.startsWith("/api/")) {
+          reply.sendFile("index.html");
+        } else {
+          reply.status(404).send({ error: "Not Found" });
+        }
+      });
+    }
   }
 
   return app;
