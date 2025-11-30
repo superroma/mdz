@@ -19,6 +19,7 @@ export class AppWorld extends World {
   checkboxCountInEditMode?: number;
   scrollPositionBefore?: number;
   originalDocumentContent?: string;
+  authToken?: string;
 
   constructor(options: IWorldOptions) {
     super(options);

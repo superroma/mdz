@@ -31,7 +31,12 @@ When(
 When(
   /^I log in using the test provider as "([^"]*)"$/,
   async function (this: AppWorld, role: string) {
+    await ensureServersRunning();
+    
+    await this.resetBrowser();
     const page = await this.ensurePage();
+    
+    await page.goto(FRONTEND_URL, { waitUntil: "networkidle" });
     
     const testButton = page.locator('button:has-text("Continue with Test")');
     await testButton.waitFor({ state: "visible", timeout: 10000 });
@@ -47,6 +52,23 @@ When(
       const urlStr = url.toString();
       return !urlStr.includes('/login') && !urlStr.includes('/auth/callback');
     }, { timeout: 15000 });
+    
+    const authHeader = page.request.storageState().then(state => {
+      const cookies = state.cookies;
+      const token = cookies.find(c => c.name === 'token')?.value;
+      if (token) {
+        this.authToken = token;
+      }
+    }).catch(() => {});
+    
+    await page.evaluate(() => {
+      const token = localStorage.getItem('auth-token');
+      return token;
+    }).then(token => {
+      if (token) {
+        this.authToken = token;
+      }
+    }).catch(() => {});
   }
 );
 

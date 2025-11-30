@@ -11,17 +11,22 @@ Dont use pnpm, dont cd to install packages
 ## Unit tests
 `npm run test`
 
-## Functional tests
-`npm run test:e2e`
 
-## Single functional test
-`npm run test:e2e -- --name "My scenario name"`
 
 ## No comments
 Don't write comments in code.
 If you see comments that explain code  - remove them.
 Only leave commented out code
 
-## Stop fiddling with timeouts
+## Functional tests
+`npm run test:e2e`
+
+### Single functional test
+`npm run test:e2e -- path/to/feature.feature 
+
+### Stop fiddling with timeouts
 If something fail in test because of timeout - it means there is no such a thing.
 Don't just increase timeout from 5 sec to 10, this is stupid, it is a local app where everything takes milliseconds.
+
+### Dont run e2e tests with head or tail
+You are not helping just make problems invisible - if you want to make it faster - run one feature or use --fail-fast to stop on first failure

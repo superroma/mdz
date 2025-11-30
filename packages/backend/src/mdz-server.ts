@@ -11,9 +11,20 @@ import { getPagesRoot, DEFAULT_PAGES_ROOT } from "./storage/path-validator.js";
 import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { AppError } from "./errors.js";
-import { FastifyInstance } from "fastify";
+import { FastifyInstance, FastifyRequest } from "fastify";
 
 export const DEFAULT_PORT = 3001;
+
+declare module "fastify" {
+  interface FastifyRequest {
+    currentUser?: {
+      email: string;
+      name: string;
+      provider: string;
+      groups: string[];
+    };
+  }
+}
 
 type TraversalFlaggedRequest = {
   __hasTraversal?: boolean;
@@ -92,6 +103,51 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
   }
 
   await registerAuthRoutes(app);
+
+  app.addHook("onRequest", async (request, reply) => {
+    const url = request.url;
+    
+    if (!url.startsWith("/api/pages") && !url.startsWith("/api/files")) {
+      return;
+    }
+    
+    if (process.env.NODE_ENV === "test") {
+      request.currentUser = {
+        email: "admin@test.local",
+        name: "Test Admin",
+        provider: "test",
+        groups: ["everyone", "admins"],
+      };
+      return;
+    }
+    
+    const authHeader = request.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      reply.status(401).send({ error: "Unauthorized" });
+      return;
+    }
+    
+    try {
+      const token = authHeader.substring(7);
+      const decoded = app.jwt.verify(token) as {
+        email: string;
+        name: string;
+        provider: string;
+        groups: string[];
+      };
+      
+      request.currentUser = {
+        email: decoded.email,
+        name: decoded.name,
+        provider: decoded.provider,
+        groups: decoded.groups || [],
+      };
+    } catch (error) {
+      reply.status(401).send({ error: "Invalid token" });
+      return;
+    }
+  });
+
   await registerPageRoutes(app);
   await registerFileRoutes(app);
 

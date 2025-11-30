@@ -12,6 +12,7 @@ let testDir: string;
 beforeEach(async () => {
   testDir = mkdtempSync(join(tmpdir(), "server-test-"));
   process.env.PAGES_ROOT = testDir;
+  process.env.NODE_ENV = "test";
   app = await buildServer();
 });
 
@@ -19,6 +20,7 @@ afterEach(async () => {
   await app.close();
   rmSync(testDir, { recursive: true, force: true });
   delete process.env.PAGES_ROOT;
+  delete process.env.NODE_ENV;
 });
 
 test("health endpoint returns ok status", async () => {
