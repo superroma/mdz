@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import type { Page } from "../types";
 
 function sanitizePathForTestId(path: string): string {
-  return path.replace(/[^a-zA-Z0-9_-]/g, "-");
+  return path.replace(/\//g, "-");
 }
 
 interface TreeItemProps {
