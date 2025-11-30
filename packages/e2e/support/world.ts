@@ -20,6 +20,8 @@ export class AppWorld extends World {
   scrollPositionBefore?: number;
   originalDocumentContent?: string;
   authToken?: string;
+  pendingRedirectPath?: string;
+  authTokenToInject?: string;
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -42,6 +44,18 @@ export class AppWorld extends World {
 
     if (!this.page) {
       this.page = await this.context.newPage();
+      if (this.authTokenToInject !== undefined) {
+        await this.page.addInitScript(
+          (token: string | null) => {
+            if (token) {
+              localStorage.setItem("auth_token", token);
+            } else {
+              localStorage.removeItem("auth_token");
+            }
+          },
+          this.authTokenToInject ?? null
+        );
+      }
     }
 
     return this.page;
@@ -58,6 +72,33 @@ export class AppWorld extends World {
       this.context = undefined;
     }
     // Don't close shared browser between scenarios
+  }
+
+  async setAuthToken(token?: string) {
+    this.authTokenToInject = token;
+    this.authToken = token;
+
+    if (this.page) {
+      try {
+        await this.page.addInitScript(
+          (value: string | null) => {
+            if (value) {
+              localStorage.setItem("auth_token", value);
+            } else {
+              localStorage.removeItem("auth_token");
+            }
+          },
+          token ?? null
+        );
+        await this.page.evaluate((value) => {
+          if (value) {
+            localStorage.setItem("auth_token", value);
+          } else {
+            localStorage.removeItem("auth_token");
+          }
+        }, token ?? null);
+      } catch {}
+    }
   }
 
   static async closeSharedBrowser() {

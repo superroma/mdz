@@ -4,6 +4,7 @@ Feature: Authentication
   So that I can resume my work after logging in
 
   Scenario: Redirect to intended page after login
+    Given I am not logged in
     When I visit a protected page URL "/Welcome"
     Then I should be redirected to the login page
     When I log in using the test provider as "admin"
@@ -11,6 +12,7 @@ Feature: Authentication
     And I should see the "Welcome" page content
 
   Scenario: Multiple login/logout cycles maintain redirect
+    Given I am not logged in
     When I visit a protected page URL "/Welcome/Tasks"
     And I log in using the test provider as "admin"
     Then I should be redirected back to "/Welcome/Tasks"
@@ -21,6 +23,7 @@ Feature: Authentication
     Then I should be redirected back to "/Welcome/Projects"
 
   Scenario: Login from login page redirects to home
+    Given I am not logged in
     When I visit the login page directly
     And I log in using the test provider as "admin"
     Then I should be redirected to the home page

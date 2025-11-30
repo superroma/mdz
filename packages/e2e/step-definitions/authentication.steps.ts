@@ -9,10 +9,12 @@ When(
   async function (this: AppWorld, url: string) {
     await ensureServersRunning();
     
+    await this.setAuthToken(undefined);
     await this.resetBrowser();
     const page = await this.ensurePage();
     
     await page.goto(`${FRONTEND_URL}${url}`, { waitUntil: "networkidle" });
+    this.pendingRedirectPath = url;
   }
 );
 
@@ -21,10 +23,12 @@ When(
   async function (this: AppWorld) {
     await ensureServersRunning();
     
+    await this.setAuthToken(undefined);
     await this.resetBrowser();
     const page = await this.ensurePage();
     
     await page.goto(`${FRONTEND_URL}/login`, { waitUntil: "networkidle" });
+    this.pendingRedirectPath = undefined;
   }
 );
 
@@ -33,10 +37,18 @@ When(
   async function (this: AppWorld, role: string) {
     await ensureServersRunning();
     
+    await this.setAuthToken(undefined);
     await this.resetBrowser();
     const page = await this.ensurePage();
     
     await page.goto(FRONTEND_URL, { waitUntil: "networkidle" });
+    
+    if (this.pendingRedirectPath) {
+      await page.evaluate((path) => {
+        sessionStorage.setItem("auth_redirect", path);
+      }, this.pendingRedirectPath);
+      this.pendingRedirectPath = undefined;
+    }
     
     const testButton = page.locator('button:has-text("Continue with Test")');
     await testButton.waitFor({ state: "visible", timeout: 10000 });

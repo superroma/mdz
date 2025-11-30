@@ -26,7 +26,13 @@ Given(
   /^I am viewing (?:the )?"([^"]*)" page$/,
   async function (this: AppWorld, pageTitle: string) {
     const page = await setupPage(this);
-    await navigateToPageByTitle(page, pageTitle);
+    try {
+      await navigateToPageByTitle(page, pageTitle);
+    } catch (error) {
+      console.error("[common-steps] failed to navigate to", pageTitle, error);
+      throw error;
+    }
+    console.log("[common-steps] now at", page.url());
     await page.waitForSelector('.prose', { timeout: 5000 });
   }
 );

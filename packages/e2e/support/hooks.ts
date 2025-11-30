@@ -52,12 +52,7 @@ BeforeAll({ timeout: 90000 }, async function () {
 
 Before(async function (this: AppWorld, scenario) {
   await this.ensurePage();
-
-  if (this.page) {
-    await this.page.addInitScript((token) => {
-      localStorage.setItem("auth_token", token);
-    }, testTokens.admin);
-  }
+  await this.setAuthToken(testTokens.admin);
 
   const { readFileSync, writeFileSync, existsSync } = await import("node:fs");
   const { join } = await import("node:path");

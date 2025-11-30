@@ -11,6 +11,10 @@ export async function setupPage(world: AppWorld, path = ""): Promise<Page> {
   const page = await world.ensurePage();
   const url = path ? `${FRONTEND_URL}${path}` : FRONTEND_URL;
   await page.goto(url, { waitUntil: "domcontentloaded" });
+  await page.waitForSelector('[data-testid="page-tree"]', { timeout: 10000 });
+  await page.waitForFunction(() => {
+    return document.querySelectorAll('[aria-label^="Navigate to"]').length > 0;
+  }, { timeout: 10000 });
   return page;
 }
 
@@ -32,11 +36,11 @@ export async function waitForNetworkIdle(page: Page): Promise<void> {
  * Navigates to a page by clicking on its sidebar navigation button
  */
 export async function navigateToPageByTitle(page: Page, pageTitle: string): Promise<void> {
-  await page.waitForSelector('[aria-label*="Navigate to"]', { timeout: 5000 });
   const escapedTitle = pageTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const pageButton = page.getByRole("button", { 
     name: new RegExp(`Navigate to ${escapedTitle}`, "i") 
   });
+  await pageButton.waitFor({ state: "visible", timeout: 10000 });
   await pageButton.click();
   await waitForPageLoad(page);
 }
