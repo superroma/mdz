@@ -6,6 +6,7 @@ import { TitleField } from "./TitleField";
 import { ContentEditor } from "./ContentEditor";
 import { CustomFieldsPanel } from "./CustomFieldsPanel";
 import { AttachmentsPanel } from "./AttachmentsPanel";
+import { UserMenu } from "./UserMenu";
 import { serializeFrontMatter, parseFrontMatter } from "../utils/front-matter";
 
 interface PageViewProps {
@@ -151,6 +152,9 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
             ←
           </button>
           {pagePath && <Breadcrumbs pages={pages} currentPath={pagePath} />}
+          <div className="ml-auto">
+            <UserMenu />
+          </div>
         </div>
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1">

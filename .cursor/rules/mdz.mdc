@@ -1,3 +1,7 @@
+---
+alwaysApply: true
+---
+
 ## This is npm workspace monorepo
 Dont use pnpm, dont cd to install packages
 

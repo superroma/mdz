@@ -9,10 +9,18 @@ import {
 } from "@cucumber/cucumber";
 import { ensureServersRunning, shutdownServers } from "./server-manager";
 import { AppWorld } from "./world";
+import jsonwebtoken from "jsonwebtoken";
 
 setDefaultTimeout(5_000);
 
 let testPagesDir: string | undefined;
+const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
+
+export const testTokens = {
+  admin: "",
+  writer: "",
+  reader: "",
+};
 
 BeforeAll({ timeout: 90000 }, async function () {
   if (!process.env.TEST_PAGES_ROOT) {
@@ -29,12 +37,31 @@ BeforeAll({ timeout: 90000 }, async function () {
       cpSync(seedPagesDir, testPagesDir, { recursive: true });
     }
   }
+
+  testTokens.admin = jsonwebtoken.sign(
+    { email: "admin@example.com", name: "Admin User", provider: "test" },
+    JWT_SECRET
+  );
+  testTokens.writer = jsonwebtoken.sign(
+    { email: "writer@example.com", name: "Writer User", provider: "test" },
+    JWT_SECRET
+  );
+  testTokens.reader = jsonwebtoken.sign(
+    { email: "reader@example.com", name: "Reader User", provider: "test" },
+    JWT_SECRET
+  );
+
   await ensureServersRunning();
 });
 
 Before(async function (this: AppWorld, scenario) {
-  // Ensure a fresh browser context for each scenario.
   await this.ensurePage();
+
+  if (this.page) {
+    await this.page.addInitScript((token) => {
+      localStorage.setItem("auth_token", token);
+    }, testTokens.admin);
+  }
 
   const { readFileSync, writeFileSync, existsSync } = await import("node:fs");
   const { join } = await import("node:path");
@@ -42,7 +69,6 @@ Before(async function (this: AppWorld, scenario) {
 
   if (!testPagesDir) return;
 
-  // Reset Getting Started.md for checkbox-related tests to ensure clean state
   if (scenario.pickle.name.includes('checkbox') || scenario.pickle.name.includes('Toggle')) {
     const originalFile = resolve(process.cwd(), "..", "..", "pages", "Welcome", "Getting Started.md");
     const testFile = join(testPagesDir, "Welcome", "Getting Started.md");
@@ -55,7 +81,6 @@ Before(async function (this: AppWorld, scenario) {
     }
   }
 
-  // Reset Write Tests.md for front-matter related tests
   if (scenario.pickle.name.includes('front-matter')) {
     const originalFile = resolve(process.cwd(), "..", "..", "pages", "Welcome", "Tasks", "Write Tests.md");
     const testFile = join(testPagesDir, "Welcome", "Tasks", "Write Tests.md");

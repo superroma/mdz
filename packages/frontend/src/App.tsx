@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { usePageStore } from "./store/usePageStore";
+import { useAuthStore } from "./store/useAuthStore";
 import { Sidebar } from "./components/Sidebar";
 import { PageView } from "./components/PageView";
 import { EmptyState } from "./components/EmptyState";
+import { LoginPage } from "./components/LoginPage";
+import { AuthCallback } from "./components/AuthCallback";
 
 function RedirectToFirstPage() {
   const { pages, loadPages } = usePageStore();
@@ -21,6 +24,28 @@ function RedirectToFirstPage() {
   }, [pages, navigate]);
 
   return <EmptyState />;
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-slate-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
 }
 
 function AppContent() {
@@ -75,8 +100,24 @@ function AppContent() {
         `}
       >
         <Routes>
-          <Route path="/" element={<RedirectToFirstPage />} />
-          <Route path="/*" element={<PageView onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <RedirectToFirstPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <PageView onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </div>
     </div>

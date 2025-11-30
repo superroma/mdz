@@ -6,3 +6,4 @@
 - [.] Authentication (in the add-auth brunch, simplfy dev jwt handling, add config file for secrets and oauth settings )
 - [ ] Access control
 - [ ] Multi-roots
+- [ ] Proper back and fron logging

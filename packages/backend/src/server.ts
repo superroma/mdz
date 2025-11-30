@@ -6,6 +6,7 @@ import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
 import { registerPageRoutes } from "./routes/pages.js";
 import { registerFileRoutes } from "./routes/files.js";
+import { registerAuthRoutes } from "./routes/auth.js";
 import { getPagesRoot, DEFAULT_PAGES_ROOT } from "./storage/path-validator.js";
 import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
@@ -84,6 +85,7 @@ export async function buildServer() {
     pagesRoot: process.env.PAGES_ROOT ?? DEFAULT_PAGES_ROOT
   }));
 
+  await registerAuthRoutes(app);
   await registerPageRoutes(app);
   await registerFileRoutes(app);
 
@@ -122,8 +124,7 @@ async function start() {
   try {
     await server.listen({ port, host });
     console.log(`Backend listening on http://${host}:${port}`);
-    console.log(`PAGES_ROOT (env): ${pagesRootEnv}`);
-    console.log(`PAGES_ROOT (absolute): ${pagesRootAbsolute}`);
+    console.log(`PAGES_ROOT: ${pagesRootAbsolute}`);
     server.log.info(`Backend listening on http://${host}:${port}`);
     server.log.info(`PAGES_ROOT (env): ${pagesRootEnv}`);
     server.log.info(`PAGES_ROOT (absolute): ${pagesRootAbsolute}`);
