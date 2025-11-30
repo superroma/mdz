@@ -34,16 +34,21 @@ export async function registerPageRoutes(app: FastifyInstance) {
     const pagePath = body.path || "Untitled";
     const content = body.content || "";
     
+    const config = loadUsersConfig();
+    
     let finalPath = pagePath;
     if (body.parent) {
       validatePathOrThrow(body.parent);
       
-      const config = loadUsersConfig();
       if (!checkPageAccess(userGroups, body.parent, "write", config)) {
         throw new NotFoundError("Page not found");
       }
       
       finalPath = `${body.parent}/${pagePath}`;
+    } else {
+      if (userGroups.length === 0 || (!userGroups.includes("admins") && !config.defaultAccess.write.some(g => userGroups.includes(g)))) {
+        throw new NotFoundError("Page not found");
+      }
     }
     
     validatePathOrThrow(finalPath);
