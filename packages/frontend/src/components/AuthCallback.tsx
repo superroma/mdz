@@ -17,8 +17,16 @@ export function AuthCallback() {
       login(token);
       
       checkAuth().then(() => {
-        console.log("[Auth] Auth check complete, redirecting to home");
-        navigate("/");
+        console.log("[Auth] Auth check complete, redirecting");
+        const intendedPath = sessionStorage.getItem("auth_redirect");
+        if (intendedPath && intendedPath !== "/login") {
+          console.log("[Auth] Redirecting to intended path:", intendedPath);
+          sessionStorage.removeItem("auth_redirect");
+          navigate(intendedPath);
+        } else {
+          console.log("[Auth] Redirecting to home");
+          navigate("/");
+        }
       }).catch((error) => {
         console.error("[Auth] Auth check failed:", error);
         navigate("/login");

@@ -85,6 +85,12 @@ export async function buildServer() {
     pagesRoot: process.env.PAGES_ROOT ?? DEFAULT_PAGES_ROOT
   }));
 
+  if (process.env.NODE_ENV !== "production") {
+    const { registerTestAuthPlugin } = await import("./dev/test-auth-plugin.js");
+    await app.register(registerTestAuthPlugin);
+    console.log("Test auth provider registered (development only)");
+  }
+
   await registerAuthRoutes(app);
   await registerPageRoutes(app);
   await registerFileRoutes(app);

@@ -28,6 +28,7 @@ function RedirectToFirstPage() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading, checkAuth } = useAuthStore();
+  const location = window.location.pathname;
 
   useEffect(() => {
     checkAuth();
@@ -42,6 +43,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) {
+    sessionStorage.setItem("auth_redirect", location);
     return <Navigate to="/login" replace />;
   }
 

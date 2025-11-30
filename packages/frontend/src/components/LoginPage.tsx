@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGoogle, FaGithub, FaYandex } from "react-icons/fa";
+import { MdBugReport } from "react-icons/md";
 import { Button } from "./ui/button";
 import * as api from "../api/client";
 import { useAuthStore } from "../store/useAuthStore";
@@ -9,6 +10,7 @@ const providerIcons: Record<string, React.ComponentType<{ className?: string }>>
   google: FaGoogle,
   github: FaGithub,
   yandex: FaYandex,
+  test: MdBugReport,
 };
 
 export function LoginPage() {
@@ -39,7 +41,9 @@ export function LoginPage() {
 
   const handleLogin = (providerName: string) => {
     const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
-    const authUrl = `${API_BASE_URL}/api/auth/${providerName}`;
+    const authUrl = providerName === "test" 
+      ? `${API_BASE_URL}/api/dev-auth/select`
+      : `${API_BASE_URL}/api/auth/${providerName}`;
     console.log(`[Auth] Redirecting to OAuth provider: ${providerName}`);
     console.log(`[Auth] URL: ${authUrl}`);
     window.location.href = authUrl;

@@ -125,11 +125,20 @@ export async function registerAuthRoutes(app: FastifyInstance) {
   }
 
   app.get("/api/auth/providers", async () => {
+    const providerList = providers.map((p) => ({
+      name: p.name,
+      displayName: p.name.charAt(0).toUpperCase() + p.name.slice(1),
+    }));
+
+    if (process.env.NODE_ENV !== "production") {
+      providerList.push({
+        name: "test",
+        displayName: "Test (Dev Only)",
+      });
+    }
+
     return {
-      providers: providers.map((p) => ({
-        name: p.name,
-        displayName: p.name.charAt(0).toUpperCase() + p.name.slice(1),
-      })),
+      providers: providerList,
     };
   });
 

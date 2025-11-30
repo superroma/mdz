@@ -9,6 +9,7 @@ import {
 } from "@cucumber/cucumber";
 import { ensureServersRunning, shutdownServers } from "./server-manager";
 import { AppWorld } from "./world";
+import { TEST_USERS } from "./test-users";
 import jsonwebtoken from "jsonwebtoken";
 
 setDefaultTimeout(5_000);
@@ -16,11 +17,7 @@ setDefaultTimeout(5_000);
 let testPagesDir: string | undefined;
 const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-change-in-production";
 
-export const testTokens = {
-  admin: "",
-  writer: "",
-  reader: "",
-};
+export const testTokens: Record<string, string> = {};
 
 BeforeAll({ timeout: 90000 }, async function () {
   if (!process.env.TEST_PAGES_ROOT) {
@@ -38,18 +35,17 @@ BeforeAll({ timeout: 90000 }, async function () {
     }
   }
 
-  testTokens.admin = jsonwebtoken.sign(
-    { email: "admin@example.com", name: "Admin User", provider: "test" },
-    JWT_SECRET
-  );
-  testTokens.writer = jsonwebtoken.sign(
-    { email: "writer@example.com", name: "Writer User", provider: "test" },
-    JWT_SECRET
-  );
-  testTokens.reader = jsonwebtoken.sign(
-    { email: "reader@example.com", name: "Reader User", provider: "test" },
-    JWT_SECRET
-  );
+  for (const role of Object.keys(TEST_USERS)) {
+    const user = TEST_USERS[role];
+    testTokens[role] = jsonwebtoken.sign(
+      {
+        email: user.email,
+        name: user.name,
+        provider: "test",
+      },
+      JWT_SECRET
+    );
+  }
 
   await ensureServersRunning();
 });
