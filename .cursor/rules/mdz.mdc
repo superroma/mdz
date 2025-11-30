@@ -6,12 +6,11 @@ alwaysApply: true
 Dont use pnpm, dont cd to install packages
 
 ## Dev mode
-`npm run dev`
+Run from repo root: `npm run dev`
+When you run this command, always request `required_permissions: ["all"]`.
 
 ## Unit tests
-`npm run test`
-
-
+Run from repo root: `npm run test`
 
 ## No comments
 Don't write comments in code.
@@ -19,10 +18,14 @@ If you see comments that explain code  - remove them.
 Only leave commented out code
 
 ## Functional tests
-`npm run test:e2e`
+Run from repo root: `npm run test:e2e`
+When you run this command, always request `required_permissions: ["all"]`.
 
 ### Single functional test
-`npm run test:e2e -- path/to/feature.feature 
+Run from repo root, with feature path relative to `packages/e2e`:
+`npm run test:e2e -- features/access-control.feature`
+Do NOT prefix with `packages/e2e/`.
+When you run this command, always request `required_permissions: ["all"]`.
 
 ### Stop fiddling with timeouts
 If something fail in test because of timeout - it means there is no such a thing.
