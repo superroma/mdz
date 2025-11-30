@@ -119,7 +119,6 @@ function spawnProcess(entry: ManagedProcess) {
 
   const env: Record<string, string> = {
     ...process.env,
-    NODE_ENV: "test",
     PAGES_ROOT: pagesRoot
   };
 

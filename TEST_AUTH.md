@@ -98,6 +98,6 @@ The new role will automatically appear:
 ### Security
 
 The test auth provider is:
-- Only registered when `process.env.NODE_ENV !== "production"`
+- Only registered in the dev-server.ts entrypoint!
 - Only available in development builds
 - Automatically excluded from production builds via conditional imports
