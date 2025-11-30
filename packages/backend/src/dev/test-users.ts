@@ -1,4 +1,5 @@
 import jsonwebtoken from "jsonwebtoken";
+import { loadUsersConfig, calculateUserGroups } from "../storage/user-access.js";
 
 export interface TestUser {
   id: string;
@@ -34,11 +35,15 @@ export function generateTestUserJWT(role: string, jwtSecret: string): string {
     throw new Error(`Unknown test user role: ${role}`);
   }
 
+  const usersConfig = loadUsersConfig();
+  const groups = calculateUserGroups(user.email, usersConfig);
+
   return jsonwebtoken.sign(
     {
       email: user.email,
       name: user.name,
       provider: "test",
+      groups,
     },
     jwtSecret
   );

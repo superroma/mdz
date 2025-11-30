@@ -68,7 +68,7 @@ test("renamePage moves a page", () => {
 test("listPages returns all pages", () => {
   createPage("Page 1", "# Content 1");
   createPage("Page 2", "# Content 2");
-  const pages = listPages();
+  const pages = listPages(["everyone", "admins"]);
   expect(pages.length).toBeGreaterThanOrEqual(2);
   expect(pages.some((p) => p.path === "Page 1")).toBe(true);
   expect(pages.some((p) => p.path === "Page 2")).toBe(true);
@@ -246,7 +246,7 @@ test("hidden folders have isHidden flag set to true", () => {
   createPage("visible-folder", "# Visible Folder");
   createPage("visible-folder/page", "# Content");
   
-  const pages = listPages();
+  const pages = listPages(["everyone", "admins"]);
   const hiddenFolder = pages.find(p => p.path === ".hidden-folder");
   const visibleFolder = pages.find(p => p.path === "visible-folder");
   
@@ -260,7 +260,7 @@ test("listPages returns all pages including hidden ones", () => {
   createPage("visible-page", "# Visible");
   createPage(".hidden-page", "# Hidden");
   
-  const pages = listPages();
+  const pages = listPages(["everyone", "admins"]);
   
   expect(pages.some(p => p.path === "visible-page")).toBe(true);
   expect(pages.some(p => p.path === ".hidden-page")).toBe(true);
@@ -273,7 +273,7 @@ test("non-markdown files have isMarkdown flag set to false", () => {
   // Create a non-markdown file
   writeFileSync(join(pagesRoot, "test-image.png"), "fake image data");
   
-  const pages = listPages();
+  const pages = listPages(["everyone", "admins"]);
   const imageFile = pages.find(p => p.path === "test-image.png");
   
   expect(imageFile).toBeDefined();

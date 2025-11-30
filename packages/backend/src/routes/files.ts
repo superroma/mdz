@@ -7,6 +7,7 @@ import { createWriteStream, statSync } from "node:fs";
 import { join, extname } from "node:path";
 import { getPagesRoot } from "../storage/path-validator.js";
 import { NotFoundError, ValidationError } from "../errors.js";
+import { loadUsersConfig, checkPageAccess } from "../storage/user-access.js";
 
 // MIME type mapping for common file types
 const getMimeType = (filename: string): string => {
@@ -64,25 +65,33 @@ const getMimeType = (filename: string): string => {
 export async function registerFileRoutes(app: FastifyInstance) {
   app.get("/api/files/*", async (request, reply) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
     const pathParts = path.split("/");
     const lastSegment = pathParts.pop();
     const pagePath = pathParts.join("/");
     
-    // Check if last segment looks like a filename (has file extension)
-    // If it doesn't have an extension, treat whole path as page path for listing
     const hasFileExtension = lastSegment && /\.\w+$/.test(lastSegment);
     
     if (!lastSegment || !hasFileExtension) {
-      // Treat whole path as page path for listing files
       validatePathOrThrow(path);
+      
+      const config = loadUsersConfig();
+      if (!checkPageAccess(userGroups, path, "read", config)) {
+        throw new NotFoundError("Page not found");
+      }
+      
       const files = listFiles(path);
       return { files };
     }
     
-    // Last segment is a filename (has extension), treat rest as page path
     validatePathOrThrow(pagePath);
     validateFilenameOrThrow(lastSegment);
     validateFileExtensionOrThrow(lastSegment);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, pagePath, "read", config)) {
+      throw new NotFoundError("Page not found");
+    }
     
     const fileStream = getFileStream(pagePath, lastSegment);
     const pagesRoot = getPagesRoot();
@@ -98,7 +107,14 @@ export async function registerFileRoutes(app: FastifyInstance) {
 
   app.post("/api/files/*", async (request, reply) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
+    
     validatePathOrThrow(path);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, path, "write", config)) {
+      throw new NotFoundError("Page not found");
+    }
     
     const page = readPage(path);
     if (!page) {
@@ -146,6 +162,7 @@ export async function registerFileRoutes(app: FastifyInstance) {
 
   app.delete("/api/files/*", async (request) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
     const pathParts = path.split("/");
     const filename = pathParts.pop();
     const pagePath = pathParts.join("/");
@@ -156,6 +173,11 @@ export async function registerFileRoutes(app: FastifyInstance) {
     
     validatePathOrThrow(pagePath);
     validateFilenameOrThrow(filename);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, pagePath, "write", config)) {
+      throw new NotFoundError("Page not found");
+    }
     
     deleteFile(pagePath, filename);
   });

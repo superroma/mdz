@@ -149,6 +149,7 @@ export interface User {
   email: string;
   name: string;
   provider: string;
+  groups: string[];
 }
 
 export async function getAuthProviders(): Promise<AuthProvidersResponse> {
