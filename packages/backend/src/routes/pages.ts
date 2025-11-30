@@ -7,7 +7,8 @@ import { loadUsersConfig, checkPageAccess } from "../storage/user-access.js";
 export async function registerPageRoutes(app: FastifyInstance) {
   app.get("/api/pages", async (request) => {
     const userGroups = request.currentUser?.groups || [];
-    return listPages(userGroups);
+    const pages = listPages(userGroups);
+    return pages;
   });
 
   app.get("/api/pages/*", async (request) => {

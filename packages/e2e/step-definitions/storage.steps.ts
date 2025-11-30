@@ -9,6 +9,13 @@ import { cpSync, rmSync } from "node:fs";
 
 let testPagesDir: string;
 
+function authHeaders(world: AppWorld, extra: Record<string, string> = {}) {
+  return {
+    Authorization: `Bearer ${world.authToken ?? ""}`,
+    ...extra,
+  };
+}
+
 Given(
   "seed pages are loaded in a temporary test directory",
   async function (this: AppWorld) {
@@ -37,7 +44,7 @@ When(
   async function (this: AppWorld, pageName: string) {
     const response = await fetch(`${BACKEND_URL}/api/pages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(this, { "Content-Type": "application/json" }),
       body: JSON.stringify({
         path: pageName,
         content: "# Test Content"
@@ -78,7 +85,7 @@ Given(
   async function (this: AppWorld, pagePath: string) {
     const response = await fetch(`${BACKEND_URL}/api/pages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(this, { "Content-Type": "application/json" }),
       body: JSON.stringify({
         path: pagePath.replace(/\.md$/, ""),
         content: "# Parent Content"
@@ -94,7 +101,7 @@ When(
     const [parent, child] = childPath.split("/");
     const response = await fetch(`${BACKEND_URL}/api/pages`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders(this, { "Content-Type": "application/json" }),
       body: JSON.stringify({
         path: child,
         parent: parent,
@@ -135,7 +142,9 @@ Then(
 When(
   "I request the page {string}",
   async function (this: AppWorld, pagePath: string) {
-    const response = await fetch(`${BACKEND_URL}/api/pages/${encodeURIComponent(pagePath)}`);
+    const response = await fetch(`${BACKEND_URL}/api/pages/${encodeURIComponent(pagePath)}`, {
+      headers: authHeaders(this),
+    });
     this.lastResponse = {
       status: response.status,
       body: await response.json()
@@ -169,7 +178,9 @@ Then(
 When(
   "I request the list of all pages",
   async function (this: AppWorld) {
-    const response = await fetch(`${BACKEND_URL}/api/pages`);
+    const response = await fetch(`${BACKEND_URL}/api/pages`, {
+      headers: authHeaders(this),
+    });
     this.lastResponse = {
       status: response.status,
       body: await response.json()
@@ -208,7 +219,9 @@ Then(
 When(
   "I attempt to access {string}",
   async function (this: AppWorld, path: string) {
-    const response = await fetch(`${BACKEND_URL}/api/pages/${encodeURIComponent(path)}`);
+    const response = await fetch(`${BACKEND_URL}/api/pages/${encodeURIComponent(path)}`, {
+      headers: authHeaders(this),
+    });
     this.lastResponse = {
       status: response.status,
       body: await response.json().catch(() => ({}))

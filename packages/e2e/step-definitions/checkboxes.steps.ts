@@ -168,7 +168,11 @@ Then(
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       await page.waitForTimeout(delayMs);
       
-      const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+      const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`, {
+        headers: {
+          Authorization: `Bearer ${this.authToken ?? ""}`,
+        },
+      });
       expect(response.status).toBe(200);
       
       const pageData = await response.json() as { content: string };
@@ -317,7 +321,11 @@ When(
     const apiPath = pathSegments.join('/');
     
     // Fetch the document content from backend
-    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`, {
+      headers: {
+        Authorization: `Bearer ${this.authToken ?? ""}`,
+      },
+    });
     expect(response.status).toBe(200);
     
     const pageData = await response.json() as { content: string };
@@ -347,7 +355,11 @@ Then(
     const apiPath = pathSegments.join('/');
     
     // Fetch the current document content from backend
-    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`);
+    const response = await fetch(`${BACKEND_URL}/api/pages/${apiPath}`, {
+      headers: {
+        Authorization: `Bearer ${this.authToken ?? ""}`,
+      },
+    });
     expect(response.status).toBe(200);
     
     const pageData = await response.json() as { content: string };

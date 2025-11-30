@@ -42,6 +42,7 @@ BeforeAll({ timeout: 90000 }, async function () {
         email: user.email,
         name: user.name,
         provider: "test",
+        groups: user.groups,
       },
       JWT_SECRET
     );

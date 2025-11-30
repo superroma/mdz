@@ -32,7 +32,6 @@ Given(
       console.error("[common-steps] failed to navigate to", pageTitle, error);
       throw error;
     }
-    console.log("[common-steps] now at", page.url());
     await page.waitForSelector('.prose', { timeout: 5000 });
   }
 );
