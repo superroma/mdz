@@ -20,12 +20,13 @@ export function LoginPage() {
   const { checkAuth } = useAuthStore();
 
   useEffect(() => {
-    checkAuth().then(() => {
-      const token = api.getAuthToken();
-      if (token) {
-        navigate("/");
-      }
-    });
+    checkAuth()
+      .then((isAuthed) => {
+        if (isAuthed) {
+          navigate("/");
+        }
+      })
+      .catch(() => {});
   }, [checkAuth, navigate]);
 
   useEffect(() => {

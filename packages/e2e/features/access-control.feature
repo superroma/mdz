@@ -13,8 +13,7 @@ Feature: Access Control
 
   Scenario: User not in users.yaml cannot access anything
     When I log in using the test provider as "outsider"
-    Then I should see no pages in the navigation
-    And accessing any page should return 404
+    Then I should be redirected to the login page
 
   Scenario: Reader can only view pages with everyone group
     When I log in using the test provider as "reader"

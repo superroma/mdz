@@ -24,19 +24,27 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     if (!token) {
       console.log("[Auth Store] No token found");
       set({ isLoading: false, isAuthenticated: false, user: null });
-      return;
+      return false;
     }
 
     console.log("[Auth Store] Token found, verifying with backend...");
     try {
       const user = await api.getCurrentUser();
+      if (!user.groups || user.groups.length === 0) {
+        console.warn("[Auth Store] User has no authorized groups, logging out");
+        api.removeAuthToken();
+        set({ user: null, isLoading: false, isAuthenticated: false });
+        throw new Error("User has no authorized groups");
+      }
       console.log("[Auth Store] User authenticated:", user.email);
       console.log("[Auth Store] User groups:", user.groups);
       set({ user, isLoading: false, isAuthenticated: true });
+      return true;
     } catch (error) {
       console.error("[Auth Store] Token validation failed:", error);
       api.removeAuthToken();
       set({ user: null, isLoading: false, isAuthenticated: false });
+      throw error;
     }
   },
 

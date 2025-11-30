@@ -62,7 +62,7 @@ When(
     
     await page.waitForURL((url) => {
       const urlStr = url.toString();
-      return !urlStr.includes('/login') && !urlStr.includes('/auth/callback');
+      return !urlStr.includes('/auth/callback');
     }, { timeout: 15000 });
     
     try {

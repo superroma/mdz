@@ -37,7 +37,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const location = window.location.pathname;
 
   useEffect(() => {
-    checkAuth();
+    checkAuth().catch(() => {});
   }, [checkAuth]);
 
   if (isLoading) {
