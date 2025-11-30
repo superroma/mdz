@@ -76,7 +76,6 @@ function AppContent() {
 
   return (
     <div className="relative flex h-screen bg-white text-slate-900 overflow-hidden">
-      {/* Sidebar - underneath everything */}
       <Sidebar
         pages={pages}
         onCreateRoot={handleCreateRoot}
@@ -87,7 +86,6 @@ function AppContent() {
         onToggleShowHidden={toggleShowHidden}
       />
       
-      {/* Page view container - slides to the right on mobile */}
       <div 
         className={`
           flex-1 flex flex-col h-full
@@ -100,24 +98,8 @@ function AppContent() {
         `}
       >
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <RedirectToFirstPage />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/*"
-            element={
-              <ProtectedRoute>
-                <PageView onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/" element={<RedirectToFirstPage />} />
+          <Route path="/*" element={<PageView onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />} />
         </Routes>
       </div>
     </div>
@@ -127,7 +109,18 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route
+          path="/*"
+          element={
+            <ProtectedRoute>
+              <AppContent />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </BrowserRouter>
   );
 }
