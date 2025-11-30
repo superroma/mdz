@@ -8,9 +8,11 @@ interface AuthStore {
   checkAuth: () => Promise<void>;
   login: (token: string) => void;
   logout: () => Promise<void>;
+  hasGroup: (group: string) => boolean;
+  isAdmin: () => boolean;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   user: null,
   isLoading: true,
   isAuthenticated: false,
@@ -29,6 +31,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
     try {
       const user = await api.getCurrentUser();
       console.log("[Auth Store] User authenticated:", user.email);
+      console.log("[Auth Store] User groups:", user.groups);
       set({ user, isLoading: false, isAuthenticated: true });
     } catch (error) {
       console.error("[Auth Store] Token validation failed:", error);
@@ -52,5 +55,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
       console.error("[Auth Store] Logout error:", error);
     }
     set({ user: null, isAuthenticated: false });
+  },
+
+  hasGroup: (group: string) => {
+    const user = get().user;
+    return user?.groups?.includes(group) || false;
+  },
+
+  isAdmin: () => {
+    const user = get().user;
+    return user?.groups?.includes("admins") || false;
   },
 }));

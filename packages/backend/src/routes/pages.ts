@@ -2,15 +2,25 @@ import { FastifyInstance } from "fastify";
 import { listPages, readPage, createPage, updatePage, renamePage, deletePage } from "../storage/page-storage.js";
 import { validatePathOrThrow } from "../storage/path-validator.js";
 import { NotFoundError, ValidationError } from "../errors.js";
+import { loadUsersConfig, checkPageAccess } from "../storage/user-access.js";
 
 export async function registerPageRoutes(app: FastifyInstance) {
-  app.get("/api/pages", async () => {
-    return listPages();
+  app.get("/api/pages", async (request) => {
+    const userGroups = request.currentUser?.groups || [];
+    return listPages(userGroups);
   });
 
   app.get("/api/pages/*", async (request) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
+    
     validatePathOrThrow(path);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, path, "read", config)) {
+      throw new NotFoundError("Page not found");
+    }
+    
     const page = readPage(path);
     if (!page) {
       throw new NotFoundError("Page not found");
@@ -20,12 +30,19 @@ export async function registerPageRoutes(app: FastifyInstance) {
 
   app.post("/api/pages", async (request) => {
     const body = request.body as { path?: string; content?: string; parent?: string };
+    const userGroups = request.currentUser?.groups || [];
     const pagePath = body.path || "Untitled";
     const content = body.content || "";
     
     let finalPath = pagePath;
     if (body.parent) {
       validatePathOrThrow(body.parent);
+      
+      const config = loadUsersConfig();
+      if (!checkPageAccess(userGroups, body.parent, "write", config)) {
+        throw new NotFoundError("Page not found");
+      }
+      
       finalPath = `${body.parent}/${pagePath}`;
     }
     
@@ -36,7 +53,14 @@ export async function registerPageRoutes(app: FastifyInstance) {
 
   app.put("/api/pages/*", async (request) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
+    
     validatePathOrThrow(path);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, path, "write", config)) {
+      throw new NotFoundError("Page not found");
+    }
     
     const body = request.body as { content: string };
     
@@ -49,7 +73,14 @@ export async function registerPageRoutes(app: FastifyInstance) {
 
   app.patch("/api/pages/*", async (request) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
+    
     validatePathOrThrow(path);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, path, "write", config)) {
+      throw new NotFoundError("Page not found");
+    }
     
     const body = request.body as { newPath: string };
     
@@ -63,7 +94,15 @@ export async function registerPageRoutes(app: FastifyInstance) {
 
   app.delete("/api/pages/*", async (request) => {
     const path = (request.params as { "*": string })["*"];
+    const userGroups = request.currentUser?.groups || [];
+    
     validatePathOrThrow(path);
+    
+    const config = loadUsersConfig();
+    if (!checkPageAccess(userGroups, path, "write", config)) {
+      throw new NotFoundError("Page not found");
+    }
+    
     deletePage(path);
   });
 }

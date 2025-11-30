@@ -10,6 +10,7 @@ import {
   isChildPage
 } from "./folderization.js";
 import { NotFoundError, ValidationError } from "../errors.js";
+import { loadUsersConfig, checkPageAccess } from "./user-access.js";
 
 export interface Page {
   path: string;
@@ -83,22 +84,30 @@ function findParentPath(pagePath: string, allPaths: string[]): string | undefine
   return undefined;
 }
 
-export function listPages(): Page[] {
+export function listPages(userGroups: string[] = []): Page[] {
   const pagesRoot = getPagesRoot();
   const allPaths = getAllPagePathsRecursive(pagesRoot);
+  const config = loadUsersConfig();
   
   const pages: Page[] = [];
   for (const path of allPaths) {
-    const page = readPageInternal(path, allPaths);
-    if (page) {
-      pages.push(page);
+    if (checkPageAccess(userGroups, path, "read", config)) {
+      const page = readPageInternal(path, allPaths);
+      if (page) {
+        pages.push(page);
+      }
     }
   }
   
+  const accessiblePaths = new Set(pages.map(p => p.path));
+  
   for (const page of pages) {
     const children = pages.filter((p) => isChildPage(page.path, p.path));
-    page.children = children.map((p) => p.path);
+    page.children = children.map((p) => p.path).filter(c => accessiblePaths.has(c));
     page.parent = findParentPath(page.path, allPaths);
+    if (page.parent && !accessiblePaths.has(page.parent)) {
+      page.parent = undefined;
+    }
   }
   
   return pages;

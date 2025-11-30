@@ -1,0 +1,11 @@
+defaultAccess:
+  read: [everyone]
+  write: [writers]
+
+users:
+  admin@test.local:
+    groups: [admins]
+  writer@test.local:
+    groups: [writers]
+  reader@test.local:
+    groups: []

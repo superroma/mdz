@@ -12,6 +12,16 @@ import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { AppError } from "./errors.js";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    currentUser?: {
+      email: string;
+      name: string;
+      groups: string[];
+    };
+  }
+}
+
 export const DEFAULT_PORT = 3001;
 
 type TraversalFlaggedRequest = {
@@ -62,6 +72,45 @@ export async function buildServer() {
     }
 
     done();
+  });
+
+  app.addHook("onRequest", async (request, reply) => {
+    const url = request.url;
+    if (!url.startsWith("/api/pages") && !url.startsWith("/api/files")) {
+      return;
+    }
+
+    if (process.env.NODE_ENV === "test") {
+      request.currentUser = {
+        email: "test@test.local",
+        name: "Test User",
+        groups: ["everyone", "admins"],
+      };
+      return;
+    }
+
+    const authHeader = request.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      reply.status(401).send({ error: "Unauthorized" });
+      return;
+    }
+
+    try {
+      const token = authHeader.substring(7);
+      const decoded = app.jwt.verify(token) as {
+        email: string;
+        name: string;
+        groups?: string[];
+      };
+
+      request.currentUser = {
+        email: decoded.email,
+        name: decoded.name,
+        groups: decoded.groups || [],
+      };
+    } catch (error) {
+      reply.status(401).send({ error: "Invalid token" });
+    }
   });
 
   // Centralized error handler

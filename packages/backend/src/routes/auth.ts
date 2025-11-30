@@ -1,6 +1,7 @@
 import { FastifyInstance } from "fastify";
 import oauthPlugin from "@fastify/oauth2";
 import jwtPlugin from "@fastify/jwt";
+import { loadUsersConfig, calculateUserGroups } from "../storage/user-access.js";
 
 interface ProviderConfig {
   name: string;
@@ -216,10 +217,15 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         const name = userInfo.name || email.split("@")[0];
         console.log(`[OAuth] Creating JWT for user: ${email}`);
 
+        const usersConfig = loadUsersConfig();
+        const groups = calculateUserGroups(email, usersConfig);
+        console.log(`[OAuth] User groups: ${groups.join(", ")}`);
+
         const jwtToken = app.jwt.sign({
           email,
           name,
           provider: provider.name,
+          groups,
         });
         console.log(`[OAuth] JWT created (length: ${jwtToken.length})`);
 
@@ -246,12 +252,13 @@ export async function registerAuthRoutes(app: FastifyInstance) {
 
       const token = authHeader.substring(7);
       const decoded = app.jwt.verify(token);
-      const user = decoded as { email: string; name: string; provider: string };
+      const user = decoded as { email: string; name: string; provider: string; groups?: string[] };
       
       return {
         email: user.email,
         name: user.name,
         provider: user.provider,
+        groups: user.groups || [],
       };
     } catch (error) {
       reply.status(401).send({ error: "Unauthorized" });
