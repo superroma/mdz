@@ -351,40 +351,6 @@ export function MDXContent({
           };
         };
 
-        // Create a rehype plugin to remove inline style attributes
-        // We do this instead of full sanitization to preserve MDX components
-        const rehypeRemoveInlineStyles = () => {
-          return (tree: any) => {
-            const visit = (node: any) => {
-              if (!node || typeof node !== "object") return;
-              
-              // Remove style attribute from all elements
-              // In rehype, attributes are stored in node.properties
-              if (node.type === "element" && node.properties) {
-                // Remove both 'style' (HTML attribute) and any className issues
-                delete node.properties.style;
-                // Also remove data-style if it exists
-                delete node.properties['data-style'];
-              }
-              
-              if (Array.isArray(node.children)) {
-                node.children.forEach(visit);
-              }
-            };
-            
-            if (tree) {
-              visit(tree);
-            }
-            
-            return tree;
-          };
-        };
-
-        // Compile MDX to JavaScript
-        // Note: We don't use rehypeSanitize because:
-        // 1. It would strip MDX components (BoardView, Tabs, etc.)
-        // 2. Security is handled by controlled component whitelist and no dynamic imports
-        // 3. We only remove inline styles for safety
         const compiled = await compile(content, {
           outputFormat: "function-body",
           development: false,
@@ -403,7 +369,35 @@ export function MDXContent({
               }
             ],
             rehypeTransformPaths(parentPath, content),
-            rehypeRemoveInlineStyles,
+            [
+              (await import("rehype-sanitize")).default,
+              {
+                tagNames: [
+                  'p', 'br', 'span', 'div', 'hr',
+                  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+                  'strong', 'b', 'em', 'i', 'u', 's', 'del', 'mark', 'sub', 'sup',
+                  'ul', 'ol', 'li', 'dl', 'dt', 'dd',
+                  'blockquote', 'pre', 'code',
+                  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+                  'a', 'img',
+                  'input',
+                  'details', 'summary',
+                ],
+                attributes: {
+                  '*': ['className', 'id', 'title', 'aria*', 'data*'],
+                  'a': ['href', 'target', 'rel'],
+                  'img': ['src', 'alt', 'width', 'height'],
+                  'input': ['type', 'checked', 'disabled', 'defaultChecked'],
+                  'th': ['scope', 'colSpan', 'rowSpan'],
+                  'td': ['colSpan', 'rowSpan'],
+                },
+                protocols: {
+                  href: ['http', 'https', 'mailto'],
+                  src: ['http', 'https', 'data'],
+                },
+                strip: ['script', 'iframe', 'object', 'embed', 'link', 'style'],
+              }
+            ],
           ],
           SourceMapGenerator: undefined,
         });
