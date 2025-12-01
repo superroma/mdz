@@ -255,9 +255,8 @@ export function MDXContent({
   useEffect(() => {
     let isCancelled = false;
 
-    // Don't reset component - keep old one mounted while compiling new one
-    // This prevents full DOM remount and allows React to do incremental updates
     setError(null);
+    setMDXComponent(null);
 
     async function compileMDX() {
       try {
@@ -389,13 +388,23 @@ export function MDXContent({
         const compiled = await compile(content, {
           outputFormat: "function-body",
           development: false,
-          // Use remark-gfm for GitHub-flavored markdown
           remarkPlugins: [(await import("remark-gfm")).default],
           rehypePlugins: [
+            [
+              (await import("rehype-raw")).default,
+              {
+                passThrough: [
+                  'mdxFlowExpression',
+                  'mdxJsxFlowElement',
+                  'mdxJsxTextElement',
+                  'mdxTextExpression',
+                  'mdxjsEsm'
+                ]
+              }
+            ],
             rehypeTransformPaths(parentPath, content),
             rehypeRemoveInlineStyles,
           ],
-          // Preserve position information from source
           SourceMapGenerator: undefined,
         });
 
@@ -442,7 +451,7 @@ export function MDXContent({
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary key={content}>
       <MDXComponent components={mdxComponents} />
     </ErrorBoundary>
   );
