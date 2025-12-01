@@ -47,3 +47,13 @@ Feature: Page Editing
     Then I should see an error message in the content area
     And the app should not crash
 
+  Scenario: Edit mode cancels when navigating to another page
+    Given I am viewing "Getting Started" page
+    And I am in preview mode
+    When I click the "Edit" button
+    Then the "markdown source editor" should be visible
+    When I click a different page in the sidebar
+    Then the "markdown source editor" should be hidden
+    And I should see the new page in preview mode
+    And the page content should match the new page
+

@@ -302,3 +302,32 @@ Then(
   }
 );
 
+Then(
+  "I should see the new page in preview mode",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    const editButton = page.getByRole("button", { name: "Edit page content" });
+    await expect(editButton).toBeVisible();
+    
+    const editor = page.getByRole("textbox", { name: "Page content" });
+    await expect(editor).not.toBeVisible();
+  }
+);
+
+Then(
+  "the page content should match the new page",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    const titleField = page.getByRole("textbox", { name: "Page title" });
+    const title = await titleField.inputValue();
+    
+    const preview = page.getByRole("article");
+    await expect(preview).toBeVisible();
+    
+    const pathname = new URL(page.url()).pathname;
+    expect(pathname).toContain(title.replace(/\s+/g, '%20'));
+  }
+);
+

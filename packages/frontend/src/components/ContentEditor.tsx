@@ -55,9 +55,16 @@ export function ContentEditor({
       if (!isEditing) {
         setValue(content);
         setDisplayValue(content);
+      } else {
+        const hasSignificantChange = Math.abs(content.length - value.length) > 100;
+        if (hasSignificantChange) {
+          setIsEditing(false);
+          setValue(content);
+          setDisplayValue(content);
+        }
       }
     }
-  }, [content, isEditing]);
+  }, [content, isEditing, value]);
 
   // Cleanup: save any pending changes before unmount
   useEffect(() => {
