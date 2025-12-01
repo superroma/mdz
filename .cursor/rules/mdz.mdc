@@ -4,6 +4,7 @@ alwaysApply: true
 
 ## This is npm workspace monorepo
 Dont use pnpm, dont cd to install packages
+For npm commands request `required_permissions: ["all"]` or you won't have a network.
 
 ## Dev mode
 Run from repo root: `npm run dev`

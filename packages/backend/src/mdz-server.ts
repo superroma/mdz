@@ -1,3 +1,4 @@
+import dotenv from "dotenv";
 import fastify from "fastify";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
@@ -12,6 +13,10 @@ import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
 import { AppError } from "./errors.js";
 import { FastifyInstance, FastifyRequest } from "fastify";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: join(__dirname, "../../../.env") });
 
 export const DEFAULT_PORT = 3001;
 
@@ -151,9 +156,6 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
   await registerPageRoutes(app);
   await registerFileRoutes(app);
 
-  // Serve static frontend files
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
   const frontendDistPath = join(__dirname, "../../frontend/dist");
   
   if (existsSync(frontendDistPath)) {
@@ -189,6 +191,7 @@ export async function startServer(server: FastifyInstance) {
     server.log.info(`PAGES_ROOT (env): ${pagesRootEnv}`);
     server.log.info(`PAGES_ROOT (absolute): ${pagesRootAbsolute}`);
   } catch (error) {
+    console.error("Failed to start server:", error);
     server.log.error(error);
     process.exit(1);
   }
