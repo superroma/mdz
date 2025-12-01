@@ -37,6 +37,16 @@ Given(
 );
 
 Given(
+  "I navigate to {string}",
+  async function (this: AppWorld, path: string) {
+    const page = await setupPage(this);
+    const { FRONTEND_URL } = await import("../support/constants");
+    await page.goto(`${FRONTEND_URL}${path}`, { waitUntil: "domcontentloaded" });
+    await waitForPageLoad(page);
+  }
+);
+
+Given(
   "I am in {word} mode",
   async function (this: AppWorld, mode: 'edit' | 'preview') {
     const page = await this.ensurePage();
