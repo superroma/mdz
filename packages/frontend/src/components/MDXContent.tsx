@@ -260,6 +260,14 @@ export function MDXContent({
 
     async function compileMDX() {
       try {
+        // Strip dangerous HTML attributes from the raw markdown string
+        // This is simpler and more reliable than trying to do it in the AST
+        const sanitizedContent = content
+          .replace(/\s+style\s*=\s*"[^"]*"/gi, '')
+          .replace(/\s+style\s*=\s*'[^']*'/gi, '')
+          .replace(/\s+on\w+\s*=\s*"[^"]*"/gi, '')
+          .replace(/\s+on\w+\s*=\s*'[^']*'/gi, '');
+        
         // Create rehype plugin to transform paths and add checkbox line indices
         const rehypeTransformPaths = (
           parentPath?: string,
@@ -351,7 +359,7 @@ export function MDXContent({
           };
         };
 
-        const compiled = await compile(content, {
+        const compiled = await compile(sanitizedContent, {
           outputFormat: "function-body",
           development: false,
           remarkPlugins: [(await import("remark-gfm")).default],
@@ -368,36 +376,7 @@ export function MDXContent({
                 ]
               }
             ],
-            rehypeTransformPaths(parentPath, content),
-            [
-              (await import("rehype-sanitize")).default,
-              {
-                tagNames: [
-                  'p', 'br', 'span', 'div', 'hr',
-                  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-                  'strong', 'b', 'em', 'i', 'u', 's', 'del', 'mark', 'sub', 'sup',
-                  'ul', 'ol', 'li', 'dl', 'dt', 'dd',
-                  'blockquote', 'pre', 'code',
-                  'table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
-                  'a', 'img',
-                  'input',
-                  'details', 'summary',
-                ],
-                attributes: {
-                  '*': ['className', 'id', 'title', 'aria*', 'data*'],
-                  'a': ['href', 'target', 'rel'],
-                  'img': ['src', 'alt', 'width', 'height'],
-                  'input': ['type', 'checked', 'disabled', 'defaultChecked'],
-                  'th': ['scope', 'colSpan', 'rowSpan'],
-                  'td': ['colSpan', 'rowSpan'],
-                },
-                protocols: {
-                  href: ['http', 'https', 'mailto'],
-                  src: ['http', 'https', 'data'],
-                },
-                strip: ['script', 'iframe', 'object', 'embed', 'link', 'style'],
-              }
-            ],
+            rehypeTransformPaths(parentPath, sanitizedContent),
           ],
           SourceMapGenerator: undefined,
         });

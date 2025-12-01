@@ -8,3 +8,4 @@ Feature: Markdown Resilience
     Then the application should not crash
     And the page should be navigable
     And I should be able to interact with the UI
+    And the page content should be displayed without errors

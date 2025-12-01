@@ -44,3 +44,16 @@ Then(
     expect(isClickable).toBe(true);
   }
 );
+
+Then(
+  "the page content should be displayed without errors",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    
+    const errorBoundaryMessage = page.locator('.text-red-600:has-text("Rendering Error:"), .text-red-600:has-text("MDX Error:")');
+    await expect(errorBoundaryMessage).not.toBeVisible();
+    
+    const article = page.getByRole('article');
+    await expect(article).toBeVisible();
+  }
+);
