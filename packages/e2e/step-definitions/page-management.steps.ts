@@ -1,4 +1,4 @@
-import { Then, When } from "@cucumber/cucumber";
+import { Then, When, Given } from "@cucumber/cucumber";
 import { expect } from "@playwright/test";
 import { FRONTEND_URL } from "../support/constants";
 import { AppWorld } from "../support/world";
@@ -15,18 +15,10 @@ When(
     }
     
     const createButton = page.getByRole("button", { name: "Create new page" });
-    const isVisible = await createButton.isVisible().catch(() => false);
-    
-    if (!isVisible) {
-      const hamburger = page.getByRole("button", { name: "Toggle sidebar" });
-      const hamburgerVisible = await hamburger.isVisible().catch(() => false);
-      if (hamburgerVisible) {
-        await hamburger.click();
-        await page.waitForSelector('aside', { state: 'visible', timeout: 1000 });
-      }
-    }
-    
+    await createButton.waitFor({ state: 'visible', timeout: 5000 });
     await createButton.click();
+    
+    await page.waitForLoadState('domcontentloaded');
   }
 );
 
@@ -143,6 +135,39 @@ Then(
     const sidebarButtons = page.getByRole("button", { name: /Navigate to/i });
     const count = await sidebarButtons.count();
     expect(count).toBeGreaterThanOrEqual(0);
+  }
+);
+
+Given(
+  "I am on a mobile viewport",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    await page.setViewportSize({ width: 390, height: 844 });
+  }
+);
+
+When(
+  "I open the sidebar",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    const hamburger = page.getByRole("button", { name: "Toggle sidebar" });
+    const isVisible = await hamburger.isVisible().catch(() => false);
+    if (isVisible) {
+      const isExpanded = await hamburger.getAttribute("aria-expanded");
+      if (isExpanded !== "true") {
+        await hamburger.click();
+      }
+    }
+  }
+);
+
+Then(
+  "the sidebar should be closed",
+  async function (this: AppWorld) {
+    const page = await this.ensurePage();
+    const hamburger = page.getByRole("button", { name: "Toggle sidebar" });
+    const expanded = await hamburger.getAttribute("aria-expanded");
+    expect(expanded).not.toBe("true");
   }
 );
 

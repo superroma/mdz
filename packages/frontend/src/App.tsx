@@ -128,6 +128,11 @@ function AppContent() {
           bg-white
           relative
         `}
+        onClick={() => {
+          if (isSidebarOpen && window.innerWidth < 768) {
+            toggleSidebar();
+          }
+        }}
       >
         <Routes>
           <Route path="/" element={<RedirectToFirstPage />} />

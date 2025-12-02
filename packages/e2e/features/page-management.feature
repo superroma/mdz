@@ -20,3 +20,16 @@ Feature: Page Management
     And I should be navigated to another page
     And the sidebar should no longer show the deleted page
 
+  Scenario: Creating multiple pages focuses title field each time
+    When I click the root "+" button
+    Then a new page named "Untitled" should be created
+    And the title field should be focused with text selected
+    When I edit the title field and press Enter
+    And I click the root "+" button
+    Then a new page named "Untitled" should be created
+    And the title field should be focused with text selected
+    When I edit the title field and press Enter
+    And I click the root "+" button
+    Then a new page named "Untitled" should be created
+    And the title field should be focused with text selected
+

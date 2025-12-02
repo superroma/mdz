@@ -32,6 +32,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
 
   useEffect(() => {
     if (pagePath) {
+      setIsAutoFocus(false);
       loadPages().then(() => {
         return loadPage(pagePath);
       }).then(() => {

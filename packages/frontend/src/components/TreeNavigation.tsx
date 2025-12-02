@@ -31,6 +31,7 @@ function TreeItem({
   const handleAddChild = (e: React.MouseEvent) => {
     e.stopPropagation();
     onCreateChild(page.path);
+    onNavigate?.();
   };
 
   const baseClasses =

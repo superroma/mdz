@@ -56,7 +56,10 @@ export function Sidebar({
             </button>
             <button
               type="button"
-              onClick={onCreateRoot}
+              onClick={() => {
+                onCreateRoot();
+                onClose?.();
+              }}
               className="text-slate-600 hover:text-slate-900 text-xl px-2 py-1 leading-none"
               aria-label={ARIA_LABELS.createNewPage}
               title="Create new page"
