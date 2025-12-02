@@ -237,7 +237,14 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         redirectUrl.searchParams.set("token", jwtToken);
         
         console.log(`[OAuth] Redirecting to: ${redirectUrl.toString()}`);
-        reply.redirect(redirectUrl.toString());
+        reply
+          .setCookie("auth_token", jwtToken, {
+            path: "/",
+            httpOnly: true,
+            sameSite: "lax",
+            secure: process.env.NODE_ENV === "production",
+          })
+          .redirect(redirectUrl.toString());
       } catch (error) {
         console.error(`[OAuth] Error during ${provider.name} callback:`, error);
         app.log.error(error);
@@ -269,7 +276,8 @@ export async function registerAuthRoutes(app: FastifyInstance) {
     }
   });
 
-  app.post("/api/auth/logout", async () => {
+  app.post("/api/auth/logout", async (request, reply) => {
+    reply.clearCookie("auth_token", { path: "/" });
     return { message: "Logged out" };
   });
 }

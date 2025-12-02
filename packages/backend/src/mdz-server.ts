@@ -5,6 +5,7 @@ import { dirname, join } from "node:path";
 import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
+import cookie from "@fastify/cookie";
 import { registerPageRoutes } from "./routes/pages.js";
 import { registerFileRoutes } from "./routes/files.js";
 import { registerAuthRoutes } from "./routes/auth.js";
@@ -59,6 +60,7 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
       fileSize: 10 * 1024 * 1024
     }
   });
+  await app.register(cookie);
   await app.register(cors, {
     origin: true,
     credentials: true
@@ -130,14 +132,21 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
       return;
     }
     
+    let token: string | undefined;
+    
     const authHeader = request.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    } else {
+      token = request.cookies.auth_token;
+    }
+    
+    if (!token) {
       reply.status(401).send({ error: "Unauthorized" });
       return;
     }
     
     try {
-      const token = authHeader.substring(7);
       const decoded = app.jwt.verify(token) as {
         email: string;
         name: string;

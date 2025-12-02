@@ -57,6 +57,13 @@ export async function registerTestAuthPlugin(app: FastifyInstance) {
     const redirectUrl = new URL(`${frontendUrl}/auth/callback`);
     redirectUrl.searchParams.set("token", jwtToken);
     
-    reply.redirect(redirectUrl.toString());
+    reply
+      .setCookie("auth_token", jwtToken, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      })
+      .redirect(redirectUrl.toString());
   });
 }

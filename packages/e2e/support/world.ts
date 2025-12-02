@@ -1,5 +1,6 @@
 import { chromium, type Browser, type BrowserContext, type Page } from "@playwright/test";
 import { setWorldConstructor, World, type IWorldOptions } from "@cucumber/cucumber";
+import { BACKEND_URL } from "./constants";
 
 export type HttpResponse = {
   status: number;
@@ -28,7 +29,6 @@ export class AppWorld extends World {
   }
 
   async ensurePage() {
-    // Reuse shared browser instance
     if (!sharedBrowser) {
       sharedBrowser = await chromium.launch({
         headless: true,
@@ -37,9 +37,20 @@ export class AppWorld extends World {
     }
     this.browser = sharedBrowser;
 
-    // Create new context for each scenario (isolation)
     if (!this.context) {
       this.context = await this.browser.newContext();
+      
+      if (this.authTokenToInject) {
+        const backendUrl = new URL(BACKEND_URL);
+        await this.context.addCookies([{
+          name: "auth_token",
+          value: this.authTokenToInject,
+          domain: backendUrl.hostname,
+          path: "/",
+          httpOnly: true,
+          sameSite: "Lax",
+        }]);
+      }
     }
 
     if (!this.page) {
@@ -77,6 +88,22 @@ export class AppWorld extends World {
   async setAuthToken(token?: string) {
     this.authTokenToInject = token;
     this.authToken = token;
+
+    if (this.context) {
+      const backendUrl = new URL(BACKEND_URL);
+      if (token) {
+        await this.context.addCookies([{
+          name: "auth_token",
+          value: token,
+          domain: backendUrl.hostname,
+          path: "/",
+          httpOnly: true,
+          sameSite: "Lax",
+        }]);
+      } else {
+        await this.context.clearCookies({ name: "auth_token" });
+      }
+    }
 
     if (this.page) {
       try {
