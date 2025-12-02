@@ -31,13 +31,6 @@ export function ContentEditor({
   const parentPathRef = useRef(parentPath);
 
   useEffect(() => {
-    if (parentPath !== parentPathRef.current) {
-      parentPathRef.current = parentPath;
-      setIsEditing(false);
-    }
-  }, [parentPath]);
-
-  useEffect(() => {
     contentRef.current = content;
   }, [content]);
 
@@ -137,10 +130,20 @@ export function ContentEditor({
       // Set new timeout for debounced save
       saveTimeoutRef.current = setTimeout(() => {
         handleSave(newValue);
-      }, 300);
+      }, 5000);
     },
     [handleSave]
   );
+
+  useEffect(() => {
+    if (parentPath !== parentPathRef.current) {
+      parentPathRef.current = parentPath;
+      if (isEditing && value !== contentRef.current) {
+        handleSave(value);
+      }
+      setIsEditing(false);
+    }
+  }, [parentPath, isEditing, value, handleSave]);
 
   const handleCheckboxToggle = useCallback(
     (checkboxIndex: number) => {
@@ -231,6 +234,7 @@ export function ContentEditor({
           <button
             type="button"
             onClick={() => {
+              handleSave(value);
               setDisplayValue(value);
               setIsEditing(false);
             }}
