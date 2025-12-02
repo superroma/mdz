@@ -39,7 +39,8 @@ export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelPro
       onFileChange?.();
     } catch (error) {
       console.error("Failed to upload file:", error);
-      alert("Failed to upload file");
+      const message = error instanceof Error ? error.message : "Failed to upload file";
+      alert(message);
     } finally {
       setIsUploading(false);
       e.target.value = "";

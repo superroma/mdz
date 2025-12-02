@@ -32,8 +32,19 @@ function getAuthHeaders(): HeadersInit {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(error || `HTTP ${response.status}: ${response.statusText}`);
+    const text = await response.text();
+    let message = `HTTP ${response.status}: ${response.statusText}`;
+    try {
+      const json = JSON.parse(text);
+      if (json.error) {
+        message = json.error;
+      }
+    } catch {
+      if (text) {
+        message = text;
+      }
+    }
+    throw new Error(message);
   }
   return response.json();
 }
