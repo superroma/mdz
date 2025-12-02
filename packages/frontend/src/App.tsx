@@ -127,6 +127,8 @@ function AppContent() {
           md:translate-x-0
           bg-white
           relative
+          max-w-full
+          overflow-x-hidden
         `}
         onClick={() => {
           if (isSidebarOpen && window.innerWidth < 768) {

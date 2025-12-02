@@ -56,7 +56,7 @@ export function TitleField({ title, onSave, autoFocus = false }: TitleFieldProps
       onBlur={handleSave}
       onKeyDown={handleKeyDown}
       placeholder="Untitled"
-      className="w-full bg-transparent text-3xl font-bold text-slate-900 border-none outline-none focus:ring-0 px-0"
+      className="w-full min-w-0 bg-transparent text-3xl font-bold text-slate-900 border-none outline-none focus:ring-0 px-0"
       aria-label={ARIA_LABELS.pageTitle}
       disabled={isSaving}
     />

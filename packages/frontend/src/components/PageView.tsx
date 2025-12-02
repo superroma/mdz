@@ -127,24 +127,23 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      {onToggleSidebar && (
-        <button
-          type="button"
-          onClick={onToggleSidebar}
-          className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-100 rounded text-slate-700 hover:bg-slate-200"
-          aria-label={ARIA_LABELS.toggleSidebar}
-          aria-expanded={isSidebarOpen}
-        >
-          ☰
-        </button>
-      )}
-      
-      <header className="flex-shrink-0 px-8 py-4 border-b border-slate-200">
-        <div className="flex items-center gap-4 mb-2">
+      <header className="flex-shrink-0 px-4 md:px-8 py-4 border-b border-slate-200 overflow-hidden">
+        <div className="flex items-center gap-2 md:gap-4 mb-2 min-w-0">
+          {onToggleSidebar && (
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className="md:hidden text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0"
+              aria-label={ARIA_LABELS.toggleSidebar}
+              aria-expanded={isSidebarOpen}
+            >
+              ☰
+            </button>
+          )}
           <button
             type="button"
             onClick={handleBack}
-            className="text-slate-600 hover:text-slate-900 transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0"
             aria-label={ARIA_LABELS.goBack}
             title="Go back"
           >
@@ -155,8 +154,8 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
             <UserMenu />
           </div>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
+        <div className="flex items-center justify-between gap-2 md:gap-4 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <TitleField
               title={currentPage.title}
               onSave={handleTitleSave}
@@ -166,7 +165,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
           <button
             type="button"
             onClick={handleDelete}
-            className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors"
+            className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors flex-shrink-0"
             aria-label={ARIA_LABELS.deletePage}
             title="Delete current page"
           >
@@ -174,7 +173,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
           </button>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto px-8 py-6">
+      <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
         {currentPage && pagePath && (
           <>
             <CustomFieldsPanel
