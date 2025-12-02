@@ -24,11 +24,18 @@ export function ContentEditor({
   const displayUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const saveInProgressRef = useRef(false);
 
-  // Use refs to avoid stale closures in timeout callbacks
   const contentRef = useRef(content);
   const onSaveRef = useRef(onSave);
   const isSavingRef = useRef(isSaving);
   const prevContentRef = useRef(content);
+  const parentPathRef = useRef(parentPath);
+
+  useEffect(() => {
+    if (parentPath !== parentPathRef.current) {
+      parentPathRef.current = parentPath;
+      setIsEditing(false);
+    }
+  }, [parentPath]);
 
   useEffect(() => {
     contentRef.current = content;
@@ -47,24 +54,14 @@ export function ContentEditor({
   }, [isSaving]);
 
   useEffect(() => {
-    // Only sync from prop when content actually changes AND we're not actively editing
-    // This prevents race conditions where autosave responses overwrite local edits
-    // while preserving editor state when switching between edit/preview modes
     if (content !== prevContentRef.current) {
       prevContentRef.current = content;
       if (!isEditing) {
         setValue(content);
         setDisplayValue(content);
-      } else {
-        const hasSignificantChange = Math.abs(content.length - value.length) > 100;
-        if (hasSignificantChange) {
-          setIsEditing(false);
-          setValue(content);
-          setDisplayValue(content);
-        }
       }
     }
-  }, [content, isEditing, value]);
+  }, [content, isEditing]);
 
   // Cleanup: save any pending changes before unmount
   useEffect(() => {
@@ -108,19 +105,14 @@ export function ContentEditor({
     setIsSaving(true);
     try {
       await onSaveRef.current(contentToSave);
-      setValue(contentToSave);
-      setDisplayValue(contentToSave); // Update display value so preview shows latest content
-      // Update contentRef immediately after successful save
       contentRef.current = contentToSave;
-      prevContentRef.current = contentToSave; // Update prev ref to avoid re-syncing on prop update
+      prevContentRef.current = contentToSave;
       
-      // After save completes, check if there's a pending save
       if (pendingValueRef.current && pendingValueRef.current !== contentToSave) {
         const nextContent = pendingValueRef.current;
         pendingValueRef.current = null;
         saveInProgressRef.current = false;
         setIsSaving(false);
-        // Recursively save the pending content
         await handleSave(nextContent);
         return;
       }
@@ -238,7 +230,10 @@ export function ContentEditor({
         <div className="flex justify-between items-center">
           <button
             type="button"
-            onClick={() => setIsEditing(false)}
+            onClick={() => {
+              setDisplayValue(value);
+              setIsEditing(false);
+            }}
             className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 rounded transition-colors"
             aria-label={ARIA_LABELS.previewPageContent}
           >
