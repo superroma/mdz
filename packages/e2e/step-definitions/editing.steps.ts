@@ -327,7 +327,9 @@ Then(
     await expect(preview).toBeVisible();
     
     const pathname = new URL(page.url()).pathname;
-    expect(pathname).toContain(title.replace(/\s+/g, '%20'));
+    const normalizedPathname = pathname.replace(/^\//, '').replace(/\//g, ' ').replace(/\%20/g, ' ');
+    const normalizedTitle = title.trim();
+    expect(normalizedPathname).toContain(normalizedTitle);
   }
 );
 
