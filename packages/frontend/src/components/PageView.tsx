@@ -20,6 +20,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
   const navigate = useNavigate();
   const {
     pages,
+    visiblePages,
     currentPage,
     loadPages,
     loadPage,
@@ -86,10 +87,11 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
 
     await deletePage(pagePath);
 
-    const allPages = pages.filter((p) => p.path !== pagePath);
-    if (allPages.length > 0) {
-      const currentIndex = pages.findIndex((p) => p.path === pagePath);
-      const nextPage = allPages[Math.max(0, currentIndex - 1)];
+    const remainingPages = visiblePages.filter((p) => p.path !== pagePath);
+    
+    if (remainingPages.length > 0) {
+      const currentIndex = visiblePages.findIndex((p) => p.path === pagePath);
+      const nextPage = remainingPages[Math.max(0, currentIndex - 1)] || remainingPages[0];
       navigate(`/${nextPage.path}`);
     } else {
       navigate("/");

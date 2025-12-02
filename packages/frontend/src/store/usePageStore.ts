@@ -2,8 +2,15 @@ import { create } from "zustand";
 import type { Page } from "../types";
 import * as api from "../api/client";
 
+function computeVisiblePages(pages: Page[], showHidden: boolean): Page[] {
+  return showHidden
+    ? pages
+    : pages.filter(page => !page.isHidden && page.isMarkdown !== false);
+}
+
 interface PageStore {
   pages: Page[];
+  visiblePages: Page[];
   currentPage: Page | null;
   isLoading: boolean;
   isSidebarOpen: boolean;
@@ -23,6 +30,7 @@ interface PageStore {
 
 export const usePageStore = create<PageStore>((set, get) => ({
   pages: [],
+  visiblePages: [],
   currentPage: null,
   isLoading: false,
   isSidebarOpen: false,
@@ -33,7 +41,12 @@ export const usePageStore = create<PageStore>((set, get) => ({
     try {
       set({ isLoading: true, error: null });
       const pages = await api.listPages();
-      set({ pages, isLoading: false });
+      const { showHidden } = get();
+      set({ 
+        pages, 
+        visiblePages: computeVisiblePages(pages, showHidden),
+        isLoading: false 
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -151,7 +164,13 @@ export const usePageStore = create<PageStore>((set, get) => ({
   },
 
   toggleShowHidden: () => {
-    set((state) => ({ showHidden: !state.showHidden }));
+    set((state) => {
+      const newShowHidden = !state.showHidden;
+      return { 
+        showHidden: newShowHidden,
+        visiblePages: computeVisiblePages(state.pages, newShowHidden)
+      };
+    });
   },
 
   setError: (error: string | null) => {

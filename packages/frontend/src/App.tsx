@@ -9,7 +9,7 @@ import { LoginPage } from "./components/LoginPage";
 import { AuthCallback } from "./components/AuthCallback";
 
 function RedirectToFirstPage() {
-  const { pages, loadPages, showHidden } = usePageStore();
+  const { visiblePages, loadPages } = usePageStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,17 +17,13 @@ function RedirectToFirstPage() {
   }, [loadPages]);
 
   useEffect(() => {
-    if (pages.length > 0) {
-      const visiblePages = showHidden 
-        ? pages 
-        : pages.filter(page => !page.isHidden && page.isMarkdown !== false);
-      
+    if (visiblePages.length > 0) {
       const firstPage = visiblePages.find((p) => !p.parent) || visiblePages[0];
       if (firstPage) {
         navigate(`/${firstPage.path}`, { replace: true });
       }
     }
-  }, [pages, showHidden, navigate]);
+  }, [visiblePages, navigate]);
 
   return <EmptyState />;
 }
@@ -82,7 +78,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppContent() {
   const {
-    pages,
+    visiblePages,
     isSidebarOpen,
     showHidden,
     loadPages,
@@ -109,7 +105,7 @@ function AppContent() {
   return (
     <div className="relative flex h-screen bg-white text-slate-900 overflow-hidden">
       <Sidebar
-        pages={pages}
+        visiblePages={visiblePages}
         onCreateRoot={handleCreateRoot}
         onCreateChild={handleCreateChild}
         isOpen={isSidebarOpen}

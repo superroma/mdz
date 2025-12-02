@@ -9,7 +9,7 @@ function renderWithRouter(ui: React.ReactElement) {
   return render(<BrowserRouter>{ui}</BrowserRouter>);
 }
 
-const mockPages: Page[] = [
+const mockVisiblePages: Page[] = [
   {
     path: "Welcome",
     title: "Welcome",
@@ -28,6 +28,10 @@ const mockPages: Page[] = [
     isHidden: false,
     isMarkdown: true,
   },
+];
+
+const mockAllPages: Page[] = [
+  ...mockVisiblePages,
   {
     path: ".hidden-page",
     title: ".hidden-page",
@@ -54,7 +58,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     expect(screen.getByRole("heading", { name: "Pages" })).toBeInTheDocument();
@@ -65,7 +69,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     expect(screen.getByRole("button", { name: "Create new page" })).toBeInTheDocument();
@@ -77,7 +81,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     const createButton = screen.getByRole("button", { name: "Create new page" });
@@ -91,7 +95,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
@@ -103,7 +107,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     const { container } = renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     const aside = container.querySelector("aside");
@@ -115,7 +119,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     const { container } = renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={false} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={false} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     const aside = container.querySelector("aside");
@@ -127,7 +131,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     const { container } = renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     const aside = container.querySelector("aside");
@@ -139,7 +143,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     const addChildButton = screen.getByRole("button", { name: /Add child page to Welcome/i });
@@ -151,7 +155,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     expect(screen.getByRole("button", { name: "Toggle hidden files" })).toBeInTheDocument();
@@ -163,7 +167,7 @@ describe("Sidebar", () => {
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     const toggleButton = screen.getByRole("button", { name: "Toggle hidden files" });
@@ -172,51 +176,29 @@ describe("Sidebar", () => {
     expect(onToggleShowHidden).toHaveBeenCalledTimes(1);
   });
 
-  it("filters out hidden pages when showHidden is false", () => {
+  it("renders only visible pages (hidden pages filtered by store)", () => {
     const onCreateRoot = vi.fn();
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockVisiblePages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
     );
     
     expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Navigate to \.hidden-page/i })).not.toBeInTheDocument();
-  });
-
-  it("filters out non-markdown files when showHidden is false", () => {
-    const onCreateRoot = vi.fn();
-    const onCreateChild = vi.fn();
-    const onToggleShowHidden = vi.fn();
-    renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={false} onToggleShowHidden={onToggleShowHidden} />
-    );
-    
-    expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Navigate to image\.png/i })).not.toBeInTheDocument();
   });
 
-  it("shows hidden pages when showHidden is true", () => {
+  it("renders all pages when visiblePages includes hidden items", () => {
     const onCreateRoot = vi.fn();
     const onCreateChild = vi.fn();
     const onToggleShowHidden = vi.fn();
     renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={true} onToggleShowHidden={onToggleShowHidden} />
+      <Sidebar visiblePages={mockAllPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={true} onToggleShowHidden={onToggleShowHidden} />
     );
     
     expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Navigate to \.hidden-page/i })).toBeInTheDocument();
-  });
-
-  it("shows non-markdown files when showHidden is true", () => {
-    const onCreateRoot = vi.fn();
-    const onCreateChild = vi.fn();
-    const onToggleShowHidden = vi.fn();
-    renderWithRouter(
-      <Sidebar pages={mockPages} onCreateRoot={onCreateRoot} onCreateChild={onCreateChild} isOpen={true} showHidden={true} onToggleShowHidden={onToggleShowHidden} />
-    );
-    
-    expect(screen.getByRole("button", { name: /Navigate to Welcome/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Navigate to image\.png/i })).toBeInTheDocument();
   });
 });

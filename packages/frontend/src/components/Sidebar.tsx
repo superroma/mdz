@@ -3,7 +3,7 @@ import type { Page } from "../types";
 import { ARIA_LABELS } from "../constants/aria-labels";
 
 interface SidebarProps {
-  pages: Page[];
+  visiblePages: Page[];
   onCreateRoot: () => void;
   onCreateChild: (parent: string) => void;
   isOpen: boolean;
@@ -13,7 +13,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({
-  pages,
+  visiblePages,
   onCreateRoot,
   onCreateChild,
   isOpen,
@@ -21,10 +21,6 @@ export function Sidebar({
   showHidden,
   onToggleShowHidden,
 }: SidebarProps) {
-  const filteredPages = showHidden 
-    ? pages 
-    : pages.filter(page => !page.isHidden && page.isMarkdown !== false);
-
   return (
     <>
       <aside
@@ -69,7 +65,7 @@ export function Sidebar({
           </div>
         </div>
         <TreeNavigation 
-          pages={filteredPages} 
+          pages={visiblePages} 
           onCreateChild={onCreateChild}
           onNavigate={onClose}
         />

@@ -6,6 +6,7 @@ import { ARIA_LABELS } from "../constants/aria-labels";
 
 const mockStoreState = {
   pages: [] as any[],
+  visiblePages: [] as any[],
   currentPage: null as any,
   isLoading: false,
   isSidebarOpen: false,
@@ -14,9 +15,9 @@ const mockStoreState = {
   loadPages: vi.fn().mockResolvedValue(undefined),
   loadPage: vi.fn().mockResolvedValue(undefined),
   createPage: vi.fn(),
-  updatePage: vi.fn(),
-  renamePage: vi.fn(),
-  deletePage: vi.fn(),
+  updatePage: vi.fn().mockResolvedValue(undefined),
+  renamePage: vi.fn().mockResolvedValue(undefined),
+  deletePage: vi.fn().mockResolvedValue(undefined),
   toggleSidebar: vi.fn(),
   toggleShowHidden: vi.fn(),
   setError: vi.fn(),
@@ -52,11 +53,14 @@ function renderWithRouter(pagePath: string) {
 
 function resetMockStore() {
   mockStoreState.pages = [];
+  mockStoreState.visiblePages = [];
   mockStoreState.currentPage = null;
   mockStoreState.isLoading = false;
+  mockStoreState.showHidden = false;
   mockStoreState.error = null;
   mockStoreState.loadPages.mockClear();
   mockStoreState.loadPage.mockClear();
+  mockStoreState.deletePage.mockClear();
 }
 
 describe("PageView", () => {

@@ -10,9 +10,11 @@ describe("usePageStore", () => {
     vi.clearAllMocks();
     usePageStore.setState({
       pages: [],
+      visiblePages: [],
       currentPage: null,
       isLoading: false,
       isSidebarOpen: false,
+      showHidden: false,
       error: null,
     });
   });
