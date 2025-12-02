@@ -117,13 +117,10 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
     );
   }
 
-  if (!currentPage) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <p className="text-slate-600">Loading...</p>
-      </div>
-    );
-  }
+  const isStaleOrMissing = !currentPage || currentPage.path !== pagePath;
+  const pageTitle = isStaleOrMissing 
+    ? (pagePath?.split("/").pop() || "") 
+    : currentPage.title;
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
@@ -157,7 +154,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
         <div className="flex items-center justify-between gap-2 md:gap-4 min-w-0">
           <div className="flex-1 min-w-0 overflow-hidden">
             <TitleField
-              title={currentPage.title}
+              title={pageTitle}
               onSave={handleTitleSave}
               autoFocus={isAutoFocus}
             />
@@ -165,7 +162,8 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
           <button
             type="button"
             onClick={handleDelete}
-            className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors flex-shrink-0"
+            disabled={isStaleOrMissing}
+            className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors flex-shrink-0 disabled:opacity-50"
             aria-label={ARIA_LABELS.deletePage}
             title="Delete current page"
           >
@@ -174,21 +172,29 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
         </div>
       </header>
       <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
-        {currentPage && pagePath && (
+        {isStaleOrMissing ? (
+          <div className="flex items-center justify-center py-12">
+            <p className="text-slate-600">Loading...</p>
+          </div>
+        ) : (
           <>
-            <CustomFieldsPanel
-              page={currentPage}
-              pages={pages}
-              onFieldChange={handleFieldChange}
+            {pagePath && (
+              <>
+                <CustomFieldsPanel
+                  page={currentPage}
+                  pages={pages}
+                  onFieldChange={handleFieldChange}
+                />
+                <AttachmentsPanel pagePath={pagePath} />
+              </>
+            )}
+            <ContentEditor
+              content={serializeFrontMatter(currentPage.frontMatter, currentPage.content)}
+              onSave={handleContentSave}
+              parentPath={pagePath}
             />
-            <AttachmentsPanel pagePath={pagePath} />
           </>
         )}
-        <ContentEditor
-          content={serializeFrontMatter(currentPage.frontMatter, currentPage.content)}
-          onSave={handleContentSave}
-          parentPath={pagePath}
-        />
       </main>
     </div>
   );
