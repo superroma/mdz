@@ -129,6 +129,15 @@ const ALLOWED_FILE_EXTENSIONS = new Set([
   // Other document formats
   ".rtf",
   ".csv",
+  ".cdr",
+  ".ai",
+  ".eps",
+  ".psd",
+  ".svg",
+  ".webp",
+  ".png",
+  ".jpg",
+  ".jpeg",
   // Archives (read-only, not extracted)
   ".zip",
   ".tar",
