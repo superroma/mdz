@@ -54,7 +54,11 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
     }
   });
 
-  await app.register(multipart);
+  await app.register(multipart, {
+    limits: {
+      fileSize: 10 * 1024 * 1024
+    }
+  });
   await app.register(cors, {
     origin: true,
     credentials: true
