@@ -259,7 +259,7 @@ test("files are served with correct MIME type and inline disposition", async () 
   });
   expect(txtResponse.statusCode).toBe(200);
   expect(txtResponse.headers["content-type"]).toBe("text/plain");
-  expect(txtResponse.headers["content-disposition"]).toBe('inline; filename="test.txt"');
+  expect(txtResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''test.txt");
 
   // Test image file
   const imgResponse = await app.inject({
@@ -268,7 +268,7 @@ test("files are served with correct MIME type and inline disposition", async () 
   });
   expect(imgResponse.statusCode).toBe(200);
   expect(imgResponse.headers["content-type"]).toBe("image/png");
-  expect(imgResponse.headers["content-disposition"]).toBe('inline; filename="image.png"');
+  expect(imgResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''image.png");
 
   // Test PDF file
   const pdfResponse = await app.inject({
@@ -277,7 +277,7 @@ test("files are served with correct MIME type and inline disposition", async () 
   });
   expect(pdfResponse.statusCode).toBe(200);
   expect(pdfResponse.headers["content-type"]).toBe("application/pdf");
-  expect(pdfResponse.headers["content-disposition"]).toBe('inline; filename="document.pdf"');
+  expect(pdfResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''document.pdf");
 });
 
 test("office file formats are allowed and served with correct MIME types", async () => {
@@ -296,7 +296,7 @@ test("office file formats are allowed and served with correct MIME types", async
   });
   expect(docxResponse.statusCode).toBe(200);
   expect(docxResponse.headers["content-type"]).toBe("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
-  expect(docxResponse.headers["content-disposition"]).toBe('inline; filename="document.docx"');
+  expect(docxResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''document.docx");
 
   const xlsxResponse = await app.inject({
     method: "GET",
@@ -304,7 +304,7 @@ test("office file formats are allowed and served with correct MIME types", async
   });
   expect(xlsxResponse.statusCode).toBe(200);
   expect(xlsxResponse.headers["content-type"]).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-  expect(xlsxResponse.headers["content-disposition"]).toBe('inline; filename="spreadsheet.xlsx"');
+  expect(xlsxResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''spreadsheet.xlsx");
 
   const pptxResponse = await app.inject({
     method: "GET",
@@ -312,7 +312,7 @@ test("office file formats are allowed and served with correct MIME types", async
   });
   expect(pptxResponse.statusCode).toBe(200);
   expect(pptxResponse.headers["content-type"]).toBe("application/vnd.openxmlformats-officedocument.presentationml.presentation");
-  expect(pptxResponse.headers["content-disposition"]).toBe('inline; filename="presentation.pptx"');
+  expect(pptxResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''presentation.pptx");
 
   // Test OpenDocument formats
   const odtResponse = await app.inject({
@@ -321,7 +321,7 @@ test("office file formats are allowed and served with correct MIME types", async
   });
   expect(odtResponse.statusCode).toBe(200);
   expect(odtResponse.headers["content-type"]).toBe("application/vnd.oasis.opendocument.text");
-  expect(odtResponse.headers["content-disposition"]).toBe('inline; filename="document.odt"');
+  expect(odtResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''document.odt");
 
   // Test CSV
   const csvResponse = await app.inject({
@@ -330,7 +330,7 @@ test("office file formats are allowed and served with correct MIME types", async
   });
   expect(csvResponse.statusCode).toBe(200);
   expect(csvResponse.headers["content-type"]).toBe("text/csv");
-  expect(csvResponse.headers["content-disposition"]).toBe('inline; filename="data.csv"');
+  expect(csvResponse.headers["content-disposition"]).toBe("inline; filename*=UTF-8''data.csv");
 });
 
 test("files with disallowed extensions are rejected", async () => {
@@ -539,5 +539,37 @@ test("validation error returns 400", async () => {
 
   expect(response.statusCode).toBe(400);
   expect(response.json()).toHaveProperty("error");
+});
+
+test("file download with Cyrillic filename", async () => {
+  mkdirSync(join(testDir, "Docs"), { recursive: true });
+  writeFileSync(join(testDir, "Docs", "README.md"), "# Docs");
+  writeFileSync(join(testDir, "Docs", "ава_3.png"), "fake image data");
+
+  const response = await app.inject({
+    method: "GET",
+    url: "/api/files/Docs/ава_3.png"
+  });
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body.toString()).toBe("fake image data");
+  expect(response.headers["content-disposition"]).toBe("inline; filename*=UTF-8''%D0%B0%D0%B2%D0%B0_3.png");
+});
+
+test("file download with URL-encoded Cyrillic filename", async () => {
+  mkdirSync(join(testDir, "Docs"), { recursive: true });
+  writeFileSync(join(testDir, "Docs", "README.md"), "# Docs");
+  writeFileSync(join(testDir, "Docs", "ава_3.png"), "fake image data");
+
+  const encodedFilename = encodeURIComponent("ава_3.png");
+
+  const response = await app.inject({
+    method: "GET",
+    url: `/api/files/Docs/${encodedFilename}`
+  });
+
+  expect(response.statusCode).toBe(200);
+  expect(response.body.toString()).toBe("fake image data");
+  expect(response.headers["content-disposition"]).toBe("inline; filename*=UTF-8''%D0%B0%D0%B2%D0%B0_3.png");
 });
 

@@ -98,9 +98,13 @@ export async function registerFileRoutes(app: FastifyInstance) {
     const filePath = join(pagesRoot, pagePath.replace(/\.md$/, ""), lastSegment);
     const stats = statSync(filePath);
     const mimeType = getMimeType(lastSegment);
+    
+    const encodedFilename = encodeURIComponent(lastSegment).replace(/'/g, "%27");
+    const contentDisposition = `inline; filename*=UTF-8''${encodedFilename}`;
+    
     return reply
       .header("Content-Length", stats.size)
-      .header("Content-Disposition", `inline; filename="${lastSegment}"`)
+      .header("Content-Disposition", contentDisposition)
       .type(mimeType)
       .send(fileStream);
   });
