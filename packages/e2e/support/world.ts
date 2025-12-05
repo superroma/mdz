@@ -23,6 +23,7 @@ export class AppWorld extends World {
   authToken?: string;
   pendingRedirectPath?: string;
   authTokenToInject?: string;
+  hiddenPageNotDraggable?: boolean;
 
   constructor(options: IWorldOptions) {
     super(options);

@@ -189,3 +189,15 @@ export async function logout(): Promise<void> {
   removeAuthToken();
 }
 
+export async function savePageOrder(parent: string | null, order: string[]): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/api/pages-order`, {
+    method: "PUT",
+    headers: { ...getAuthHeaders(), "Content-Type": "application/json" },
+    body: JSON.stringify({ parent, order }),
+  });
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(error || `HTTP ${response.status}: ${response.statusText}`);
+  }
+}
+

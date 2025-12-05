@@ -9,5 +9,3 @@ users:
     groups: [writers]
   reader@test.local:
     groups: []
-  roman.eremin@gmail.com:
-    groups: [admins]

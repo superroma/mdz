@@ -11,6 +11,7 @@ import {
 } from "./folderization.js";
 import { NotFoundError, ValidationError } from "../errors.js";
 import { loadUsersConfig, checkPageAccess } from "./user-access.js";
+import { applyOrdering } from "./page-order.js";
 
 export interface Page {
   path: string;
@@ -110,7 +111,7 @@ export function listPages(userGroups: string[] = []): Page[] {
     }
   }
   
-  return pages;
+  return applyOrdering(pages);
 }
 
 function readPageInternal(pagePath: string, allPaths?: string[]): Page | null {

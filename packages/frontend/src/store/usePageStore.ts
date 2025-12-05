@@ -23,6 +23,7 @@ interface PageStore {
   updatePage: (path: string, content: string, frontMatter?: Record<string, unknown>) => Promise<void>;
   renamePage: (oldPath: string, newPath: string) => Promise<void>;
   deletePage: (path: string) => Promise<void>;
+  reorderPages: (parent: string | null, order: string[]) => Promise<void>;
   toggleSidebar: () => void;
   toggleShowHidden: () => void;
   setError: (error: string | null) => void;
@@ -155,6 +156,16 @@ export const usePageStore = create<PageStore>((set, get) => ({
       await get().loadPages();
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
+      throw error;
+    }
+  },
+
+  reorderPages: async (parent: string | null, order: string[]) => {
+    try {
+      await api.savePageOrder(parent, order);
+      await get().loadPages();
+    } catch (error) {
+      set({ error: (error as Error).message });
       throw error;
     }
   },

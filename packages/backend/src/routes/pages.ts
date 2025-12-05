@@ -3,6 +3,7 @@ import { listPages, readPage, createPage, updatePage, renamePage, deletePage } f
 import { validatePathOrThrow } from "../storage/path-validator.js";
 import { NotFoundError, ValidationError } from "../errors.js";
 import { loadUsersConfig, checkPageAccess } from "../storage/user-access.js";
+import { cleanAndSaveOrder } from "../storage/page-order.js";
 
 export async function registerPageRoutes(app: FastifyInstance) {
   app.get("/api/pages", async (request) => {
@@ -110,6 +111,33 @@ export async function registerPageRoutes(app: FastifyInstance) {
     }
     
     deletePage(path);
+  });
+
+  app.put("/api/pages-order", async (request) => {
+    const body = request.body as { parent: string | null; order: string[] };
+    const userGroups = request.currentUser?.groups || [];
+    
+    if (!Array.isArray(body.order)) {
+      throw new ValidationError("order must be an array");
+    }
+    
+    const config = loadUsersConfig();
+    
+    if (body.parent) {
+      validatePathOrThrow(body.parent);
+      if (!checkPageAccess(userGroups, body.parent, "write", config)) {
+        throw new NotFoundError("Page not found");
+      }
+    } else {
+      if (userGroups.length === 0 || (!userGroups.includes("admins") && !config.defaultAccess.write.some(g => userGroups.includes(g)))) {
+        throw new NotFoundError("Access denied");
+      }
+    }
+    
+    const allPages = listPages(userGroups);
+    cleanAndSaveOrder(body.parent, body.order, allPages);
+    
+    return { success: true };
   });
 }
 
