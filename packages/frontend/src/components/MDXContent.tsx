@@ -362,7 +362,10 @@ export function MDXContent({
         const compiled = await compile(sanitizedContent, {
           outputFormat: "function-body",
           development: false,
-          remarkPlugins: [(await import("remark-gfm")).default],
+          remarkPlugins: [
+            (await import("remark-gfm")).default,
+            (await import("remark-gemoji")).default,
+          ],
           rehypePlugins: [
             [
               (await import("rehype-raw")).default,

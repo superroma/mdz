@@ -264,6 +264,44 @@ describe("MDXContent - Link Resolution", () => {
   });
 });
 
+describe("MDXContent - Emoji Rendering", () => {
+  it("renders emoji shortcodes as actual emoji", async () => {
+    const content = "Emoji: :rocket: :star: :smile:";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const text = screen.getByText(/🚀/);
+      expect(text).toBeInTheDocument();
+      expect(text.textContent).toContain("🚀");
+      expect(text.textContent).toContain("⭐");
+      expect(text.textContent).toContain("😄");
+    });
+  });
+
+  it("renders emoji shortcodes in headings", async () => {
+    const content = "# Hello :wave:";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const heading = screen.getByRole("heading", { level: 1 });
+      expect(heading).toBeInTheDocument();
+      expect(heading.textContent).toContain("👋");
+    });
+  });
+
+  it("renders emoji shortcodes mixed with text", async () => {
+    const content = "I :heart: coding!";
+    renderWithRouter(<MDXContent content={content} parentPath="Test" />);
+    
+    await waitFor(() => {
+      const text = screen.getByText(/❤️/);
+      expect(text).toBeInTheDocument();
+      expect(text.textContent).toContain("I");
+      expect(text.textContent).toContain("coding!");
+    });
+  });
+});
+
 describe("MDXContent - Markdown Formatting", () => {
   it("renders headers (H1, H2) correctly", async () => {
     const content = `# Heading 1\n## Heading 2\n### Heading 3`;
