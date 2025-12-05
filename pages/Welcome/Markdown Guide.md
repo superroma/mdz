@@ -64,6 +64,14 @@ function hello() {
 | Data 1   | Data 2   | Data 3   |
 | Data 4   | Data 5   | Data 6   |
 
+## Emoji
+
+Emoji: :rocket: :star: :smile:
+
+```md
+Emoji: :rocket: :star: :smile:
+```
+
 ## MDX Components
 
 MDX allows you to use React components in markdown. View components like `<BoardView>`, `<GridView>`, `<CalendarView>`, and `<ListView>` can be used to display child pages in various formats.
