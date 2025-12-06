@@ -1,44 +1,74 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import yaml from "js-yaml";
+import { join } from "node:path";
 import { getPagesRoot } from "./path-validator.js";
+import { parseFrontMatter, serializeFrontMatter } from "./front-matter.js";
 import type { Page } from "./page-storage.js";
 
-const ORDER_FILENAME = ".pages.yaml";
-
-interface PageOrderConfig {
-  order: string[];
-}
-
-export function getOrderFilePath(parentPath: string | null): string {
+function getParentFilePath(parentPath: string | null): string | null {
   const pagesRoot = getPagesRoot();
+  
   if (!parentPath) {
-    return join(pagesRoot, ORDER_FILENAME);
+    return join(pagesRoot, "README.md");
   }
-  return join(pagesRoot, parentPath, ORDER_FILENAME);
+  
+  const folderReadme = join(pagesRoot, parentPath, "README.md");
+  if (existsSync(folderReadme)) {
+    return folderReadme;
+  }
+  
+  const singleFile = join(pagesRoot, `${parentPath}.md`);
+  if (existsSync(singleFile)) {
+    return singleFile;
+  }
+  
+  return null;
 }
 
 export function loadPageOrder(parentPath: string | null): string[] {
-  const orderFile = getOrderFilePath(parentPath);
-
-  if (!existsSync(orderFile)) {
+  const filePath = getParentFilePath(parentPath);
+  
+  if (!filePath || !existsSync(filePath)) {
     return [];
   }
 
   try {
-    const content = readFileSync(orderFile, "utf-8");
-    const config = yaml.load(content) as PageOrderConfig | null;
-    return config?.order ?? [];
+    const content = readFileSync(filePath, "utf-8");
+    const parsed = parseFrontMatter(content);
+    const children = parsed.frontMatter.__children;
+    
+    if (Array.isArray(children)) {
+      return children.filter(c => typeof c === "string");
+    }
+    return [];
   } catch {
     return [];
   }
 }
 
 export function savePageOrder(parentPath: string | null, order: string[]): void {
-  const orderFile = getOrderFilePath(parentPath);
-  const config: PageOrderConfig = { order };
-  const content = yaml.dump(config);
-  writeFileSync(orderFile, content, "utf-8");
+  const pagesRoot = getPagesRoot();
+  let filePath = getParentFilePath(parentPath);
+  
+  if (!filePath) {
+    if (!parentPath) {
+      filePath = join(pagesRoot, "README.md");
+      writeFileSync(filePath, "", "utf-8");
+    } else {
+      return;
+    }
+  }
+
+  const content = existsSync(filePath) ? readFileSync(filePath, "utf-8") : "";
+  const parsed = parseFrontMatter(content);
+  
+  if (order.length > 0) {
+    parsed.frontMatter.__children = order;
+  } else {
+    delete parsed.frontMatter.__children;
+  }
+  
+  const newContent = serializeFrontMatter(parsed.frontMatter, parsed.content);
+  writeFileSync(filePath, newContent, "utf-8");
 }
 
 function isHiddenPage(page: Page): boolean {

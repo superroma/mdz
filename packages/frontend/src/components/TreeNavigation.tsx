@@ -81,7 +81,7 @@ function TreeItem({
   };
 
   const baseClasses =
-    "group flex items-center gap-2 py-1.5 px-3 transition-colors";
+    "group flex items-center gap-2 py-1.5 px-3 transition-colors cursor-default";
   const selectedClasses = isSelected
     ? "bg-slate-200 border-l-2 border-sky-500"
     : isMarkdown 
@@ -113,7 +113,7 @@ function TreeItem({
           role="button"
           tabIndex={0}
           className={`flex-1 text-left text-sm truncate ${
-            isMarkdown ? "cursor-pointer" : "cursor-default text-slate-500 italic"
+            isMarkdown ? "" : "text-slate-500 italic"
           }`}
           onClick={handleClick}
           onKeyDown={(e) => e.key === "Enter" && handleClick()}

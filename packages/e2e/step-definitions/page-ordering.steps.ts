@@ -21,13 +21,15 @@ Given(
   "a .pages.yaml file exists with custom order",
   async function (this: AppWorld) {
     const testDir = getTestPagesDir();
-    const orderFile = join(testDir, ".pages.yaml");
-    const orderContent = `order:
+    const readmeFile = join(testDir, "README.md");
+    const content = `---
+__children:
   - Team
   - Docs
   - Welcome
+---
 `;
-    writeFileSync(orderFile, orderContent, "utf-8");
+    writeFileSync(readmeFile, content, "utf-8");
   }
 );
 
@@ -35,11 +37,13 @@ Given(
   "a .pages.yaml file with partial order",
   async function (this: AppWorld) {
     const testDir = getTestPagesDir();
-    const orderFile = join(testDir, ".pages.yaml");
-    const orderContent = `order:
+    const readmeFile = join(testDir, "README.md");
+    const content = `---
+__children:
   - Team
+---
 `;
-    writeFileSync(orderFile, orderContent, "utf-8");
+    writeFileSync(readmeFile, content, "utf-8");
   }
 );
 
@@ -148,12 +152,15 @@ Then(
   "the page order should be updated",
   async function (this: AppWorld) {
     const testDir = getTestPagesDir();
-    const orderFile = join(testDir, ".pages.yaml");
+    const readmeFile = join(testDir, "README.md");
     
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const exists = existsSync(orderFile);
+    const exists = existsSync(readmeFile);
     expect(exists).toBe(true);
+    
+    const content = readFileSync(readmeFile, "utf-8");
+    expect(content).toContain("__children:");
   }
 );
 

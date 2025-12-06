@@ -45,6 +45,11 @@ function getAllPagePathsRecursive(dir: string, basePath: string = ""): string[] 
     const fullPath = join(dir, entry.name);
     const relativePath = basePath ? `${basePath}/${entry.name}` : entry.name;
     
+    // Skip root README.md - it's used for root page ordering/content, not as a page itself
+    if (entry.name === "README.md" && basePath === "") {
+      continue;
+    }
+    
     if (entry.isDirectory()) {
       const readmePath = join(fullPath, "README.md");
       if (existsSync(readmePath)) {
