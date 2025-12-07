@@ -158,7 +158,9 @@ export interface AuthProvidersResponse {
 
 export interface User {
   email: string;
-  name: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
   provider: string;
   groups: string[];
 }

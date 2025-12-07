@@ -3,12 +3,20 @@ import oauthPlugin from "@fastify/oauth2";
 import jwtPlugin from "@fastify/jwt";
 import { loadUsersConfig, calculateUserGroups } from "../storage/user-access.js";
 
+interface UserProfile {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  avatar?: string;
+}
+
 const OAUTH_PROVIDERS: Record<string, {
   envPrefix: string;
   auth: typeof oauthPlugin.GOOGLE_CONFIGURATION | { authorizeHost: string; authorizePath: string; tokenHost: string; tokenPath: string };
   scope: string[];
   userInfoURL: string;
   callbackUriParams?: Record<string, string>;
+  extractProfile: (data: any) => UserProfile;
 }> = {
   google: {
     envPrefix: "GOOGLE",
@@ -16,12 +24,27 @@ const OAUTH_PROVIDERS: Record<string, {
     scope: ["openid", "profile", "email"],
     userInfoURL: "https://www.googleapis.com/oauth2/v2/userinfo",
     callbackUriParams: { prompt: "select_account" },
+    extractProfile: (data) => ({
+      email: data.email,
+      firstName: data.given_name,
+      lastName: data.family_name,
+      avatar: data.picture,
+    }),
   },
   github: {
     envPrefix: "GITHUB",
     auth: oauthPlugin.GITHUB_CONFIGURATION,
-    scope: ["user:email"],
+    scope: ["user:email", "read:user"],
     userInfoURL: "https://api.github.com/user",
+    extractProfile: (data) => {
+      const [firstName, ...rest] = (data.name || data.login || "").split(" ");
+      return {
+        email: data.email || data.login,
+        firstName,
+        lastName: rest.join(" ") || undefined,
+        avatar: data.avatar_url,
+      };
+    },
   },
   yandex: {
     envPrefix: "YANDEX",
@@ -31,8 +54,16 @@ const OAUTH_PROVIDERS: Record<string, {
       tokenHost: "https://oauth.yandex.ru",
       tokenPath: "/token",
     },
-    scope: ["login:email", "login:info"],
+    scope: ["login:email", "login:info", "login:avatar"],
     userInfoURL: "https://login.yandex.ru/info",
+    extractProfile: (data) => ({
+      email: data.default_email || data.emails?.[0],
+      firstName: data.first_name,
+      lastName: data.last_name,
+      avatar: data.default_avatar_id 
+        ? `https://avatars.yandex.net/get-yapic/${data.default_avatar_id}/islands-200`
+        : undefined,
+    }),
   },
 };
 
@@ -44,6 +75,7 @@ interface ProviderConfig {
   scope: string[];
   userInfoURL: string;
   callbackUriParams?: Record<string, string>;
+  extractProfile: (data: any) => UserProfile;
 }
 
 function getProviderConfigs(): ProviderConfig[] {
@@ -61,6 +93,7 @@ function getProviderConfigs(): ProviderConfig[] {
         scope: config.scope,
         userInfoURL: config.userInfoURL,
         callbackUriParams: config.callbackUriParams,
+        extractProfile: config.extractProfile,
       });
     }
   }
@@ -68,10 +101,7 @@ function getProviderConfigs(): ProviderConfig[] {
   return providers;
 }
 
-async function fetchUserInfo(
-  userInfoURL: string,
-  accessToken: string
-): Promise<{ email?: string; name?: string; login?: string; default_email?: string }> {
+async function fetchUserInfo(userInfoURL: string, accessToken: string): Promise<any> {
   console.log(`[OAuth] Fetching user info with token: ${accessToken.substring(0, 20)}...`);
   const response = await fetch(userInfoURL, {
     headers: {
@@ -85,9 +115,7 @@ async function fetchUserInfo(
     throw new Error(`Failed to fetch user info: ${response.statusText}`);
   }
 
-  const data = await response.json();
-  console.log(`[OAuth] User info fetched successfully`);
-  return data;
+  return response.json();
 }
 
 function getBackendUrl(request?: any): string {
@@ -189,20 +217,21 @@ export async function registerAuthRoutes(app: FastifyInstance) {
         console.log(`[OAuth] Access token received (expires in ${token.expires_in}s)`);
 
         console.log(`[OAuth] Fetching user info from: ${provider.userInfoURL}`);
-        const userInfo = await fetchUserInfo(provider.userInfoURL, token.access_token);
-        console.log(`[OAuth] User info received:`, userInfo);
+        const rawUserInfo = await fetchUserInfo(provider.userInfoURL, token.access_token);
+        console.log(`[OAuth] Raw user info received:`, rawUserInfo);
 
-        const email = userInfo.email || userInfo.default_email || userInfo.login || "unknown@example.com";
-        const name = userInfo.name || email.split("@")[0];
-        console.log(`[OAuth] Creating JWT for user: ${email}`);
+        const profile = provider.extractProfile(rawUserInfo);
+        console.log(`[OAuth] Extracted profile:`, profile);
 
         const usersConfig = loadUsersConfig();
-        const groups = calculateUserGroups(email, usersConfig);
+        const groups = calculateUserGroups(profile.email, usersConfig);
         console.log(`[OAuth] User groups: ${groups.join(", ")}`);
 
         const jwtToken = app.jwt.sign({
-          email,
-          name,
+          email: profile.email,
+          firstName: profile.firstName,
+          lastName: profile.lastName,
+          avatar: profile.avatar,
           provider: provider.name,
           groups,
         });
@@ -238,11 +267,20 @@ export async function registerAuthRoutes(app: FastifyInstance) {
 
       const token = authHeader.substring(7);
       const decoded = app.jwt.verify(token);
-      const user = decoded as { email: string; name: string; provider: string; groups?: string[] };
+      const user = decoded as {
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        avatar?: string;
+        provider: string;
+        groups?: string[];
+      };
       
       return {
         email: user.email,
-        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
         provider: user.provider,
         groups: user.groups || [],
       };
