@@ -37,7 +37,9 @@ export function useChildPages(parentPath: string | undefined, refreshTrigger?: n
         } else {
           setSchemaFields([]);
         }
-        const children = allPages.filter((p) => p.parent === parentPath);
+        const children = allPages.filter(
+          (p) => p.parent === parentPath && !p.isHidden && p.isMarkdown !== false
+        );
         setChildPages(children);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load pages");
