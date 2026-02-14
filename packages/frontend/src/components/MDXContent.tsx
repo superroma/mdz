@@ -233,6 +233,7 @@ const createMdxComponents = (
           {...props}
           type="checkbox"
           disabled={true}
+          className="cursor-default"
         />
       );
     }
