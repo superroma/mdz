@@ -130,7 +130,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="md:hidden fixed top-4 left-4 z-50 p-2 bg-slate-100 rounded text-slate-700 hover:bg-slate-200"
+          className="md:hidden fixed top-4 left-4 z-50 w-10 h-10 flex items-center justify-center bg-slate-100 rounded text-xl text-slate-700 hover:bg-slate-200"
           aria-label="Toggle sidebar"
           aria-expanded={isSidebarOpen}
           data-testid="toggle-sidebar-button"
