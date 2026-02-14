@@ -33,7 +33,7 @@ export function Breadcrumbs({ pages, currentPath }: BreadcrumbsProps) {
   const breadcrumbs = buildBreadcrumbPath(currentPath);
 
   return (
-    <nav className="flex items-center gap-2 text-sm text-slate-600" aria-label={ARIA_LABELS.breadcrumbNavigation}>
+    <nav className="flex items-center gap-2 text-base text-slate-600" aria-label={ARIA_LABELS.breadcrumbNavigation}>
       {breadcrumbs.map((page, index) => (
         <div key={page.path} className="flex items-center gap-2">
           {index > 0 && <span aria-hidden="true">/</span>}

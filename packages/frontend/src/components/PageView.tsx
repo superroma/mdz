@@ -133,7 +133,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
             <button
               type="button"
               onClick={onToggleSidebar}
-              className="md:hidden text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0"
+              className="md:hidden w-10 h-10 flex items-center justify-center text-xl text-slate-600 hover:text-slate-900 transition-colors flex-shrink-0"
               aria-label={ARIA_LABELS.toggleSidebar}
               aria-expanded={isSidebarOpen}
             >
