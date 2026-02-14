@@ -22,7 +22,11 @@ export async function setupPage(world: AppWorld, path = ""): Promise<Page> {
  * Waits for the page to load by checking for the title input field
  */
 export async function waitForPageLoad(page: Page): Promise<void> {
-  await page.getByRole("textbox", { name: "Page title" }).waitFor({ timeout: 5000 });
+  await page.waitForFunction(() => {
+    const textbox = document.querySelector('[aria-label="Page title"]');
+    const heading = document.querySelector('header h1');
+    return textbox !== null || heading !== null;
+  }, { timeout: 5000 });
 }
 
 /**
@@ -57,13 +61,14 @@ export async function switchToMode(page: Page, mode: 'edit' | 'preview'): Promis
     }
   } else {
     const editButton = page.getByRole("button", { name: "Edit" });
-    if (await editButton.isVisible()) {
-      return; // Already in preview mode
+    const editCount = await editButton.count();
+    if (editCount > 0 && await editButton.isVisible()) {
+      return;
     }
     const previewButton = page.getByRole("button", { name: "Preview" });
-    if (await previewButton.isVisible()) {
+    const previewCount = await previewButton.count();
+    if (previewCount > 0 && await previewButton.isVisible()) {
       await previewButton.click();
-      await page.waitForSelector('[aria-label="Page title"]', { timeout: 5000 });
       await page.waitForSelector('.prose', { timeout: 5000 });
     }
   }

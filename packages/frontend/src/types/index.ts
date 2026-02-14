@@ -7,6 +7,7 @@ export interface Page {
   parent?: string;
   isHidden?: boolean;
   isMarkdown?: boolean;
+  canEdit?: boolean;
 }
 
 export interface CreatePageRequest {

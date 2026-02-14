@@ -8,12 +8,14 @@ interface ContentEditorProps {
   content: string;
   onSave: (newContent: string) => Promise<void>;
   parentPath?: string;
+  readOnly?: boolean;
 }
 
 export function ContentEditor({
   content,
   onSave,
   parentPath,
+  readOnly = false,
 }: ContentEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [value, setValue] = useState(content);
@@ -199,26 +201,28 @@ export function ContentEditor({
       {/* Preview Mode */}
       {!isEditing && (
         <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors"
-              aria-label={ARIA_LABELS.editPageContent}
-            >
-              Edit
-            </button>
-          </div>
+          {!readOnly && (
+            <div className="flex justify-between items-center">
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded transition-colors"
+                aria-label={ARIA_LABELS.editPageContent}
+              >
+                Edit
+              </button>
+            </div>
+          )}
           <div className="prose max-w-none" role="article">
             {markdownContent ? (
               <MDXContent
                 content={markdownContent}
                 parentPath={parentPath}
-                onCheckboxToggle={handleCheckboxToggle}
+                onCheckboxToggle={readOnly ? undefined : handleCheckboxToggle}
               />
             ) : (
               <p className="text-slate-600">
-                No content yet. Click Edit to add some.
+                {readOnly ? "No content yet." : "No content yet. Click Edit to add some."}
               </p>
             )}
           </div>

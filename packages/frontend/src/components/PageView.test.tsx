@@ -98,6 +98,7 @@ describe("PageView", () => {
         content: "test content",
         frontMatter: {},
         children: [],
+        canEdit: true,
       };
 
       renderWithRouter("TestPage");
@@ -108,16 +109,15 @@ describe("PageView", () => {
   });
 
   describe("title field", () => {
-    it("shows path-derived title when loading (currentPage null)", () => {
+    it("shows path-derived title as heading when loading (currentPage null)", () => {
       mockStoreState.currentPage = null;
 
       renderWithRouter("My Test Page");
 
-      const titleInput = screen.getByRole("textbox", { name: ARIA_LABELS.pageTitle });
-      expect(titleInput).toHaveValue("My Test Page");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("My Test Page");
     });
 
-    it("shows path-derived title when stale data present", () => {
+    it("shows path-derived title as heading when stale data present", () => {
       mockStoreState.currentPage = {
         path: "OldPage",
         title: "Old Title Should Not Show",
@@ -128,17 +128,17 @@ describe("PageView", () => {
 
       renderWithRouter("NewPage");
 
-      const titleInput = screen.getByRole("textbox", { name: ARIA_LABELS.pageTitle });
-      expect(titleInput).toHaveValue("NewPage");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("NewPage");
     });
 
-    it("shows actual page title when page is loaded", () => {
+    it("shows editable title field when page is loaded with canEdit", () => {
       mockStoreState.currentPage = {
         path: "TestPage",
         title: "Actual Page Title",
         content: "",
         frontMatter: {},
         children: [],
+        canEdit: true,
       };
 
       renderWithRouter("TestPage");
@@ -147,48 +147,63 @@ describe("PageView", () => {
       expect(titleInput).toHaveValue("Actual Page Title");
     });
 
-    it("extracts last path segment for nested paths", () => {
+    it("shows read-only title when page is loaded without canEdit", () => {
+      mockStoreState.currentPage = {
+        path: "TestPage",
+        title: "Read Only Title",
+        content: "",
+        frontMatter: {},
+        children: [],
+        canEdit: false,
+      };
+
+      renderWithRouter("TestPage");
+
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Read Only Title");
+      expect(screen.queryByRole("textbox", { name: ARIA_LABELS.pageTitle })).not.toBeInTheDocument();
+    });
+
+    it("extracts last path segment for nested paths when loading", () => {
       mockStoreState.currentPage = null;
 
       renderWithRouter("Parent/Child/GrandChild");
 
-      const titleInput = screen.getByRole("textbox", { name: ARIA_LABELS.pageTitle });
-      expect(titleInput).toHaveValue("GrandChild");
+      expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("GrandChild");
     });
   });
 
   describe("delete button", () => {
-    it("is disabled when loading", () => {
+    it("is hidden when loading (canEdit defaults to false)", () => {
       mockStoreState.currentPage = null;
 
       renderWithRouter("TestPage");
 
-      const deleteButton = screen.getByRole("button", { name: ARIA_LABELS.deletePage });
-      expect(deleteButton).toBeDisabled();
+      expect(screen.queryByRole("button", { name: ARIA_LABELS.deletePage })).not.toBeInTheDocument();
     });
 
-    it("is disabled when stale data present", () => {
-      mockStoreState.currentPage = {
-        path: "OldPage",
-        title: "Old",
-        content: "",
-        frontMatter: {},
-        children: [],
-      };
-
-      renderWithRouter("NewPage");
-
-      const deleteButton = screen.getByRole("button", { name: ARIA_LABELS.deletePage });
-      expect(deleteButton).toBeDisabled();
-    });
-
-    it("is enabled when page is loaded", () => {
+    it("is hidden when page has no edit permission", () => {
       mockStoreState.currentPage = {
         path: "TestPage",
         title: "Test",
         content: "",
         frontMatter: {},
         children: [],
+        canEdit: false,
+      };
+
+      renderWithRouter("TestPage");
+
+      expect(screen.queryByRole("button", { name: ARIA_LABELS.deletePage })).not.toBeInTheDocument();
+    });
+
+    it("is enabled when page is loaded with canEdit", () => {
+      mockStoreState.currentPage = {
+        path: "TestPage",
+        title: "Test",
+        content: "",
+        frontMatter: {},
+        children: [],
+        canEdit: true,
       };
 
       renderWithRouter("TestPage");

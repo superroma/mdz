@@ -13,6 +13,7 @@ interface CustomFieldsPanelProps {
   page: Page;
   pages: Page[];
   onFieldChange: (fieldName: string, value: unknown) => Promise<void>;
+  readOnly?: boolean;
 }
 
 function getParentSchema(page: Page, pages: Page[]): FieldSchema[] {
@@ -79,7 +80,7 @@ function setExpandedState(expanded: boolean): void {
   localStorage.setItem(STORAGE_KEY, String(expanded));
 }
 
-export function CustomFieldsPanel({ page, pages, onFieldChange }: CustomFieldsPanelProps) {
+export function CustomFieldsPanel({ page, pages, onFieldChange, readOnly = false }: CustomFieldsPanelProps) {
   const [isExpanded, setIsExpanded] = useState(getInitialExpandedState);
   const schema = getParentSchema(page, pages);
   
@@ -116,10 +117,10 @@ export function CustomFieldsPanel({ page, pages, onFieldChange }: CustomFieldsPa
                 field={field}
                 value={getFieldValue(page, field.name)}
                 onChange={(value) => onFieldChange(field.name, value)}
+                readOnly={readOnly}
               />
             ))
           ) : (
-            // Show all frontmatter fields when no schema
             Object.keys(page.frontMatter).map((key) => {
               const value = getFieldValue(page, key);
               if (isComplexField(value)) {
@@ -137,6 +138,7 @@ export function CustomFieldsPanel({ page, pages, onFieldChange }: CustomFieldsPa
                   fieldName={key}
                   value={value}
                   onChange={(value) => onFieldChange(key, value)}
+                  readOnly={readOnly}
                 />
               );
             })
@@ -151,9 +153,10 @@ interface FieldEditorProps {
   field: FieldSchema;
   value: unknown;
   onChange: (value: unknown) => Promise<void>;
+  readOnly?: boolean;
 }
 
-function FieldEditor({ field, value, onChange }: FieldEditorProps) {
+function FieldEditor({ field, value, onChange, readOnly = false }: FieldEditorProps) {
   const [localValue, setLocalValue] = useState(value);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -183,7 +186,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           value={String(localValue ?? "")}
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          disabled={isSaving}
+          disabled={isSaving || readOnly}
           aria-label={ARIA_LABELS.customField(field.name)}
         />
       )}
@@ -194,7 +197,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           value={Number(localValue ?? 0)}
           onChange={(e) => handleChange(Number(e.target.value))}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          disabled={isSaving}
+          disabled={isSaving || readOnly}
           aria-label={ARIA_LABELS.customField(field.name)}
         />
       )}
@@ -205,7 +208,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           value={localValue ? String(localValue).split('T')[0] : ""}
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          disabled={isSaving}
+          disabled={isSaving || readOnly}
           aria-label={ARIA_LABELS.customField(field.name)}
         />
       )}
@@ -215,7 +218,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
           value={String(localValue ?? "")}
           onChange={(e) => handleChange(e.target.value)}
           className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-          disabled={isSaving}
+          disabled={isSaving || readOnly}
           aria-label={ARIA_LABELS.customField(field.name)}
         >
           <option value="">Select...</option>
@@ -234,7 +237,7 @@ function FieldEditor({ field, value, onChange }: FieldEditorProps) {
             checked={Boolean(localValue)}
             onChange={(e) => handleChange(e.target.checked)}
             className="w-4 h-4 text-sky-600 bg-white border-slate-300 rounded focus:ring-2 focus:ring-sky-500"
-            disabled={isSaving}
+            disabled={isSaving || readOnly}
             aria-label={ARIA_LABELS.customField(field.name)}
           />
           <span className="text-sm text-slate-700">
@@ -250,9 +253,10 @@ interface TextFieldEditorProps {
   fieldName: string;
   value: unknown;
   onChange: (value: unknown) => Promise<void>;
+  readOnly?: boolean;
 }
 
-function TextFieldEditor({ fieldName, value, onChange }: TextFieldEditorProps) {
+function TextFieldEditor({ fieldName, value, onChange, readOnly = false }: TextFieldEditorProps) {
   const [localValue, setLocalValue] = useState(String(value ?? ""));
   const [isSaving, setIsSaving] = useState(false);
   
@@ -280,7 +284,7 @@ function TextFieldEditor({ fieldName, value, onChange }: TextFieldEditorProps) {
         value={localValue}
         onChange={(e) => handleChange(e.target.value)}
         className="px-3 py-1.5 bg-white border border-slate-300 rounded text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-        disabled={isSaving}
+        disabled={isSaving || readOnly}
       />
     </div>
   );

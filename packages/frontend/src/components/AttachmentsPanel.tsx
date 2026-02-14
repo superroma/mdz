@@ -6,9 +6,10 @@ import { ARIA_LABELS } from "../constants/aria-labels";
 interface AttachmentsPanelProps {
   pagePath: string;
   onFileChange?: () => void;
+  readOnly?: boolean;
 }
 
-export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelProps) {
+export function AttachmentsPanel({ pagePath, onFileChange, readOnly = false }: AttachmentsPanelProps) {
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -81,22 +82,24 @@ export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelPro
       
       {isExpanded && (
         <div className="p-4 space-y-3 border-t border-slate-300">
-          <div>
-            <label className="block mb-2">
-              <input
-                type="file"
-                multiple
-                onChange={handleFileSelect}
-                disabled={isUploading}
-                className="hidden"
-                id="file-upload"
-                aria-label={ARIA_LABELS.uploadFiles}
-              />
-              <span className="inline-block px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded cursor-pointer transition-colors disabled:opacity-50">
-                {isUploading ? "Uploading..." : "Upload Files"}
-              </span>
-            </label>
-          </div>
+          {!readOnly && (
+            <div>
+              <label className="block mb-2">
+                <input
+                  type="file"
+                  multiple
+                  onChange={handleFileSelect}
+                  disabled={isUploading}
+                  className="hidden"
+                  id="file-upload"
+                  aria-label={ARIA_LABELS.uploadFiles}
+                />
+                <span className="inline-block px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white text-sm rounded cursor-pointer transition-colors disabled:opacity-50">
+                  {isUploading ? "Uploading..." : "Upload Files"}
+                </span>
+              </label>
+            </div>
+          )}
           
           {files.length === 0 ? (
             <p className="text-sm text-slate-600" role="status">No attachments</p>
@@ -121,14 +124,16 @@ export function AttachmentsPanel({ pagePath, onFileChange }: AttachmentsPanelPro
                     <span className="text-xs text-slate-600" aria-label={ARIA_LABELS.fileSize(formatFileSize(file.size))}>
                       {formatFileSize(file.size)}
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(file.name)}
-                      className="text-xs text-red-600 hover:text-red-700"
-                      aria-label={ARIA_LABELS.deleteFile(file.name)}
-                    >
-                      Delete
-                    </button>
+                    {!readOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(file.name)}
+                        className="text-xs text-red-600 hover:text-red-700"
+                        aria-label={ARIA_LABELS.deleteFile(file.name)}
+                      >
+                        Delete
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}

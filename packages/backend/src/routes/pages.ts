@@ -8,8 +8,12 @@ import { cleanAndSaveOrder } from "../storage/page-order.js";
 export async function registerPageRoutes(app: FastifyInstance) {
   app.get("/api/pages", async (request) => {
     const userGroups = request.currentUser?.groups || [];
+    const config = loadUsersConfig();
     const pages = listPages(userGroups);
-    return pages;
+    return pages.map((page) => ({
+      ...page,
+      canEdit: checkPageAccess(userGroups, page.path, "write", config),
+    }));
   });
 
   app.get("/api/pages/*", async (request) => {
@@ -27,7 +31,10 @@ export async function registerPageRoutes(app: FastifyInstance) {
     if (!page) {
       throw new NotFoundError("Page not found");
     }
-    return page;
+    return {
+      ...page,
+      canEdit: checkPageAccess(userGroups, path, "write", config),
+    };
   });
 
   app.post("/api/pages", async (request) => {

@@ -205,15 +205,12 @@ const createMdxComponents = (
       "data-checkbox-index"?: string;
     }
   ) => {
-    // Only handle task list checkboxes (those with data-checkbox-index)
     const checkboxIndexStr = props["data-checkbox-index"];
     const isTaskListCheckbox =
       checkboxIndexStr !== undefined && props.type === "checkbox";
 
     if (isTaskListCheckbox && onCheckboxToggle) {
       const checkboxIndex = parseInt(checkboxIndexStr, 10);
-      // Remove disabled and checked from props to make checkbox uncontrolled
-      // This prevents React from interfering with rapid clicks
       const { disabled, checked, ...restProps } = props;
       return (
         <input
@@ -222,7 +219,6 @@ const createMdxComponents = (
           disabled={false}
           defaultChecked={checked}
           onClick={(e) => {
-            // Capture the checkbox index at render time in a closure            // This ensures we use the correct index even if the component re-renders
             const capturedIndex = checkboxIndex;
             onCheckboxToggle(capturedIndex);
             props.onClick?.(e);
@@ -231,7 +227,16 @@ const createMdxComponents = (
       );
     }
 
-    // For all other inputs, use default behavior
+    if (isTaskListCheckbox && !onCheckboxToggle) {
+      return (
+        <input
+          {...props}
+          type="checkbox"
+          disabled={true}
+        />
+      );
+    }
+
     return <input {...props} />;
   },
 });

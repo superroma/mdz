@@ -120,6 +120,7 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
   }
 
   const isStaleOrMissing = !currentPage || currentPage.path !== pagePath;
+  const canEdit = currentPage?.canEdit ?? false;
   const pageTitle = isStaleOrMissing 
     ? (pagePath?.split("/").pop() || "") 
     : currentPage.title;
@@ -155,22 +156,30 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
         </div>
         <div className="flex items-center justify-between gap-2 md:gap-4 min-w-0">
           <div className="flex-1 min-w-0 overflow-hidden">
-            <TitleField
-              title={pageTitle}
-              onSave={handleTitleSave}
-              autoFocus={isAutoFocus}
-            />
+            {canEdit ? (
+              <TitleField
+                title={pageTitle}
+                onSave={handleTitleSave}
+                autoFocus={isAutoFocus}
+              />
+            ) : (
+              <h1 className="w-full min-w-0 text-3xl font-bold text-slate-900 px-0 truncate">
+                {pageTitle}
+              </h1>
+            )}
           </div>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={isStaleOrMissing}
-            className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors flex-shrink-0 disabled:opacity-50"
-            aria-label={ARIA_LABELS.deletePage}
-            title="Delete current page"
-          >
-            Delete
-          </button>
+          {canEdit && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={isStaleOrMissing}
+              className="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-700 rounded transition-colors flex-shrink-0 disabled:opacity-50"
+              aria-label={ARIA_LABELS.deletePage}
+              title="Delete current page"
+            >
+              Delete
+            </button>
+          )}
         </div>
       </header>
       <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6">
@@ -186,14 +195,16 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
                   page={currentPage}
                   pages={pages}
                   onFieldChange={handleFieldChange}
+                  readOnly={!canEdit}
                 />
-                <AttachmentsPanel pagePath={pagePath} />
+                <AttachmentsPanel pagePath={pagePath} readOnly={!canEdit} />
               </>
             )}
             <ContentEditor
               content={serializeFrontMatter(currentPage.frontMatter, currentPage.content)}
               onSave={handleContentSave}
               parentPath={pagePath}
+              readOnly={!canEdit}
             />
           </>
         )}

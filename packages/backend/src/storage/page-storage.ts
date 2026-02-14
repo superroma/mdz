@@ -22,6 +22,7 @@ export interface Page {
   parent?: string;
   isHidden?: boolean;
   isMarkdown?: boolean;
+  canEdit?: boolean;
 }
 
 function ensureDirectoryExists(filePath: string): void {

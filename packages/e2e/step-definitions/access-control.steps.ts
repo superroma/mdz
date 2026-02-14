@@ -4,6 +4,7 @@ import { AppWorld } from "../support/world";
 import { writeFileSync, mkdirSync, existsSync } from "fs";
 import { join } from "path";
 import { BACKEND_URL } from "../support/constants";
+import { navigateToPageByTitle } from "../support/test-helpers";
 
 function getNavigationTitle(pagePath: string): string {
   const normalized = pagePath.replace(/\.md$/, "");
@@ -387,4 +388,42 @@ Then(/^my user info should include groups: (.+)$/, async function (this: AppWorl
   expect(response.status()).toBe(200);
   const user = await response.json();
   expect(user.groups).toEqual(expectedGroups);
+});
+
+When("I navigate to {string} page", async function (this: AppWorld, pageTitle: string) {
+  const page = await this.ensurePage();
+  await navigateToPageByTitle(page, pageTitle);
+  await page.waitForSelector('[role="article"], .prose', { timeout: 5000 }).catch(() => {});
+});
+
+Then("I should not see the {string} button", async function (this: AppWorld, ariaLabel: string) {
+  const page = await this.ensurePage();
+  await page.waitForSelector('[role="article"], .prose', { timeout: 5000 });
+  const button = page.getByRole("button", { name: ariaLabel });
+  await expect(button).toHaveCount(0);
+});
+
+Then("I should see the {string} button", async function (this: AppWorld, ariaLabel: string) {
+  const page = await this.ensurePage();
+  await page.waitForSelector('[role="article"], .prose', { timeout: 5000 });
+  const button = page.getByRole("button", { name: ariaLabel });
+  await expect(button).toBeVisible();
+});
+
+Then("checkboxes should be disabled", async function (this: AppWorld) {
+  const page = await this.ensurePage();
+  await page.waitForSelector('.prose input[type="checkbox"]', { timeout: 5000 });
+  const checkboxes = page.locator('.prose input[type="checkbox"]');
+  const count = await checkboxes.count();
+  expect(count).toBeGreaterThan(0);
+  for (let i = 0; i < count; i++) {
+    await expect(checkboxes.nth(i)).toBeDisabled();
+  }
+});
+
+Then("the page title should be read-only", async function (this: AppWorld) {
+  const page = await this.ensurePage();
+  await page.waitForSelector('[role="article"], .prose', { timeout: 5000 });
+  const titleInput = page.getByRole("textbox", { name: "Page title" });
+  await expect(titleInput).toHaveCount(0);
 });

@@ -63,6 +63,33 @@ Feature: Access Control
     Then I should be able to download "report.pdf"
     And I should be able to upload files to "Docs"
 
+  Scenario: Reader should not see edit or delete buttons
+    When I log in using the test provider as "reader"
+    And I navigate to "Welcome" page
+    Then I should not see the "Edit page content" button
+    And I should not see the "Delete page" button
+
+  Scenario: Reader should not be able to toggle checkboxes
+    When I log in using the test provider as "writer"
+    And I navigate to "Getting Started" page
+    And I am in preview mode
+    And I note the current document state
+    When I log in using the test provider as "reader"
+    And I navigate to "Getting Started" page
+    And I am in preview mode
+    Then checkboxes should be disabled
+
+  Scenario: Writer should see edit and delete buttons
+    When I log in using the test provider as "writer"
+    And I navigate to "Welcome" page
+    Then I should see the "Edit page content" button
+    And I should see the "Delete page" button
+
+  Scenario: Reader should not be able to rename page title
+    When I log in using the test provider as "reader"
+    And I navigate to "Welcome" page
+    Then the page title should be read-only
+
   Scenario: User groups are shown in JWT
     When I log in using the test provider as "admin"
     Then my user info should include groups: ["everyone", "admins"]
