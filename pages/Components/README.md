@@ -1,0 +1,179 @@
+---
+__schema:
+  - name: status
+    type: select
+    options: [Todo, In Progress, Done]
+  - name: priority
+    type: select
+    options: [Low, Medium, High]
+  - name: category
+    type: select
+    options: [Frontend, Backend]
+  - name: due_date
+    type: date
+---
+
+# Components
+
+MDZ pages support special components you can use directly in your markdown content.
+
+## Progress
+
+A progress bar.
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| value | number (0-100) | yes | | Current progress |
+| label | string | no | | Text label above the bar |
+| color | "blue" "green" "orange" "red" | no | "blue" | Bar color |
+| showPercent | boolean | no | true | Show percentage number |
+
+```
+<Progress value={75} label="Sprint progress" color="green" />
+```
+
+<Progress value={75} label="Sprint progress" color="green" />
+
+<Progress value={30} label="Budget used" color="orange" />
+
+<Progress value={90} color="red" />
+
+<Progress value={50} showPercent={false} />
+
+## Tabs / Tab
+
+Wrap multiple views or content sections in switchable tabs.
+
+```
+<Tabs>
+  <Tab name="First">
+    Content of the first tab.
+  </Tab>
+  <Tab name="Second">
+    Content of the second tab.
+  </Tab>
+</Tabs>
+```
+
+<Tabs>
+  <Tab name="Example A">
+
+This is **tab A** content. You can put any markdown here.
+
+  </Tab>
+  <Tab name="Example B">
+
+This is **tab B** content, including components:
+
+<Progress value={60} label="Demo" color="blue" />
+
+  </Tab>
+</Tabs>
+
+## View Components
+
+View components display child pages of the current folder in different layouts. They read front-matter fields from child pages to populate the view.
+
+This page has 6 child pages with `status`, `priority`, `category`, and `due_date` fields — the live demos below use them.
+
+All view components support a `filter` prop using MongoDB-style query operators:
+
+| Operator | Meaning |
+|----------|---------|
+| `$eq` | equals |
+| `$ne` | not equals |
+| `$in` | in array |
+| `$lt` | less than |
+| `$gt` | greater than |
+| `$lte` | less than or equal |
+| `$gte` | greater than or equal |
+
+Filter examples:
+
+```
+filter={{ status: "Done" }}
+filter={{ status: { $ne: "Done" } }}
+filter={{ priority: { $in: ["High", "Medium"] } }}
+```
+
+### BoardView
+
+A kanban board that groups child pages by a front-matter field.
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| groupBy | string | yes | Front-matter field to group cards by |
+| filter | object | no | Filter query |
+| sort | string | no | Front-matter field to sort by |
+
+```
+<BoardView groupBy="status" sort="priority" />
+```
+
+<BoardView groupBy="status" sort="priority" />
+
+### GridView
+
+A table with configurable columns from front-matter fields.
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| columns | string[] | yes | Front-matter fields to show as columns |
+| filter | object | no | Filter query |
+| sort | string | no | Front-matter field to sort by |
+
+```
+<GridView columns={["status", "priority", "category", "due_date"]} sort="due_date" />
+```
+
+<GridView columns={["status", "priority", "category", "due_date"]} sort="due_date" />
+
+### CalendarView
+
+A monthly calendar that places child pages on dates based on a front-matter date field.
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| dateField | string | yes | Front-matter date field to position pages on the calendar |
+| filter | object | no | Filter query |
+
+```
+<CalendarView dateField="due_date" />
+```
+
+<CalendarView dateField="due_date" />
+
+### ListView
+
+A simple list showing child page titles with inline field values.
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| fields | string[] | yes | Front-matter fields to display inline |
+| filter | object | no | Filter query |
+| sort | string | no | Front-matter field to sort by |
+
+```
+<ListView fields={["status", "priority", "category"]} sort="due_date" />
+```
+
+<ListView fields={["status", "priority", "category"]} sort="due_date" />
+
+## Combining Views with Tabs
+
+A common pattern is wrapping multiple views in tabs to give different perspectives on the same data. Here it is live — filtering to only incomplete items:
+
+<Tabs>
+  <Tab name="Board">
+    <BoardView groupBy="status" filter={{ status: { $ne: "Done" } }} sort="priority" />
+  </Tab>
+  <Tab name="Table">
+    <GridView columns={["status", "priority", "category", "due_date"]} filter={{ status: { $ne: "Done" } }} sort="due_date" />
+  </Tab>
+  <Tab name="Calendar">
+    <CalendarView dateField="due_date" filter={{ status: { $ne: "Done" } }} />
+  </Tab>
+  <Tab name="All">
+    <ListView fields={["status", "priority"]} sort="due_date" />
+  </Tab>
+</Tabs>
