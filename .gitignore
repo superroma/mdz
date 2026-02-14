@@ -13,3 +13,4 @@ test-results
 /.turbo
 /.idea
 package-lock.json
+.DS_Store
