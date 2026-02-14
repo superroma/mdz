@@ -114,19 +114,29 @@ A kanban board that groups child pages by a front-matter field.
 
 ### GridView
 
-A table with configurable columns from front-matter fields.
+A table with configurable columns from front-matter fields. When used without `columns`, it automatically shows all fields defined in the page's schema.
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| columns | string[] | yes | Front-matter fields to show as columns |
+| columns | string[] | no | Front-matter fields to show as columns (defaults to all schema fields) |
 | filter | object | no | Filter query |
 | sort | string | no | Front-matter field to sort by |
 
+Without parameters — all schema fields are shown automatically:
+
 ```
-<GridView columns={["status", "priority", "category", "due_date"]} sort="due_date" />
+<GridView />
 ```
 
-<GridView columns={["status", "priority", "category", "due_date"]} sort="due_date" />
+<GridView />
+
+With explicit columns and sorting:
+
+```
+<GridView columns={["status", "priority"]} sort="due_date" />
+```
+
+<GridView columns={["status", "priority"]} sort="due_date" />
 
 ### CalendarView
 
@@ -145,19 +155,42 @@ A monthly calendar that places child pages on dates based on a front-matter date
 
 ### ListView
 
-A simple list showing child page titles with inline field values.
+A simple list showing child page titles. Optionally displays inline field values next to each title.
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
-| fields | string[] | yes | Front-matter fields to display inline |
+| fields | string[] | no | Front-matter fields to display inline (defaults to none — just page names) |
 | filter | object | no | Filter query |
 | sort | string | no | Front-matter field to sort by |
 
+Without parameters — just page names:
+
+```
+<ListView />
+```
+
+<ListView />
+
+With inline fields:
+
 ```
 <ListView fields={["status", "priority", "category"]} sort="due_date" />
 ```
 
 <ListView fields={["status", "priority", "category"]} sort="due_date" />
+
+## No Parameters
+
+`GridView` and `ListView` work without any parameters. `GridView` picks up all schema fields as columns automatically, `ListView` shows page names.
+
+<Tabs>
+  <Tab name="GridView">
+    <GridView />
+  </Tab>
+  <Tab name="ListView">
+    <ListView />
+  </Tab>
+</Tabs>
 
 ## Combining Views with Tabs
 
@@ -168,7 +201,7 @@ A common pattern is wrapping multiple views in tabs to give different perspectiv
     <BoardView groupBy="status" filter={{ status: { $ne: "Done" } }} sort="priority" />
   </Tab>
   <Tab name="Table">
-    <GridView columns={["status", "priority", "category", "due_date"]} filter={{ status: { $ne: "Done" } }} sort="due_date" />
+    <GridView filter={{ status: { $ne: "Done" } }} sort="due_date" />
   </Tab>
   <Tab name="Calendar">
     <CalendarView dateField="due_date" filter={{ status: { $ne: "Done" } }} />
