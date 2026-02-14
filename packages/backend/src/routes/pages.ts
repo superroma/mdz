@@ -62,7 +62,10 @@ export async function registerPageRoutes(app: FastifyInstance) {
     
     validatePathOrThrow(finalPath);
     const page = createPage(finalPath, content);
-    return page;
+    return {
+      ...page,
+      canEdit: checkPageAccess(userGroups, page.path, "write", config),
+    };
   });
 
   app.put("/api/pages/*", async (request) => {
@@ -82,7 +85,11 @@ export async function registerPageRoutes(app: FastifyInstance) {
       throw new ValidationError("Content is required");
     }
     
-    return updatePage(path, body.content);
+    const page = updatePage(path, body.content);
+    return {
+      ...page,
+      canEdit: checkPageAccess(userGroups, page.path, "write", config),
+    };
   });
 
   app.patch("/api/pages/*", async (request) => {
@@ -103,7 +110,11 @@ export async function registerPageRoutes(app: FastifyInstance) {
     }
     
     validatePathOrThrow(body.newPath);
-    return renamePage(path, body.newPath);
+    const page = renamePage(path, body.newPath);
+    return {
+      ...page,
+      canEdit: checkPageAccess(userGroups, page.path, "write", config),
+    };
   });
 
   app.delete("/api/pages/*", async (request) => {
