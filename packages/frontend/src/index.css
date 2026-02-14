@@ -66,7 +66,14 @@
 .prose ul > li input[type="checkbox"] {
   margin-right: 0.5rem;
   margin-left: 0;
+}
+
+.prose ul > li input[type="checkbox"]:not(:disabled) {
   cursor: pointer;
+}
+
+.prose ul > li input[type="checkbox"]:disabled {
+  cursor: default;
 }
 
 /* Nested task lists - ensure they also don't have bullets */
