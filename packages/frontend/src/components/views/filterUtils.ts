@@ -60,17 +60,20 @@ export function filterPages(pages: Page[], filter?: FilterQuery): Page[] {
   return pages.filter((page) => matchesFilter(page, filter));
 }
 
-export function sortPages(pages: Page[], sortField?: string, sortOrder: "asc" | "desc" = "asc"): Page[] {
-  if (!sortField) return pages;
-  
+export function sortPages(pages: Page[], sort?: string): Page[] {
+  if (!sort) return pages;
+
+  const desc = sort.startsWith("-");
+  const field = desc ? sort.slice(1) : sort;
+
   return [...pages].sort((a, b) => {
-    const aVal = a.frontMatter[sortField];
-    const bVal = b.frontMatter[sortField];
-    
+    const aVal = field === "name" ? a.title : normalizeValue(a.frontMatter[field]);
+    const bVal = field === "name" ? b.title : normalizeValue(b.frontMatter[field]);
+
     if (aVal === undefined && bVal === undefined) return 0;
     if (aVal === undefined) return 1;
     if (bVal === undefined) return -1;
-    
+
     let comparison = 0;
     if (typeof aVal === "string" && typeof bVal === "string") {
       comparison = aVal.localeCompare(bVal);
@@ -79,8 +82,8 @@ export function sortPages(pages: Page[], sortField?: string, sortOrder: "asc" | 
     } else {
       comparison = String(aVal).localeCompare(String(bVal));
     }
-    
-    return sortOrder === "asc" ? comparison : -comparison;
+
+    return desc ? -comparison : comparison;
   });
 }
 

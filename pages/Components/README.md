@@ -106,6 +106,17 @@ filter={{ due_date: { $lte: "today" } }}
 filter={{ due_date: { $gte: "tomorrow" } }}
 ```
 
+### Sorting
+
+All view components accept a `sort` prop. Use any front-matter field name, or `"name"` to sort by page title. Prefix with `-` for descending order.
+
+```
+sort="due_date"
+sort="-due_date"
+sort="name"
+sort="-name"
+```
+
 ### BoardView
 
 A kanban board that groups child pages by a front-matter field.
@@ -114,7 +125,7 @@ A kanban board that groups child pages by a front-matter field.
 |------|------|----------|-------------|
 | groupBy | string | yes | Front-matter field to group cards by |
 | filter | object | no | Filter query |
-| sort | string | no | Front-matter field to sort by |
+| sort | string | no | Field to sort by (`"name"` for page title, prefix `-` for desc) |
 
 ```
 <BoardView groupBy="status" sort="priority" />
@@ -130,7 +141,7 @@ A table with configurable columns from front-matter fields. When used without `c
 |------|------|----------|-------------|
 | columns | string[] | no | Front-matter fields to show as columns (defaults to all schema fields) |
 | filter | object | no | Filter query |
-| sort | string | no | Front-matter field to sort by |
+| sort | string | no | Field to sort by (`"name"` for page title, prefix `-` for desc) |
 
 Without parameters — all schema fields are shown automatically:
 
@@ -171,7 +182,7 @@ A simple list showing child page titles. Optionally displays inline field values
 |------|------|----------|-------------|
 | fields | string[] | no | Front-matter fields to display inline (defaults to none — just page names) |
 | filter | object | no | Filter query |
-| sort | string | no | Front-matter field to sort by |
+| sort | string | no | Field to sort by (`"name"` for page title, prefix `-` for desc) |
 
 Without parameters — just page names:
 

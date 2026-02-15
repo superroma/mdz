@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { filterPages, resolveValue, normalizeValue } from "./filterUtils";
+import { filterPages, sortPages, resolveValue, normalizeValue } from "./filterUtils";
 import type { Page } from "../../types";
 
-const makePage = (frontMatter: Record<string, unknown>): Page => ({
+const makePage = (frontMatter: Record<string, unknown>, title = "Test"): Page => ({
   path: "test",
-  title: "Test",
+  title,
   content: "",
   frontMatter,
   children: [],
@@ -230,5 +230,71 @@ describe("filterPages with JSON-serialized dates (real API scenario)", () => {
     ];
     const result = filterPages(pages, { due_date: { $eq: "2026-02-15" } });
     expect(result).toHaveLength(1);
+  });
+});
+
+describe("sortPages", () => {
+  it("sorts by front-matter field ascending", () => {
+    const pages = [
+      makePage({ priority: "Medium" }, "B"),
+      makePage({ priority: "High" }, "A"),
+      makePage({ priority: "Low" }, "C"),
+    ];
+    const result = sortPages(pages, "priority");
+    expect(result.map((p) => p.frontMatter.priority)).toEqual(["High", "Low", "Medium"]);
+  });
+
+  it("sorts descending with - prefix", () => {
+    const pages = [
+      makePage({ priority: "High" }),
+      makePage({ priority: "Low" }),
+      makePage({ priority: "Medium" }),
+    ];
+    const result = sortPages(pages, "-priority");
+    expect(result.map((p) => p.frontMatter.priority)).toEqual(["Medium", "Low", "High"]);
+  });
+
+  it("sorts by name (page title)", () => {
+    const pages = [
+      makePage({}, "Charlie"),
+      makePage({}, "Alice"),
+      makePage({}, "Bob"),
+    ];
+    const result = sortPages(pages, "name");
+    expect(result.map((p) => p.title)).toEqual(["Alice", "Bob", "Charlie"]);
+  });
+
+  it("sorts by name descending", () => {
+    const pages = [
+      makePage({}, "Alice"),
+      makePage({}, "Charlie"),
+      makePage({}, "Bob"),
+    ];
+    const result = sortPages(pages, "-name");
+    expect(result.map((p) => p.title)).toEqual(["Charlie", "Bob", "Alice"]);
+  });
+
+  it("returns pages unchanged when no sort specified", () => {
+    const pages = [
+      makePage({}, "C"),
+      makePage({}, "A"),
+      makePage({}, "B"),
+    ];
+    const result = sortPages(pages);
+    expect(result.map((p) => p.title)).toEqual(["C", "A", "B"]);
+  });
+
+  it("normalizes date values when sorting", () => {
+    const pages = [
+      makePage({ due_date: "2026-03-01T00:00:00.000Z" }),
+      makePage({ due_date: "2026-01-15T00:00:00.000Z" }),
+      makePage({ due_date: "2026-02-15T00:00:00.000Z" }),
+    ];
+    const result = sortPages(pages, "due_date");
+    expect(result.map((p) => p.frontMatter.due_date)).toEqual([
+      "2026-01-15T00:00:00.000Z",
+      "2026-02-15T00:00:00.000Z",
+      "2026-03-01T00:00:00.000Z",
+    ]);
   });
 });
