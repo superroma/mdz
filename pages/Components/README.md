@@ -88,12 +88,22 @@ All view components support a `filter` prop using MongoDB-style query operators:
 | `$lte` | less than or equal |
 | `$gte` | greater than or equal |
 
+Date expressions can be used as filter values for date fields:
+
+| Expression | Resolves to |
+|------------|-------------|
+| `"today"` | current date |
+| `"yesterday"` | previous date |
+| `"tomorrow"` | next date |
+
 Filter examples:
 
 ```
 filter={{ status: "Done" }}
 filter={{ status: { $ne: "Done" } }}
 filter={{ priority: { $in: ["High", "Medium"] } }}
+filter={{ due_date: { $lte: "today" } }}
+filter={{ due_date: { $gte: "tomorrow" } }}
 ```
 
 ### BoardView

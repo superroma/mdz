@@ -2,6 +2,28 @@ import type { Page } from "../../types";
 
 type FilterQuery = Record<string, unknown>;
 
+function toISODate(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function resolveValue(val: unknown): unknown {
+  if (typeof val !== "string") return val;
+  const now = new Date();
+  switch (val) {
+    case "today":
+      return toISODate(now);
+    case "yesterday":
+      return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1));
+    case "tomorrow":
+      return toISODate(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+    default:
+      return val;
+  }
+}
+
 function matchesFilter(page: Page, filter: FilterQuery): boolean {
   for (const [key, condition] of Object.entries(filter)) {
     const value = page.frontMatter[key];
@@ -9,15 +31,15 @@ function matchesFilter(page: Page, filter: FilterQuery): boolean {
     if (typeof condition === "object" && condition !== null && !Array.isArray(condition)) {
       const ops = condition as Record<string, unknown>;
       
-      if ("$ne" in ops && value === ops.$ne) return false;
-      if ("$eq" in ops && value !== ops.$eq) return false;
-      if ("$in" in ops && Array.isArray(ops.$in) && !ops.$in.includes(value)) return false;
-      if ("$lt" in ops && (value === undefined || value >= ops.$lt)) return false;
-      if ("$gt" in ops && (value === undefined || value <= ops.$gt)) return false;
-      if ("$lte" in ops && (value === undefined || value > ops.$lte)) return false;
-      if ("$gte" in ops && (value === undefined || value < ops.$gte)) return false;
+      if ("$ne" in ops && value === resolveValue(ops.$ne)) return false;
+      if ("$eq" in ops && value !== resolveValue(ops.$eq)) return false;
+      if ("$in" in ops && Array.isArray(ops.$in) && !ops.$in.map(resolveValue).includes(value)) return false;
+      if ("$lt" in ops && (value === undefined || value >= resolveValue(ops.$lt))) return false;
+      if ("$gt" in ops && (value === undefined || value <= resolveValue(ops.$gt))) return false;
+      if ("$lte" in ops && (value === undefined || value > resolveValue(ops.$lte))) return false;
+      if ("$gte" in ops && (value === undefined || value < resolveValue(ops.$gte))) return false;
     } else {
-      if (value !== condition) return false;
+      if (value !== resolveValue(condition)) return false;
     }
   }
   
