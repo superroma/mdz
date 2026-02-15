@@ -352,7 +352,7 @@ __access:
     expect(access.write).toEqual(["team-b"]);
   });
 
-  test("handles partial access specification", () => {
+  test("partial access falls back to default for missing field", () => {
     const config = {
       defaultAccess: { read: ["everyone"], write: ["writers"] },
       users: {},
@@ -368,7 +368,34 @@ __access:
 
     const access = resolvePageAccess("TestPage", config);
     expect(access.read).toEqual(["team-a"]);
-    expect(access.write).toBeUndefined();
+    expect(access.write).toEqual(["writers"]);
+  });
+
+  test("partial access falls back to parent for missing field", () => {
+    const config = {
+      defaultAccess: { read: ["everyone"], write: ["writers"] },
+      users: {},
+    };
+
+    const parentContent = `---
+__access:
+  read: [team-a]
+  write: [team-a]
+---
+# Parent`;
+
+    const childContent = `---
+__access:
+  read: [everyone]
+---
+# Child`;
+
+    createPage("Parent/README", parentContent);
+    createPage("Parent/Child", childContent, "Parent");
+
+    const access = resolvePageAccess("Parent/Child", config);
+    expect(access.read).toEqual(["everyone"]);
+    expect(access.write).toEqual(["team-a"]);
   });
 
   test("multi-level inheritance", () => {

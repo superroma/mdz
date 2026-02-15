@@ -79,9 +79,12 @@ export function resolvePageAccess(pagePath: string, config: UsersConfig): PageAc
   const frontMatterAccess = page.frontMatter.__access as PageAccess | undefined;
 
   if (frontMatterAccess) {
+    const inherited = page.parent
+      ? resolvePageAccess(page.parent, config)
+      : config.defaultAccess;
     return {
-      read: frontMatterAccess.read,
-      write: frontMatterAccess.write,
+      read: frontMatterAccess.read ?? inherited.read,
+      write: frontMatterAccess.write ?? inherited.write,
     };
   }
 
