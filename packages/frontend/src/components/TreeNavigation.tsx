@@ -248,16 +248,58 @@ export function TreeNavigation({
   const currentPath = decodeURIComponent(location.pathname.substring(1));
   const { reorderPages } = usePageStore();
 
-  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
+  const STORAGE_KEY = "mdz-expanded-nodes";
+
+  const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => {
+    try {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) return new Set(JSON.parse(stored));
+    } catch {}
+    return new Set<string>();
+  });
+
+  useEffect(() => {
+    if (!currentPath) return;
+    const currentPage = pages.find((p) => p.path === currentPath);
+    if (!currentPage) return;
+
+    const ancestors: string[] = [];
+    let parent = currentPage.parent;
+    while (parent) {
+      ancestors.push(parent);
+      const parentPage = pages.find((p) => p.path === parent);
+      parent = parentPage?.parent;
+    }
+
+    if (ancestors.length === 0) return;
+    const missing = ancestors.filter((a) => !expandedPaths.has(a));
+    if (missing.length === 0) return;
+
+    setExpandedPaths((prev) => {
+      const next = new Set(prev);
+      for (const a of missing) next.add(a);
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
+      return next;
+    });
+  }, [currentPath, pages]);
+
+  const collapsedPaths = {
+    has: (path: string) => {
+      const children = pages.filter((p) => p.parent === path);
+      if (children.length === 0) return false;
+      return !expandedPaths.has(path);
+    },
+  };
 
   const toggleCollapse = useCallback((path: string) => {
-    setCollapsedPaths((prev) => {
+    setExpandedPaths((prev) => {
       const next = new Set(prev);
       if (next.has(path)) {
         next.delete(path);
       } else {
         next.add(path);
       }
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify([...next]));
       return next;
     });
   }, []);

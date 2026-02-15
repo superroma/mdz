@@ -151,5 +151,45 @@ describe("TreeNavigation", () => {
     const addButton = screen.getByRole("button", { name: /Add child page to Tasks/i });
     expect(addButton).toBeVisible();
   });
+
+  it("auto-expands ancestors of the current page", () => {
+    const onCreateChild = vi.fn();
+    renderWithRoute(
+      <TreeNavigation pages={mockPages} onCreateChild={onCreateChild} />,
+      ["/Welcome/Tasks/Task1"]
+    );
+
+    expect(screen.getByRole("button", { name: "Collapse Welcome" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Collapse Tasks" })).toBeInTheDocument();
+  });
+
+  it("keeps nodes collapsed when not an ancestor of current page", () => {
+    const pagesWithTwoBranches: Page[] = [
+      ...mockPages,
+      {
+        path: "Other",
+        title: "Other",
+        content: "",
+        frontMatter: {},
+        children: ["Other/Sub"],
+      },
+      {
+        path: "Other/Sub",
+        title: "Sub",
+        content: "",
+        frontMatter: {},
+        children: [],
+        parent: "Other",
+      },
+    ];
+    const onCreateChild = vi.fn();
+    renderWithRoute(
+      <TreeNavigation pages={pagesWithTwoBranches} onCreateChild={onCreateChild} />,
+      ["/Welcome/Tasks/Task1"]
+    );
+
+    expect(screen.getByRole("button", { name: "Collapse Welcome" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Expand Other" })).toBeInTheDocument();
+  });
 });
 
