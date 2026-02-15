@@ -10,6 +10,7 @@ tmp
 .cache
 playwright-report
 test-results
+storybook-static
 /.turbo
 /.idea
 package-lock.json

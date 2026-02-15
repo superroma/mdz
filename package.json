@@ -9,7 +9,9 @@
     "start": "npm run start --workspace @app/backend",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test:e2e": "npm run test:e2e --workspace @app/e2e"
+    "test:e2e": "npm run test:e2e --workspace @app/e2e",
+    "storybook": "storybook dev -p 6006 -c .storybook",
+    "build-storybook": "storybook build -c .storybook -o storybook-static"
   },
   "workspaces": [
     "packages/backend",
@@ -17,7 +19,11 @@
     "packages/e2e"
   ],
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.2.8",
+    "@storybook/react": "^10.2.8",
+    "@storybook/react-vite": "^10.2.8",
     "concurrently": "^9.0.1",
+    "storybook": "^10.2.8",
     "typescript": "5.5.4"
   },
   "engines": {
