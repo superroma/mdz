@@ -203,10 +203,10 @@ With filter:
 With inline fields:
 
 ```
-<ListView fields={["status", "priority", "category"]} sort="due_date" />
+<ListView fields={["status", "priority", "category"]} sort="-due_date" />
 ```
 
-<ListView fields={["status", "priority", "category"]} sort="due_date" />
+<ListView fields={["status", "priority", "category"]} sort="-due_date" />
 
 ## No Parameters
 
