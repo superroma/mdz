@@ -124,8 +124,6 @@ export function PageView({ onToggleSidebar, isSidebarOpen }: PageViewProps = {})
   const pageTitle = isStaleOrMissing 
     ? (pagePath?.split("/").pop() || "") 
     : currentPage.title;
-  
-  console.log(`[PageView] path="${pagePath}", isStaleOrMissing=${isStaleOrMissing}, canEdit=${canEdit}, currentPage.canEdit=${currentPage?.canEdit}, currentPage.path="${currentPage?.path}"`);  
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">

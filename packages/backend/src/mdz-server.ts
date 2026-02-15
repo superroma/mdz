@@ -160,9 +160,7 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
         provider: decoded.provider,
         groups: decoded.groups || [],
       };
-      console.log(`[Auth] ${request.method} ${request.url} → user=${decoded.email}, groups=[${(decoded.groups || []).join(', ')}]`);
     } catch (error) {
-      console.log(`[Auth] ${request.method} ${request.url} → token verification failed:`, error);
       reply.status(401).send({ error: "Invalid token" });
       return;
     }

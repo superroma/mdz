@@ -53,19 +53,14 @@ export async function listPages(): Promise<Page[]> {
   const response = await fetch(`${API_BASE_URL}/api/pages`, {
     headers: getAuthHeaders(),
   });
-  const pages = await handleResponse<Page[]>(response);
-  const editSummary = pages.map(p => `${p.path}:${p.canEdit}`).join(', ');
-  console.log(`[API] listPages() → ${pages.length} pages, canEdit: [${editSummary}]`);
-  return pages;
+  return handleResponse<Page[]>(response);
 }
 
 export async function getPage(path: string): Promise<Page> {
   const response = await fetch(`${API_BASE_URL}/api/pages/${path}`, {
     headers: getAuthHeaders(),
   });
-  const page = await handleResponse<Page>(response);
-  console.log(`[API] getPage("${path}") → canEdit: ${page.canEdit}`);
-  return page;
+  return handleResponse<Page>(response);
 }
 
 export async function createPage(data: CreatePageRequest): Promise<Page> {
