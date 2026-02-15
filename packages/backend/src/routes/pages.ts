@@ -23,7 +23,9 @@ export async function registerPageRoutes(app: FastifyInstance) {
     validatePathOrThrow(path);
     
     const config = loadUsersConfig();
-    if (!checkPageAccess(userGroups, path, "read", config)) {
+    const canRead = checkPageAccess(userGroups, path, "read", config);
+    console.log(`[Pages] GET /api/pages/${path} → user=${request.currentUser?.email}, groups=[${userGroups.join(', ')}], canRead=${canRead}`);
+    if (!canRead) {
       throw new NotFoundError("Page not found");
     }
     
@@ -31,9 +33,11 @@ export async function registerPageRoutes(app: FastifyInstance) {
     if (!page) {
       throw new NotFoundError("Page not found");
     }
+    const canEdit = checkPageAccess(userGroups, path, "write", config);
+    console.log(`[Pages] GET /api/pages/${path} → canEdit=${canEdit}`);
     return {
       ...page,
-      canEdit: checkPageAccess(userGroups, path, "write", config),
+      canEdit,
     };
   });
 
