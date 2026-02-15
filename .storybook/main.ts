@@ -16,6 +16,10 @@ const config: StorybookConfig = {
     "@storybook/addon-a11y",
   ],
   viteFinal: async (config) => {
+    if (process.env.STORYBOOK_BASE) {
+      config.base = process.env.STORYBOOK_BASE;
+    }
+
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
