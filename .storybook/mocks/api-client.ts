@@ -13,6 +13,7 @@ const MOCK_PAGES: Page[] = [
     },
     children: [],
     parent: "Components/README",
+    canEdit: true,
   },
   {
     path: "Components/task-2",
@@ -26,6 +27,7 @@ const MOCK_PAGES: Page[] = [
     },
     children: [],
     parent: "Components/README",
+    canEdit: true,
   },
   {
     path: "Components/task-3",
@@ -39,6 +41,7 @@ const MOCK_PAGES: Page[] = [
     },
     children: [],
     parent: "Components/README",
+    canEdit: true,
   },
   {
     path: "Components/task-4",
@@ -52,6 +55,7 @@ const MOCK_PAGES: Page[] = [
     },
     children: [],
     parent: "Components/README",
+    canEdit: true,
   },
   {
     path: "Components/task-5",
@@ -65,6 +69,7 @@ const MOCK_PAGES: Page[] = [
     },
     children: [],
     parent: "Components/README",
+    canEdit: true,
   },
   {
     path: "Components/task-6",
@@ -78,6 +83,7 @@ const MOCK_PAGES: Page[] = [
     },
     children: [],
     parent: "Components/README",
+    canEdit: true,
   },
 ];
 
