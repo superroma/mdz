@@ -9,7 +9,16 @@ function toISODate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+const ISO_DATETIME_RE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+
+export function normalizeValue(val: unknown): unknown {
+  if (val instanceof Date) return toISODate(val);
+  if (typeof val === "string" && ISO_DATETIME_RE.test(val)) return val.slice(0, 10);
+  return val;
+}
+
 export function resolveValue(val: unknown): unknown {
+  if (val instanceof Date) return toISODate(val);
   if (typeof val !== "string") return val;
   const now = new Date();
   switch (val) {
@@ -26,7 +35,7 @@ export function resolveValue(val: unknown): unknown {
 
 function matchesFilter(page: Page, filter: FilterQuery): boolean {
   for (const [key, condition] of Object.entries(filter)) {
-    const value = page.frontMatter[key];
+    const value = normalizeValue(page.frontMatter[key]);
     
     if (typeof condition === "object" && condition !== null && !Array.isArray(condition)) {
       const ops = condition as Record<string, unknown>;

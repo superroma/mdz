@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { filterPages, resolveValue } from "./filterUtils";
+import { filterPages, resolveValue, normalizeValue } from "./filterUtils";
 import type { Page } from "../../types";
 
 const makePage = (frontMatter: Record<string, unknown>): Page => ({
@@ -49,6 +49,35 @@ describe("resolveValue", () => {
     expect(resolveValue(42)).toBe(42);
     expect(resolveValue(true)).toBe(true);
     expect(resolveValue(null)).toBe(null);
+  });
+
+  it("converts Date objects to YYYY-MM-DD strings", () => {
+    expect(resolveValue(new Date(2026, 1, 15))).toBe("2026-02-15");
+  });
+});
+
+describe("normalizeValue", () => {
+  it("converts Date objects to YYYY-MM-DD strings", () => {
+    expect(normalizeValue(new Date(2026, 1, 15))).toBe("2026-02-15");
+    expect(normalizeValue(new Date(2026, 0, 1))).toBe("2026-01-01");
+  });
+
+  it("strips time from ISO datetime strings (JSON-serialized dates)", () => {
+    expect(normalizeValue("2026-02-15T00:00:00.000Z")).toBe("2026-02-15");
+    expect(normalizeValue("2026-01-01T12:30:00.000Z")).toBe("2026-01-01");
+  });
+
+  it("passes through plain date strings unchanged", () => {
+    expect(normalizeValue("2026-02-15")).toBe("2026-02-15");
+  });
+
+  it("passes through non-date strings unchanged", () => {
+    expect(normalizeValue("Done")).toBe("Done");
+  });
+
+  it("passes through other types unchanged", () => {
+    expect(normalizeValue(42)).toBe(42);
+    expect(normalizeValue(undefined)).toBe(undefined);
   });
 });
 
@@ -107,5 +136,99 @@ describe("filterPages with date expressions", () => {
       status: { $ne: "Done" },
     });
     expect(result).toHaveLength(2);
+  });
+});
+
+describe("filterPages with Date objects from YAML", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("handles Date objects in front-matter with $eq today", () => {
+    vi.useFakeTimers({ now: new Date(2026, 1, 15) });
+    const pages = [
+      makePage({ due_date: new Date(2026, 1, 14) }),
+      makePage({ due_date: new Date(2026, 1, 15) }),
+      makePage({ due_date: new Date(2026, 1, 16) }),
+    ];
+    const result = filterPages(pages, { due_date: { $eq: "today" } });
+    expect(result).toHaveLength(1);
+  });
+
+  it("handles Date objects in front-matter with $lte today", () => {
+    vi.useFakeTimers({ now: new Date(2026, 1, 15) });
+    const pages = [
+      makePage({ due_date: new Date(2026, 1, 14) }),
+      makePage({ due_date: new Date(2026, 1, 15) }),
+      makePage({ due_date: new Date(2026, 1, 16) }),
+    ];
+    const result = filterPages(pages, { due_date: { $lte: "today" } });
+    expect(result).toHaveLength(2);
+  });
+
+  it("handles Date objects in front-matter with $gt yesterday", () => {
+    vi.useFakeTimers({ now: new Date(2026, 1, 15) });
+    const pages = [
+      makePage({ due_date: new Date(2026, 1, 13) }),
+      makePage({ due_date: new Date(2026, 1, 14) }),
+      makePage({ due_date: new Date(2026, 1, 15) }),
+    ];
+    const result = filterPages(pages, { due_date: { $gt: "yesterday" } });
+    expect(result).toHaveLength(1);
+  });
+
+  it("handles Date objects with plain date string comparison", () => {
+    const pages = [
+      makePage({ due_date: new Date(2026, 1, 15) }),
+      makePage({ due_date: new Date(2026, 2, 1) }),
+    ];
+    const result = filterPages(pages, { due_date: { $eq: "2026-02-15" } });
+    expect(result).toHaveLength(1);
+  });
+
+  it("handles mix of Date objects and strings", () => {
+    vi.useFakeTimers({ now: new Date(2026, 1, 15) });
+    const pages = [
+      makePage({ due_date: new Date(2026, 1, 15) }),
+      makePage({ due_date: "2026-02-15" }),
+    ];
+    const result = filterPages(pages, { due_date: { $eq: "today" } });
+    expect(result).toHaveLength(2);
+  });
+});
+
+describe("filterPages with JSON-serialized dates (real API scenario)", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("matches ISO datetime string with $eq today", () => {
+    vi.useFakeTimers({ now: new Date(2026, 1, 15) });
+    const pages = [
+      makePage({ due_date: "2026-02-15T00:00:00.000Z" }),
+      makePage({ due_date: "2026-02-16T00:00:00.000Z" }),
+    ];
+    const result = filterPages(pages, { due_date: { $eq: "today" } });
+    expect(result).toHaveLength(1);
+  });
+
+  it("matches ISO datetime string with $lte today", () => {
+    vi.useFakeTimers({ now: new Date(2026, 1, 15) });
+    const pages = [
+      makePage({ due_date: "2026-02-14T00:00:00.000Z" }),
+      makePage({ due_date: "2026-02-15T00:00:00.000Z" }),
+      makePage({ due_date: "2026-02-16T00:00:00.000Z" }),
+    ];
+    const result = filterPages(pages, { due_date: { $lte: "today" } });
+    expect(result).toHaveLength(2);
+  });
+
+  it("matches ISO datetime string with plain date comparison", () => {
+    const pages = [
+      makePage({ due_date: "2026-02-15T00:00:00.000Z" }),
+      makePage({ due_date: "2026-03-01T00:00:00.000Z" }),
+    ];
+    const result = filterPages(pages, { due_date: { $eq: "2026-02-15" } });
+    expect(result).toHaveLength(1);
   });
 });

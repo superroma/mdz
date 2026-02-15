@@ -178,8 +178,16 @@ Without parameters — just page names:
 ```
 <ListView />
 ```
-
 <ListView />
+
+With filter:
+
+```
+<ListView sort="due_date" filter={{ due_date: { $eq: "today" } }}/>
+```
+
+<ListView sort="due_date" filter={{ due_date: { $eq: "today" } }}/>
+
 
 With inline fields:
 
