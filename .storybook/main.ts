@@ -23,6 +23,8 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
+      react: path.resolve(__dirname, "../node_modules/react"),
+      "react-dom": path.resolve(__dirname, "../node_modules/react-dom"),
       [path.resolve(__dirname, "../packages/frontend/src/api/client")]:
         path.resolve(__dirname, "mocks/api-client.ts"),
       api: path.resolve(__dirname, "../packages/frontend/src/api"),
