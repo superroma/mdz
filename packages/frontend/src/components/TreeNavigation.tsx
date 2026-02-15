@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { Page } from "../types";
 import { ARIA_LABELS } from "../constants/aria-labels";
@@ -8,6 +8,24 @@ interface DragState {
   draggedPath: string | null;
   dropTargetPath: string | null;
   dropPosition: "before" | "after" | null;
+}
+
+function Chevron({ expanded }: { expanded: boolean }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={`shrink-0 transition-transform duration-200 ${expanded ? "rotate-90" : ""}`}
+    >
+      <path d="M6 4l4 4-4 4" />
+    </svg>
+  );
 }
 
 interface TreeItemProps {
@@ -22,6 +40,8 @@ interface TreeItemProps {
   onDragOver: (e: React.DragEvent, path: string) => void;
   onDrop: (e: React.DragEvent, targetPath: string) => void;
   hasChildren?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 function TreeItem({
@@ -36,6 +56,8 @@ function TreeItem({
   onDragOver,
   onDrop,
   hasChildren,
+  isCollapsed,
+  onToggleCollapse,
 }: TreeItemProps) {
   const navigate = useNavigate();
   const isSelected = currentPath === page.path;
@@ -81,7 +103,7 @@ function TreeItem({
   };
 
   const baseClasses =
-    "group flex items-center gap-2 py-1.5 px-3 transition-colors cursor-default";
+    "group flex items-center gap-1 py-1.5 px-3 transition-colors cursor-default";
   const selectedClasses = isSelected
     ? "bg-slate-200 border-l-2 border-sky-500"
     : isMarkdown 
@@ -109,6 +131,21 @@ function TreeItem({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
+        <div className="w-4 h-4 shrink-0 flex items-center justify-center">
+          {hasChildren && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleCollapse?.();
+              }}
+              className="text-slate-400 hover:text-slate-700 transition-colors"
+              aria-label={isCollapsed ? `Expand ${page.title}` : `Collapse ${page.title}`}
+            >
+              <Chevron expanded={!isCollapsed} />
+            </button>
+          )}
+        </div>
         <div
           role="button"
           tabIndex={0}
@@ -142,6 +179,60 @@ function TreeItem({
   );
 }
 
+function CollapsibleChildren({
+  collapsed,
+  children,
+}: {
+  collapsed: boolean;
+  children: React.ReactNode;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [height, setHeight] = useState<number | "auto">(collapsed ? 0 : "auto");
+  const firstRender = useRef(true);
+
+  const measure = useCallback(() => {
+    if (ref.current) {
+      return ref.current.scrollHeight;
+    }
+    return 0;
+  }, []);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
+    if (collapsed) {
+      const h = measure();
+      setHeight(h);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setHeight(0);
+        });
+      });
+    } else {
+      const h = measure();
+      setHeight(h);
+      const onEnd = () => {
+        setHeight("auto");
+        ref.current?.removeEventListener("transitionend", onEnd);
+      };
+      ref.current?.addEventListener("transitionend", onEnd);
+    }
+  }, [collapsed, measure]);
+
+  return (
+    <div
+      ref={ref}
+      className="overflow-hidden transition-[height] duration-200 ease-in-out"
+      style={{ height: height === "auto" ? "auto" : `${height}px` }}
+    >
+      {children}
+    </div>
+  );
+}
+
 interface TreeNavigationProps {
   pages: Page[];
   onCreateChild: (parent: string) => void;
@@ -156,6 +247,20 @@ export function TreeNavigation({
   const location = useLocation();
   const currentPath = decodeURIComponent(location.pathname.substring(1));
   const { reorderPages } = usePageStore();
+
+  const [collapsedPaths, setCollapsedPaths] = useState<Set<string>>(new Set());
+
+  const toggleCollapse = useCallback((path: string) => {
+    setCollapsedPaths((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }, []);
 
   const [dragState, setDragState] = useState<DragState>({
     draggedPath: null,
@@ -327,6 +432,7 @@ export function TreeNavigation({
     const renderPage = (page: Page, level: number = 0): JSX.Element => {
       const children = pages.filter((p) => p.parent === page.path);
       const hasChildren = children.length > 0;
+      const isCollapsed = collapsedPaths.has(page.path);
       const isDropZoneActive = dragState.dropTargetPath === `__after__${page.path}`;
       const canShowDropZone = dragState.draggedPath && 
         dragState.draggedPath !== page.path &&
@@ -346,24 +452,28 @@ export function TreeNavigation({
             onDragOver={handleDragOver}
             onDrop={handleDrop}
             hasChildren={hasChildren}
+            isCollapsed={isCollapsed}
+            onToggleCollapse={() => toggleCollapse(page.path)}
           />
-          {children.map((child) => renderPage(child, level + 1))}
           {hasChildren && (
-            <div
-              className={`h-1 transition-colors ${isDropZoneActive ? "bg-sky-500" : ""}`}
-              style={{ marginLeft: `${level * 16 + 12}px` }}
-              onDragOver={(e) => {
-                if (canShowDropZone) {
-                  handleDropZoneDragOver(e, page.path);
-                }
-              }}
-              onDragLeave={() => {
-                if (dragState.dropTargetPath === `__after__${page.path}`) {
-                  setDragState(prev => ({ ...prev, dropTargetPath: null, dropPosition: null }));
-                }
-              }}
-              onDrop={(e) => handleDropZoneDrop(e, page.path)}
-            />
+            <CollapsibleChildren collapsed={isCollapsed}>
+              {children.map((child) => renderPage(child, level + 1))}
+              <div
+                className={`h-1 transition-colors ${isDropZoneActive ? "bg-sky-500" : ""}`}
+                style={{ marginLeft: `${level * 16 + 12}px` }}
+                onDragOver={(e) => {
+                  if (canShowDropZone) {
+                    handleDropZoneDragOver(e, page.path);
+                  }
+                }}
+                onDragLeave={() => {
+                  if (dragState.dropTargetPath === `__after__${page.path}`) {
+                    setDragState(prev => ({ ...prev, dropTargetPath: null, dropPosition: null }));
+                  }
+                }}
+                onDrop={(e) => handleDropZoneDrop(e, page.path)}
+              />
+            </CollapsibleChildren>
           )}
         </div>
       );
