@@ -56,6 +56,10 @@ export function LoginPage() {
           ? `${emailParam} doesn't have access to this app.`
           : "You don't have access to this app."
       );
+    } else if (errorParam === "expired-link") {
+      setErrorMessage(
+        "Your sign-in link has expired or is invalid. Ask an admin for a new one."
+      );
     } else if (errorParam === "invalid-login") {
       setErrorMessage("Unable to complete login. Please try again.");
     }

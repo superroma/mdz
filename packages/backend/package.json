@@ -10,6 +10,7 @@
     "serve": "node --import tsx/esm src/dev-server.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
+    "admin": "node --import tsx/esm src/cli/admin.ts",
     "test": "vitest run",
     "lint": "eslint \"src/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\""
   },

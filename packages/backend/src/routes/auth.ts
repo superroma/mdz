@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import oauthPlugin from "@fastify/oauth2";
 import jwtPlugin from "@fastify/jwt";
 import { loadUsersConfig, calculateUserGroups } from "../storage/user-access.js";
+import { verifyMagicToken } from "../auth/magic-link.js";
 
 interface UserProfile {
   email: string;
@@ -118,7 +119,7 @@ async function fetchUserInfo(userInfoURL: string, accessToken: string): Promise<
   return response.json();
 }
 
-function getBackendUrl(request?: any): string {
+export function getBackendUrl(request?: any): string {
   if (process.env.BACKEND_URL) {
     return process.env.BACKEND_URL;
   }
@@ -287,6 +288,45 @@ export async function registerAuthRoutes(app: FastifyInstance) {
     } catch (error) {
       reply.status(401).send({ error: "Unauthorized" });
     }
+  });
+
+  // Magic-link verify: exchange a short-lived, identity-bound magic-link token
+  // for a normal session. Deterministic, no LLM. Mirrors the OAuth callback tail.
+  app.get("/api/auth/magic", async (request, reply) => {
+    const token = (request.query as { token?: string })?.token;
+    if (!token) {
+      return reply.redirect("/login?error=expired-link");
+    }
+
+    let email: string;
+    try {
+      ({ email } = verifyMagicToken(token));
+    } catch {
+      // expired, tampered, or wrong-purpose — one generic message (no oracle)
+      return reply.redirect("/login?error=expired-link");
+    }
+
+    // Groups resolve from users.yaml at click time, so a removed/changed member
+    // is reflected immediately even on an already-delivered link.
+    const groups = calculateUserGroups(email, loadUsersConfig());
+    if (groups.length === 0) {
+      return reply.redirect("/login?error=no-access");
+    }
+
+    const sessionToken = app.jwt.sign({
+      email,
+      provider: "magic",
+      groups,
+    });
+
+    return reply
+      .setCookie("auth_token", sessionToken, {
+        path: "/",
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+      })
+      .redirect(`/auth/callback?token=${encodeURIComponent(sessionToken)}`);
   });
 
   app.post("/api/auth/logout", async (request, reply) => {

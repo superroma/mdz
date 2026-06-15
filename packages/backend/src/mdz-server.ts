@@ -9,6 +9,7 @@ import cookie from "@fastify/cookie";
 import { registerPageRoutes } from "./routes/pages.js";
 import { registerFileRoutes } from "./routes/files.js";
 import { registerAuthRoutes } from "./routes/auth.js";
+import { registerAdminRoutes } from "./routes/admin.js";
 import { getPagesRoot, DEFAULT_PAGES_ROOT } from "./storage/path-validator.js";
 import { mkdirSync } from "node:fs";
 import { existsSync } from "node:fs";
@@ -114,10 +115,11 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
   }
 
   await registerAuthRoutes(app);
+  await registerAdminRoutes(app);
 
   app.addHook("onRequest", async (request, reply) => {
     const url = request.url;
-    
+
     if (!url.startsWith("/api/pages") && !url.startsWith("/api/files")) {
       return;
     }
@@ -152,8 +154,16 @@ export async function buildServer(registerExtraPlugins?: (app: any) => Promise<v
         name: string;
         provider: string;
         groups: string[];
+        purpose?: string;
       };
-      
+
+      // A magic-link bootstrap token is not a session — it must be exchanged at
+      // /api/auth/magic first. Reject it if presented directly as a session.
+      if (decoded.purpose === "magic-link") {
+        reply.status(401).send({ error: "Invalid token" });
+        return;
+      }
+
       request.currentUser = {
         email: decoded.email,
         name: decoded.name,

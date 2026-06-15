@@ -1,8 +1,12 @@
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { join, dirname } from "node:path";
 import yaml from "js-yaml";
 import { getPagesRoot } from "./path-validator.js";
 import { readPage } from "./page-storage.js";
+
+function getUsersConfigPath(): string {
+  return join(getPagesRoot(), ".settings", "users.yaml");
+}
 
 export interface UsersConfig {
   defaultAccess: {
@@ -26,8 +30,7 @@ const DEFAULT_CONFIG: UsersConfig = {
 };
 
 export function loadUsersConfig(): UsersConfig {
-  const pagesRoot = getPagesRoot();
-  const configPath = join(pagesRoot, ".settings", "users.yaml");
+  const configPath = getUsersConfigPath();
 
   if (!existsSync(configPath)) {
     console.log("[Access Control] No users.yaml found, using default open access");
@@ -121,4 +124,39 @@ export function checkPageAccess(
 
 export function filterAccessiblePages(pages: string[], userGroups: string[], config: UsersConfig): string[] {
   return pages.filter((pagePath) => checkPageAccess(userGroups, pagePath, "read", config));
+}
+
+// --- Membership mutations (admin API / CLI) -------------------------------
+// MDZ's membership store stays at pages/.settings/users.yaml — these helpers
+// add a *write* path to that existing file. Each is a synchronous
+// read-modify-write, so within MDZ's single process they serialize naturally
+// (no interleaving between load and save) and preserve the existing schema.
+
+export function saveUsersConfig(config: UsersConfig): void {
+  const configPath = getUsersConfigPath();
+  mkdirSync(dirname(configPath), { recursive: true });
+  writeFileSync(configPath, yaml.dump(config), "utf-8");
+}
+
+/** Create or update a member's group assignment. */
+export function upsertUser(email: string, groups: string[]): void {
+  const config = loadUsersConfig();
+  config.users[email] = { groups };
+  saveUsersConfig(config);
+}
+
+/** Remove a member. Returns false if the member did not exist. */
+export function removeUser(email: string): boolean {
+  const config = loadUsersConfig();
+  if (!config.users[email]) {
+    return false;
+  }
+  delete config.users[email];
+  saveUsersConfig(config);
+  return true;
+}
+
+/** List all members (email → groups). */
+export function listUsers(): Record<string, { groups: string[] }> {
+  return loadUsersConfig().users;
 }
