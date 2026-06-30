@@ -1,4 +1,5 @@
-import { afterEach, beforeEach, describe, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
+import jwt from "jsonwebtoken";
 import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -94,5 +95,22 @@ describe("runAdminCommand", () => {
 
   test("an unknown command throws", async () => {
     await expect(runAdminCommand(["frobnicate"])).rejects.toThrow();
+  });
+});
+
+describe("admin cli: mint-admin-token", () => {
+  const OLD = process.env;
+  beforeEach(() => { process.env = { ...OLD, JWT_SECRET: "test-secret" }; });
+  afterEach(() => { process.env = OLD; });
+
+  it("prints a verifiable admins token", async () => {
+    const out = await runAdminCommand(["mint-admin-token", "agent-admin@demo.example.com"]);
+    const decoded = jwt.verify(out.trim(), "test-secret") as any;
+    expect(decoded.groups).toContain("admins");
+    expect(decoded.purpose).toBeUndefined();
+  });
+
+  it("requires an email", async () => {
+    await expect(runAdminCommand(["mint-admin-token"])).rejects.toThrow(/usage: mint-admin-token/);
   });
 });

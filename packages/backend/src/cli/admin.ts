@@ -6,6 +6,7 @@ import {
   listUsers,
 } from "../storage/user-access.js";
 import { mintMagicToken, buildMagicLinkUrl } from "../auth/magic-link.js";
+import { mintAdminToken } from "../auth/admin-token.js";
 
 /**
  * Tiny admin CLI — the no-nanoclaw fallback for managing membership and minting
@@ -60,6 +61,11 @@ export async function runAdminCommand(argv: string[]): Promise<string> {
       }
       return magicLinkFor(email);
     }
+    case "mint-admin-token": {
+      const [email] = rest;
+      if (!email) throw new Error("usage: mint-admin-token <email>");
+      return mintAdminToken(email);
+    }
     case "list": {
       const users = listUsers();
       const lines = Object.entries(users).map(
@@ -70,7 +76,7 @@ export async function runAdminCommand(argv: string[]): Promise<string> {
     default:
       throw new Error(
         `Unknown command: ${command ?? "(none)"}\n` +
-          "commands: add-user, set-groups, remove, mint-link, list"
+          "commands: add-user, set-groups, remove, mint-link, mint-admin-token, list"
       );
   }
 }
