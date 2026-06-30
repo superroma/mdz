@@ -7,6 +7,7 @@ function getSecret(): string {
 
 const DEFAULT_TTL = "45m";
 
+/** Default lifetime of an agent admin session token; overridable via ADMIN_TOKEN_TTL (any ms/jsonwebtoken span, e.g. "45m", "1h"). */
 export function getAdminTokenTtl(): string {
   return process.env.ADMIN_TOKEN_TTL || DEFAULT_TTL;
 }
